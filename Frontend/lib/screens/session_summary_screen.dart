@@ -1,113 +1,208 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../app_theme.dart';
+import '../widgets/animations.dart';
 import '../widgets/primary_button.dart';
 
-class SessionSummaryScreen extends StatelessWidget {
+class SessionSummaryScreen extends StatefulWidget {
   final Map<String, dynamic> session;
   const SessionSummaryScreen({super.key, required this.session});
 
   @override
+  State<SessionSummaryScreen> createState() => _SessionSummaryScreenState();
+}
+
+class _SessionSummaryScreenState extends State<SessionSummaryScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _badgeCtrl;
+  late final Animation<double> _badgeScale;
+
+  @override
+  void initState() {
+    super.initState();
+    _badgeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _badgeScale = TweenSequence([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.2), weight: 60),
+      TweenSequenceItem(tween: Tween(begin: 1.2, end: 0.95), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 0.95, end: 1.0), weight: 20),
+    ]).animate(CurvedAnimation(parent: _badgeCtrl, curve: Curves.easeOut));
+
+    // Delay so it fires after screen slide-in
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) _badgeCtrl.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _badgeCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final subject = session['subject'] ?? '';
-    final mins = session['actualDurationMinutes'] ?? 0;
-    final focus = (session['focusScore'] ?? 0).toDouble();
-    final interruptions = session['interruptions'] ?? 0;
+    final subject = widget.session['subject'] ?? '';
+    final mins = widget.session['actualDurationMinutes'] ?? 0;
+    final focus = (widget.session['focusScore'] ?? 0).toDouble();
+    final interruptions = widget.session['interruptions'] ?? 0;
     final focusColor = _focusColor(focus);
+    final focusPct = (focus / 100).clamp(0.0, 1.0);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
           child: Column(
             children: [
-              // ── Badge / icon ──────────────────────────
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: focusColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: focusColor.withOpacity(0.3), width: 2),
+              // ── Animated badge ────────────────────────────────────────
+              ScaleTransition(
+                scale: _badgeScale,
+                child: Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: focusColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.textPrimary, width: 3),
+                    boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
+                  ),
+                  child: Icon(_focusIcon(focus), color: AppColors.textPrimary, size: 44),
                 ),
-                child: Icon(_focusIcon(focus), color: focusColor, size: 36),
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Session Complete! 🎉',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.5),
-                textAlign: TextAlign.center,
+              const SizedBox(height: 24),
+
+              // ── Title ─────────────────────────────────────────────────
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 350),
+                child: Text(
+                  'Session Complete! 🎉',
+                  style: GoogleFonts.syne(fontSize: 26, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.5),
+                  textAlign: TextAlign.center,
+                ),
               ),
               const SizedBox(height: 6),
-              Text(
-                subject,
-                style: const TextStyle(fontSize: 15, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 400),
+                child: Text(
+                  subject,
+                  style: const TextStyle(fontSize: 15, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                ),
               ),
               const SizedBox(height: 32),
 
-              // ── Stats row ─────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 4))],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _StatBox(label: 'Duration', value: '${mins}m', icon: Icons.timer_rounded, color: AppColors.primary),
-                    _Divider(),
-                    _StatBox(label: 'Focus', value: '${focus.toInt()}', icon: Icons.bolt_rounded, color: AppColors.accentGreen),
-                    _Divider(),
-                    _StatBox(label: 'Breaks', value: '$interruptions', icon: Icons.notifications_off_outlined, color: AppColors.accentOrange),
-                  ],
+              // ── Stats card ────────────────────────────────────────────
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 450),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.textPrimary, width: 3),
+                    boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _StatBox(label: 'Duration', value: '${mins}m', icon: Icons.timer_rounded, color: AppColors.primary),
+                      Container(width: 1.5, height: 44, color: AppColors.divider.withOpacity(0.4)),
+                      _StatBox(label: 'Focus', value: '${focus.toInt()}', icon: Icons.bolt_rounded, color: AppColors.accentGreen),
+                      Container(width: 1.5, height: 44, color: AppColors.divider.withOpacity(0.4)),
+                      _StatBox(label: 'Breaks', value: '$interruptions', icon: Icons.notifications_off_outlined, color: AppColors.accentOrange),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
 
-              // ── Focus feedback card ────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: focusColor.withOpacity(0.07),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: focusColor.withOpacity(0.2)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _focusLabel(focus),
-                      style: TextStyle(color: focusColor, fontWeight: FontWeight.w700, fontSize: 16),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _focusTip(focus, interruptions),
-                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5),
-                    ),
-                  ],
+              // ── Focus progress bar ────────────────────────────────────
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 500),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.textPrimary, width: 2),
+                    boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _focusLabel(focus),
+                            style: TextStyle(color: focusColor, fontWeight: FontWeight.w800, fontSize: 15),
+                          ),
+                          Text(
+                            '${focus.toInt()}%',
+                            style: GoogleFonts.syne(color: focusColor, fontWeight: FontWeight.w900, fontSize: 18),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      AnimatedProgressBar(value: focusPct, color: focusColor, height: 10),
+                      const SizedBox(height: 12),
+                      Text(
+                        _focusTip(focus, interruptions),
+                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              const SizedBox(height: 40),
 
-              const Spacer(),
-
-              // ── Actions ───────────────────────────────
-              PrimaryButton(text: 'Back to Home', onPressed: () => context.go('/home')),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => context.pushReplacement('/session/setup'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 52),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    side: const BorderSide(color: AppColors.divider, width: 1.5),
-                    foregroundColor: AppColors.textPrimary,
-                  ),
-                  child: const Text('Start Another Session', style: TextStyle(fontWeight: FontWeight.w600)),
+              // ── Actions ───────────────────────────────────────────────
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 560),
+                child: Column(
+                  children: [
+                    PressButton(
+                      onTap: () => context.go('/home'),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.textPrimary, width: 3),
+                          boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
+                        ),
+                        child: Text(
+                          'Back to Home',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.syne(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    PressButton(
+                      onTap: () => context.pushReplacement('/session/setup'),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.textPrimary, width: 2.5),
+                          boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
+                        ),
+                        child: Text(
+                          'Start Another Session',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.syne(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -123,7 +218,7 @@ class SessionSummaryScreen extends StatelessWidget {
           ? AppColors.primary
           : f >= 40
               ? AppColors.accentOrange
-              : const Color(0xFFE07A5F);
+              : AppColors.accent;
 
   IconData _focusIcon(double f) => f >= 80
       ? Icons.star_rounded
@@ -144,11 +239,6 @@ class SessionSummaryScreen extends StatelessWidget {
       : 'You had $i interruption${i != 1 ? 's' : ''}. Try enabling Do Not Disturb next time.';
 }
 
-class _Divider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Container(width: 1, height: 40, color: AppColors.divider);
-}
-
 class _StatBox extends StatelessWidget {
   final String label, value;
   final IconData icon;
@@ -158,11 +248,13 @@ class _StatBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          Icon(icon, color: color, size: 22),
+          Icon(icon, color: color, size: 24),
           const SizedBox(height: 6),
-          Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color, letterSpacing: -0.5)),
+          Text(value,
+              style: GoogleFonts.syne(fontSize: 22, fontWeight: FontWeight.w900, color: color, letterSpacing: -0.5)),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+          Text(label,
+              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
         ],
       );
 }

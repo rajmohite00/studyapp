@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 import '../providers/theme_provider.dart';
 import '../app_theme.dart';
+import '../widgets/animations.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -13,110 +15,133 @@ class ProfileScreen extends ConsumerWidget {
     final user = ref.watch(authStateProvider).user;
     final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
 
-    if (user == null) return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: AppColors.surface,
+        body: Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2.5)),
+      );
+    }
 
-    final initials = user.name.split(' ').map((w) => w.isEmpty ? '' : w[0].toUpperCase()).take(2).join();
+    final initials = user.name
+        .split(' ')
+        .map((w) => w.isEmpty ? '' : w[0].toUpperCase())
+        .take(2)
+        .join();
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text('Profile', style: GoogleFonts.syne(fontWeight: FontWeight.w800)),
         backgroundColor: Colors.white,
         elevation: 0,
-        shadowColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: AppColors.divider),
+          preferredSize: const Size.fromHeight(1.5),
+          child: Container(height: 1.5, color: AppColors.divider.withOpacity(0.3)),
         ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 28, 20, 32),
-        child: Column(
+        child: StaggeredList(
+          itemDelay: const Duration(milliseconds: 70),
           children: [
-            // ── Avatar / identity card ─────────────────
+            // ── Avatar card ────────────────────────────────────────────
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 4))],
+                border: Border.all(color: AppColors.textPrimary, width: 3),
+                boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
               ),
               child: Column(
                 children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.accentGreen],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  // Animated avatar
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.6, end: 1.0),
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOutBack,
+                    builder: (_, v, child) => Transform.scale(scale: v, child: child),
+                    child: Container(
+                      width: 84,
+                      height: 84,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.textPrimary, width: 3),
+                        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
                       ),
-                      shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.2), blurRadius: 16, offset: const Offset(0, 6))],
-                    ),
-                    child: Center(
-                      child: Text(
-                        initials,
-                        style: const TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.w800),
+                      child: Center(
+                        child: Text(
+                          initials,
+                          style: GoogleFonts.syne(fontSize: 30, color: AppColors.textPrimary, fontWeight: FontWeight.w900),
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(user.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                  Text(user.name,
+                      style: GoogleFonts.syne(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
                   const SizedBox(height: 4),
-                  Text(user.email, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                  const SizedBox(height: 12),
+                  Text(user.email,
+                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 14),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
                     decoration: BoxDecoration(
-                      color: user.subscription.isPremium
-                          ? AppColors.accentOrange.withOpacity(0.1)
-                          : AppColors.divider,
+                      color: user.subscription.isPremium ? AppColors.accentOrange : AppColors.textPrimary,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      user.subscription.isPremium ? '⭐ PRO MEMBER' : 'FREE PLAN',
-                      style: TextStyle(
-                        color: user.subscription.isPremium ? AppColors.accentOrange : AppColors.textSecondary,
+                      user.subscription.isPremium ? '⭐  PRO MEMBER' : 'FREE PLAN',
+                      style: const TextStyle(
+                        color: Colors.white,
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            // ── Study Settings ─────────────────────────
+            // ── Study Settings ─────────────────────────────────────────
             _SectionCard(
               title: 'Study Settings',
               children: [
-                _MenuTile(icon: Icons.person_outline_rounded, title: 'Edit Profile', onTap: () => context.push('/profile-setup')),
-                _MenuTile(icon: Icons.notifications_outlined, title: 'Notifications', trailing: Switch(value: true, onChanged: (v) {}, activeColor: AppColors.primary)),
-                _MenuTile(
+                _AnimatedTile(icon: Icons.person_outline_rounded, title: 'Edit Profile',
+                    onTap: () => context.push('/profile-setup')),
+                _AnimatedTile(
+                    icon: Icons.notifications_outlined,
+                    title: 'Notifications',
+                    trailing: Switch(value: true, onChanged: (_) {}, activeColor: AppColors.primary)),
+                _AnimatedTile(
                   icon: isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
                   title: 'Dark Mode',
-                  trailing: Switch(value: isDark, onChanged: (v) => ref.read(themeModeProvider.notifier).toggle(), activeColor: AppColors.primary),
+                  trailing: Switch(
+                    value: isDark,
+                    onChanged: (_) => ref.read(themeModeProvider.notifier).toggle(),
+                    activeColor: AppColors.primary,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // ── Account ────────────────────────────────
+            // ── Account ────────────────────────────────────────────────
             _SectionCard(
               title: 'Account',
               children: [
-                _MenuTile(icon: Icons.lock_outline_rounded, title: 'Change Password', onTap: () {}),
-                _MenuTile(icon: Icons.star_outline_rounded, title: 'Upgrade to Pro', color: AppColors.accentOrange, onTap: () {}),
-                _MenuTile(
+                _AnimatedTile(icon: Icons.lock_outline_rounded, title: 'Change Password', onTap: () {}),
+                _AnimatedTile(icon: Icons.star_outline_rounded, title: 'Upgrade to Pro',
+                    color: AppColors.accentOrange, onTap: () {}),
+                _AnimatedTile(
                   icon: Icons.logout_rounded,
                   title: 'Log Out',
-                  color: const Color(0xFFE07A5F),
+                  color: AppColors.accent,
                   onTap: () async {
                     await ref.read(authStateProvider.notifier).logout();
                     if (context.mounted) context.go('/welcome');
@@ -141,45 +166,71 @@ class _SectionCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4))],
+          border: Border.all(color: AppColors.textPrimary, width: 2.5),
+          boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-              child: Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 0.5)),
+              child: Text(title,
+                  style: GoogleFonts.syne(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 1.0)),
             ),
-            const Divider(height: 1, color: AppColors.divider),
+            Container(height: 1.5, color: AppColors.textPrimary.withOpacity(0.08)),
             ...children,
           ],
         ),
       );
 }
 
-class _MenuTile extends StatelessWidget {
+class _AnimatedTile extends StatefulWidget {
   final IconData icon;
   final String title;
   final Widget? trailing;
   final Color? color;
   final VoidCallback? onTap;
-
-  const _MenuTile({required this.icon, required this.title, this.trailing, this.color, this.onTap});
+  const _AnimatedTile({required this.icon, required this.title, this.trailing, this.color, this.onTap});
 
   @override
-  Widget build(BuildContext context) => ListTile(
-        onTap: onTap,
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: (color ?? AppColors.primary).withOpacity(0.08),
-            borderRadius: BorderRadius.circular(10),
+  State<_AnimatedTile> createState() => _AnimatedTileState();
+}
+
+class _AnimatedTileState extends State<_AnimatedTile> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          color: _pressed ? AppColors.primary.withOpacity(0.06) : Colors.transparent,
+          child: ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: (widget.color ?? AppColors.primary).withOpacity(0.10),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(widget.icon, color: widget.color ?? AppColors.primary, size: 18),
+            ),
+            title: Text(widget.title,
+                style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: widget.color ?? AppColors.textPrimary,
+                    fontSize: 14)),
+            trailing: widget.trailing ??
+                Icon(Icons.chevron_right_rounded, color: AppColors.textLight, size: 20),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+            minLeadingWidth: 0,
           ),
-          child: Icon(icon, color: color ?? AppColors.primary, size: 18),
         ),
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.w600, color: color ?? AppColors.textPrimary, fontSize: 14)),
-        trailing: trailing ?? Icon(Icons.chevron_right_rounded, color: AppColors.textLight, size: 20),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-        minLeadingWidth: 0,
       );
 }

@@ -21,7 +21,48 @@ import 'screens/quiz_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/exam_planner_screen.dart';
 import 'screens/exam_planner_setup_screen.dart';
-import 'app_theme.dart';
+
+// ── Smooth fade+slide transition ──────────────────────────────────────────────
+CustomTransitionPage<T> _slideFade<T>({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+  Offset begin = const Offset(0.03, 0),
+}) =>
+    CustomTransitionPage<T>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 250),
+      reverseTransitionDuration: const Duration(milliseconds: 200),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final fade = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+        final slide = Tween<Offset>(begin: begin, end: Offset.zero).animate(
+          CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+        );
+        return FadeTransition(
+          opacity: fade,
+          child: SlideTransition(position: slide, child: child),
+        );
+      },
+    );
+
+// ── Gentle fade only (for tab-like switches) ─────────────────────────────────
+CustomTransitionPage<T> _fadeOnly<T>({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) =>
+    CustomTransitionPage<T>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 200),
+      reverseTransitionDuration: const Duration(milliseconds: 180),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+          FadeTransition(
+            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+            child: child,
+          ),
+    );
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -38,39 +79,69 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(path: '/splash', builder: (c, s) => const SplashScreen()),
-      GoRoute(path: '/welcome', builder: (c, s) => const WelcomeScreen()),
-      GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
-      GoRoute(path: '/signup', builder: (c, s) => const SignupScreen()),
+      // Auth flow – fade only
+      GoRoute(path: '/splash',
+          pageBuilder: (c, s) => _fadeOnly(context: c, state: s, child: const SplashScreen())),
+      GoRoute(path: '/welcome',
+          pageBuilder: (c, s) => _fadeOnly(context: c, state: s, child: const WelcomeScreen())),
+      GoRoute(path: '/login',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const LoginScreen())),
+      GoRoute(path: '/signup',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const SignupScreen())),
       GoRoute(
         path: '/otp',
-        builder: (c, s) => OtpScreen(email: s.extra as String),
+        pageBuilder: (c, s) => _slideFade(context: c, state: s, child: OtpScreen(email: s.extra as String)),
       ),
-      GoRoute(path: '/profile-setup', builder: (c, s) => const ProfileSetupScreen()),
-      GoRoute(path: '/home', builder: (c, s) => const HomeScreen()),
-      GoRoute(path: '/session/setup', builder: (c, s) => const SessionSetupScreen()),
+      GoRoute(path: '/profile-setup',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ProfileSetupScreen())),
+
+      // Main app – fade (instant feel inside tab shell)
+      GoRoute(path: '/home',
+          pageBuilder: (c, s) => _fadeOnly(context: c, state: s, child: const HomeScreen())),
+
+      // Session flow – slide in from right
+      GoRoute(path: '/session/setup',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const SessionSetupScreen())),
       GoRoute(
         path: '/session/active',
-        builder: (c, s) => SessionActiveScreen(session: s.extra as Map<String, dynamic>),
+        pageBuilder: (c, s) => _slideFade(
+            context: c, state: s,
+            child: SessionActiveScreen(session: s.extra as Map<String, dynamic>)),
       ),
       GoRoute(
         path: '/session/summary',
-        builder: (c, s) => SessionSummaryScreen(session: s.extra as Map<String, dynamic>),
+        pageBuilder: (c, s) => _slideFade(
+            context: c, state: s,
+            child: SessionSummaryScreen(session: s.extra as Map<String, dynamic>)),
       ),
-      GoRoute(path: '/analytics', builder: (c, s) => const AnalyticsScreen()),
+
+      // Analytics
+      GoRoute(path: '/analytics',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const AnalyticsScreen())),
       GoRoute(
         path: '/analytics/subject',
-        builder: (c, s) => SubjectDetailScreen(subject: s.extra as String),
+        pageBuilder: (c, s) => _slideFade(context: c, state: s,
+            child: SubjectDetailScreen(subject: s.extra as String)),
       ),
-      GoRoute(path: '/analytics/weekly-report', builder: (c, s) => const WeeklyReportScreen()),
-      GoRoute(path: '/ai/chat', builder: (c, s) => const AiChatScreen()),
+      GoRoute(path: '/analytics/weekly-report',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const WeeklyReportScreen())),
+
+      // AI
+      GoRoute(path: '/ai/chat',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const AiChatScreen())),
       GoRoute(
         path: '/ai/quiz',
-        builder: (c, s) => QuizScreen(quizData: s.extra as Map<String, dynamic>),
+        pageBuilder: (c, s) => _slideFade(context: c, state: s,
+            child: QuizScreen(quizData: s.extra as Map<String, dynamic>)),
       ),
-      GoRoute(path: '/profile', builder: (c, s) => const ProfileScreen()),
-      GoRoute(path: '/exam-planner', builder: (c, s) => const ExamPlannerScreen()),
-      GoRoute(path: '/exam-planner/setup', builder: (c, s) => const ExamPlannerSetupScreen()),
+
+      // Profile & Planner
+      GoRoute(path: '/profile',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ProfileScreen())),
+      GoRoute(path: '/exam-planner',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ExamPlannerScreen())),
+      GoRoute(path: '/exam-planner/setup',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ExamPlannerSetupScreen())),
     ],
     errorBuilder: (c, s) => Scaffold(
       body: Center(child: Text('Page not found: ${s.error}')),

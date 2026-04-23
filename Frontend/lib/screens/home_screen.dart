@@ -8,12 +8,9 @@ import '../providers/intelligence_provider.dart';
 import '../providers/session_provider.dart';
 import '../widgets/streak_card.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/animations.dart';
 import '../app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'session_setup_screen.dart';
-import 'analytics_screen.dart';
-import 'ai_chat_screen.dart';
-import 'profile_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -110,13 +107,14 @@ class _HomePage extends ConsumerWidget {
               ),
               Container(height: 1.5, color: AppColors.divider),
 
-              // ── HERO SECTION ─────────────────────────────────
-              Container(
+              // ── HERO SECTION
+              FadeSlideIn(
+                beginOffset: const Offset(0, 0.05),
+                child: Container(
                 width: double.infinity,
-                // Neo-brutalist layered grid background
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.primary,
-                  border: const Border(
+                  border: Border(
                     bottom: BorderSide(color: AppColors.textPrimary, width: 3),
                   ),
                 ),
@@ -217,15 +215,21 @@ class _HomePage extends ConsumerWidget {
                     _BoldSectionHeader(title: 'Your Progress', icon: Icons.trending_up_rounded, bg: AppColors.surface),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                      child: _GoalCard(studied: data.today.totalMinutes, goal: data.dailyGoalMinutes, sessions: data.today.sessionCount),
+                      child: FadeSlideIn(
+                        delay: const Duration(milliseconds: 100),
+                        child: _GoalCard(studied: data.today.totalMinutes, goal: data.dailyGoalMinutes, sessions: data.today.sessionCount),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                      child: StreakCard(
-                        currentStreak: data.streak.current,
-                        longestStreak: data.streak.longest,
-                        freezesAvailable: data.streak.freezesAvailable,
-                        nextMilestone: data.streak.nextMilestone,
+                      child: FadeSlideIn(
+                        delay: const Duration(milliseconds: 160),
+                        child: StreakCard(
+                          currentStreak: data.streak.current,
+                          longestStreak: data.streak.longest,
+                          freezesAvailable: data.streak.freezesAvailable,
+                          nextMilestone: data.streak.nextMilestone,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
