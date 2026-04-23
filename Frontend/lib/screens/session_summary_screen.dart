@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_theme.dart';
 import '../widgets/animations.dart';
-import '../widgets/primary_button.dart';
 
 class SessionSummaryScreen extends StatefulWidget {
   final Map<String, dynamic> session;
