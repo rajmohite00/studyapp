@@ -18,7 +18,7 @@ class StreakCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.primary, AppColors.accentGreen],
@@ -26,12 +26,9 @@ class StreakCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primaryDark, width: 2),
         boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
+          BoxShadow(color: AppColors.primary.withOpacity(0.25), blurRadius: 0, offset: const Offset(4, 4)),
         ],
       ),
       child: Column(
@@ -40,27 +37,17 @@ class StreakCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                '🔥  Study Streak',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              const Text('🔥  Study Streak', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withOpacity(0.3)),
                 ),
                 child: Text(
                   '${freezesAvailable} freeze${freezesAvailable != 1 ? 's' : ''}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -71,35 +58,24 @@ class StreakCard extends StatelessWidget {
             children: [
               Text(
                 '$currentStreak',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 52,
-                  fontWeight: FontWeight.w900,
-                  height: 1,
-                  letterSpacing: -2,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 56, fontWeight: FontWeight.w900, height: 1, letterSpacing: -2),
               ),
               const Padding(
-                padding: EdgeInsets.only(bottom: 8, left: 6),
-                child: Text(
-                  'days',
-                  style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
-                ),
+                padding: EdgeInsets.only(bottom: 10, left: 6),
+                child: Text('days', style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Container(
-            height: 1,
-            color: Colors.white.withOpacity(0.15),
-          ),
+          Container(height: 1, color: Colors.white.withOpacity(0.2)),
           const SizedBox(height: 14),
           Row(
             children: [
-              _Stat(label: 'Best Streak', value: '$longestStreak days'),
-              const SizedBox(width: 28),
-              if (nextMilestone != null)
-                _Stat(label: 'Next Milestone', value: '$nextMilestone days'),
+              _Stat(label: 'BEST STREAK', value: '$longestStreak days'),
+              if (nextMilestone != null) ...[
+                const SizedBox(width: 28),
+                _Stat(label: 'NEXT MILESTONE', value: '$nextMilestone days'),
+              ],
             ],
           ),
         ],
@@ -109,17 +85,16 @@ class StreakCard extends StatelessWidget {
 }
 
 class _Stat extends StatelessWidget {
-  final String label;
-  final String value;
+  final String label, value;
   const _Stat({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.w500, letterSpacing: 0.3)),
+          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
           const SizedBox(height: 2),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+          Text(value, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
         ],
       );
 }

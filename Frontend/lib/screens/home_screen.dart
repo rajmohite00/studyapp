@@ -12,14 +12,12 @@ import '../app_theme.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
-
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _navIndex = 0;
-
   final _pages = const [_HomePage(), _StudyPlaceholder(), _AnalyticsPlaceholder(), _AiPlaceholder(), _ProfilePlaceholder()];
 
   @override
@@ -51,120 +49,96 @@ class _HomePage extends ConsumerWidget {
         onRefresh: () => ref.refresh(dashboardProvider.future),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Header ────────────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Good ${_greeting()} 👋',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user?.name.split(' ').first ?? 'Student',
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: () => context.push('/profile'),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.primary.withOpacity(0.3), width: 2),
-                      ),
-                      child: CircleAvatar(
-                        radius: 24,
-                        backgroundColor: AppColors.primary.withOpacity(0.08),
-                        child: Text(
-                          user?.name.substring(0, 1).toUpperCase() ?? 'S',
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
+              // ── TOP APP BAR ─────────────────────────────────
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'STUDY COACH',
+                          style: TextStyle(
                             fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.primary,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        Text(
+                          'Good ${_greeting()}, ${user?.name.split(' ').first ?? 'Student'} 👋',
+                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                    GestureDetector(
+                      onTap: () => context.push('/profile'),
+                      child: Container(
+                        width: 44, height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const LinearGradient(colors: [AppColors.primary, AppColors.accentGreen], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.25), blurRadius: 8, offset: const Offset(0, 3))],
+                        ),
+                        child: Center(
+                          child: Text(
+                            user?.name.substring(0, 1).toUpperCase() ?? 'S',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 17),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 24),
+              Container(height: 1.5, color: AppColors.divider),
 
-              // ── Hero Section ───────────────────────────────────
+              // ── HERO SECTION ─────────────────────────────────
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(28),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.06),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.15)),
-                ),
+                color: AppColors.primary.withOpacity(0.05),
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Badge pill
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(30),
                       ),
                       child: const Text(
-                        '✦  YOUR STUDY COMPANION',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.4,
-                          color: AppColors.textSecondary,
-                        ),
+                        '✦  YOUR DAILY STUDY COMPANION',
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1.2),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    const Text(
+                      'Study Coach',
+                      style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: AppColors.textPrimary, height: 1.0, letterSpacing: -1.5),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.divider, width: 1.5),
+                      ),
+                      child: const Text(
+                        'Focus. Plan. Execute.\nCrush your next exam with AI.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5, fontWeight: FontWeight.w500),
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Study Coach',
-                      style: TextStyle(
-                        fontSize: 38,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.primary,
-                        height: 1.1,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Focus, plan, and execute.\nCrush your next exam.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 28),
                     // Primary CTA
                     SizedBox(
                       width: double.infinity,
@@ -173,14 +147,14 @@ class _HomePage extends ConsumerWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 17),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            side: BorderSide(color: AppColors.primaryDark, width: 2),
+                          ),
                           elevation: 0,
                         ),
-                        child: const Text(
-                          'Start Study Session  →',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
+                        child: const Text('Start Study Session  →', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.3)),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -189,74 +163,66 @@ class _HomePage extends ConsumerWidget {
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: () => context.push('/exam-planner'),
-                        icon: const Icon(Icons.menu_book_rounded, size: 17),
+                        icon: const Icon(Icons.menu_book_rounded, size: 18),
                         label: const Text('Plan Your Exam'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textPrimary,
                           backgroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          side: const BorderSide(color: AppColors.divider, width: 1.5),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          side: const BorderSide(color: AppColors.textPrimary, width: 2),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
 
-              // ── Dynamic content ────────────────────────────────
+              // ── PROGRESS SECTION ─────────────────────────────
               dashAsync.when(
-                loading: () => const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32),
-                    child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2.5),
-                  ),
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(40),
+                  child: Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2.5)),
                 ),
-                error: (e, _) => Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.06),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text('Unable to load data: $e', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                ),
+                error: (e, _) => Padding(padding: const EdgeInsets.all(20), child: Text('$e', style: const TextStyle(color: AppColors.textSecondary))),
                 data: (data) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Section: Progress
-                    _SectionHeader(title: 'Your Progress', icon: Icons.trending_up_rounded),
-                    const SizedBox(height: 14),
-                    _GoalCard(
-                      studied: data.today.totalMinutes,
-                      goal: data.dailyGoalMinutes,
-                      sessions: data.today.sessionCount,
+                    // Progress section header
+                    _BoldSectionHeader(title: 'Your Progress', icon: Icons.trending_up_rounded, bg: AppColors.surface),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                      child: _GoalCard(studied: data.today.totalMinutes, goal: data.dailyGoalMinutes, sessions: data.today.sessionCount),
                     ),
-                    const SizedBox(height: 14),
-                    StreakCard(
-                      currentStreak: data.streak.current,
-                      longestStreak: data.streak.longest,
-                      freezesAvailable: data.streak.freezesAvailable,
-                      nextMilestone: data.streak.nextMilestone,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                      child: StreakCard(
+                        currentStreak: data.streak.current,
+                        longestStreak: data.streak.longest,
+                        freezesAvailable: data.streak.freezesAvailable,
+                        nextMilestone: data.streak.nextMilestone,
+                      ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 8),
 
-                    // Section: Quick Links
-                    _SectionHeader(title: 'Quick Links', icon: Icons.grid_view_rounded),
-                    const SizedBox(height: 14),
-                    _QuickActions(),
-                    const SizedBox(height: 32),
+                    // Features section (Guidelines-style floating icon cards)
+                    _BoldSectionHeader(title: 'What You Can Do', icon: Icons.apps_rounded, bg: AppColors.surface),
+                    _FloatingIconCards(),
 
-                    // Section: AI Insights
+                    // AI Suggestions (mentor-card style)
                     _AiSuggestionsWidget(),
-                    const SizedBox(height: 16),
-                    _SmartInsightsWidget(),
-                    const SizedBox(height: 32),
 
-                    // Section: Today's Subjects
-                    if (data.today.subjectBreakdown.isNotEmpty)
-                      _TodaySubjects(breakdown: data.today.subjectBreakdown),
+                    // Smart Insights
+                    _SmartInsightsWidget(burnoutAsync: ref.watch(burnoutProvider), predictionAsync: ref.watch(predictionProvider)),
+
+                    // Today's subjects
+                    if (data.today.subjectBreakdown.isNotEmpty) ...[
+                      _BoldSectionHeader(title: "Today's Subjects", icon: Icons.auto_stories_rounded, bg: AppColors.surface),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                        child: _TodaySubjects(breakdown: data.today.subjectBreakdown),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -275,171 +241,124 @@ class _HomePage extends ConsumerWidget {
   }
 }
 
-// ── Section Header ─────────────────────────────────────────────────────────────
-class _SectionHeader extends StatelessWidget {
+// ── Bold Section Header (Guidelines-style) ─────────────────────────────────────
+class _BoldSectionHeader extends StatelessWidget {
   final String title;
   final IconData icon;
-  const _SectionHeader({required this.title, required this.icon});
-
-  @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Icon(icon, size: 18, color: AppColors.primary),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-              letterSpacing: -0.3,
-            ),
-          ),
-        ],
-      );
-}
-
-// ── Smart Insights ─────────────────────────────────────────────────────────────
-class _SmartInsightsWidget extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final burnoutAsync = ref.watch(burnoutProvider);
-    final predictionAsync = ref.watch(predictionProvider);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(title: 'Smart Insights', icon: Icons.psychology_rounded),
-        const SizedBox(height: 14),
-        burnoutAsync.when(
-          loading: () => const LinearProgressIndicator(color: AppColors.primary, backgroundColor: AppColors.divider),
-          error: (_, __) => const SizedBox(),
-          data: (data) {
-            final status = data['status'];
-            final isHighRisk = status == 'High Risk';
-            final isWarning = status == 'Warning';
-            final color = isHighRisk
-                ? const Color(0xFFE07A5F)
-                : (isWarning ? AppColors.accentOrange : AppColors.accentGreen);
-
-            return _InsightCard(
-              icon: isHighRisk ? Icons.local_fire_department_rounded : Icons.health_and_safety_rounded,
-              color: color,
-              title: 'Burnout: $status',
-              subtitle: data['suggestion'],
-            );
-          },
-        ),
-        const SizedBox(height: 10),
-        predictionAsync.when(
-          loading: () => const SizedBox(),
-          error: (_, __) => const SizedBox(),
-          data: (data) => _InsightCard(
-            icon: Icons.analytics_rounded,
-            color: AppColors.primary,
-            title: 'Predicted Score: ${data['predictedScore']}%',
-            subtitle: data['suggestion'],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _InsightCard extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
-  const _InsightCard({required this.icon, required this.color, required this.title, required this.subtitle});
+  final Color bg;
+  const _BoldSectionHeader({required this.title, required this.icon, required this.bg});
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.07),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.2)),
-        ),
+        width: double.infinity,
+        color: bg,
+        padding: const EdgeInsets.fromLTRB(20, 28, 20, 16),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-              child: Icon(icon, color: color, size: 20),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 20, color: AppColors.primary),
             ),
             const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: color, fontSize: 13)),
-                  const SizedBox(height: 3),
-                  Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4)),
-                ],
-              ),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.5),
             ),
           ],
         ),
       );
 }
 
-// ── AI Suggestions ─────────────────────────────────────────────────────────────
-class _AiSuggestionsWidget extends ConsumerWidget {
+// ── Floating Icon Cards (like Guidelines section in reference) ─────────────────
+class _FloatingIconCards extends StatelessWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final asyncSugg = ref.watch(suggestionsProvider);
+  Widget build(BuildContext context) {
+    final features = [
+      _FeatureData(icon: Icons.timer_rounded, label: 'Study Timer', desc: 'Pomodoro & custom focus sessions', color: AppColors.primary, route: '/session/setup'),
+      _FeatureData(icon: Icons.smart_toy_rounded, label: 'AI Coach', desc: 'Ask anything, get personalized help', color: AppColors.accentGreen, route: '/ai/chat'),
+      _FeatureData(icon: Icons.calendar_today_rounded, label: 'Exam Planner', desc: 'AI-generated study plan with PYQs', color: AppColors.accent, route: '/exam-planner'),
+      _FeatureData(icon: Icons.bar_chart_rounded, label: 'Analytics', desc: 'Heatmaps, focus scores & insights', color: AppColors.accentOrange, route: '/analytics'),
+    ];
 
-    return asyncSugg.when(
-      loading: () => const SizedBox(),
-      error: (_, __) => const SizedBox(),
-      data: (suggestions) {
-        if (suggestions.isEmpty) return const SizedBox();
-        return Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: AppColors.accentBlue.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.accentBlue.withOpacity(0.25)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(color: AppColors.accentBlue.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.tips_and_updates_rounded, color: AppColors.accentBlue, size: 16),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text('AI Suggestions', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.accentBlue, fontSize: 14)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              ...suggestions.map((s) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('• ', style: TextStyle(color: AppColors.accentBlue, fontWeight: FontWeight.bold)),
-                    Expanded(child: Text(s, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, height: 1.4))),
-                  ],
-                ),
-              )),
-            ],
-          ),
-        );
-      },
+    return Column(
+      children: features.map((f) => _FloatingIconCard(feature: f)).toList(),
     );
   }
 }
 
+class _FeatureData {
+  final IconData icon;
+  final String label, desc, route;
+  final Color color;
+  const _FeatureData({required this.icon, required this.label, required this.desc, required this.color, required this.route});
+}
+
+class _FloatingIconCard extends StatelessWidget {
+  final _FeatureData feature;
+  const _FloatingIconCard({required this.feature});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.topCenter,
+          children: [
+            // Card body
+            GestureDetector(
+              onTap: () => context.push(feature.route),
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(top: 28),
+                padding: const EdgeInsets.fromLTRB(20, 36, 20, 24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.textPrimary, width: 2),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 0, offset: const Offset(4, 4))],
+                ),
+                child: Column(
+                  children: [
+                    Text(feature.label, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+                    const SizedBox(height: 8),
+                    Text(feature.desc, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5)),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: feature.color,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.textPrimary, width: 1.5),
+                      ),
+                      child: Text('Open  →', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Floating circular icon
+            Container(
+              width: 60, height: 60,
+              decoration: BoxDecoration(
+                color: feature.color,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.textPrimary, width: 2.5),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 3))],
+              ),
+              child: Icon(feature.icon, color: Colors.white, size: 28),
+            ),
+          ],
+        ),
+      );
+}
+
 // ── Goal Card ──────────────────────────────────────────────────────────────────
 class _GoalCard extends StatelessWidget {
-  final int studied;
-  final int goal;
-  final int sessions;
+  final int studied, goal, sessions;
   const _GoalCard({required this.studied, required this.goal, required this.sessions});
 
   @override
@@ -450,25 +369,18 @@ class _GoalCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 4)),
-        ],
+        border: Border.all(color: AppColors.textPrimary, width: 2),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 0, offset: const Offset(4, 4))],
       ),
       child: Row(
         children: [
           CircularPercentIndicator(
-            radius: 50,
-            lineWidth: 9,
+            radius: 48,
+            lineWidth: 8,
             percent: pct,
-            center: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '${(pct * 100).toInt()}%',
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
-                ),
-              ],
-            ),
+            center: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text('${(pct * 100).toInt()}%', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900)),
+            ]),
             progressColor: AppColors.primary,
             backgroundColor: AppColors.primary.withOpacity(0.1),
             circularStrokeCap: CircularStrokeCap.round,
@@ -478,27 +390,18 @@ class _GoalCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Daily Goal', style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+                const Text('Daily Goal', style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
                 const SizedBox(height: 4),
-                Text(
-                  '${studied}m / ${goal}m',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.5),
-                ),
+                Text('${studied}m / ${goal}m', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.5)),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.accentGreen.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '$sessions session${sessions != 1 ? 's' : ''} done',
-                        style: const TextStyle(color: AppColors.accentGreen, fontSize: 11, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentGreen.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.accentGreen.withOpacity(0.3)),
+                  ),
+                  child: Text('$sessions session${sessions != 1 ? 's' : ''} done', style: const TextStyle(color: AppColors.accentGreen, fontSize: 11, fontWeight: FontWeight.w700)),
                 ),
               ],
             ),
@@ -509,29 +412,91 @@ class _GoalCard extends StatelessWidget {
   }
 }
 
-// ── Quick Actions ──────────────────────────────────────────────────────────────
-class _QuickActions extends StatelessWidget {
+// ── AI Suggestions (Mentor-card style) ────────────────────────────────────────
+class _AiSuggestionsWidget extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncSugg = ref.watch(suggestionsProvider);
+    return asyncSugg.when(
+      loading: () => const SizedBox(),
+      error: (_, __) => const SizedBox(),
+      data: (suggestions) {
+        if (suggestions.isEmpty) return const SizedBox();
+        return Column(
+          children: [
+            _BoldSectionHeader(title: 'AI Suggestions', icon: Icons.tips_and_updates_rounded, bg: Colors.white),
+            ...suggestions.take(3).map((s) => Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.textPrimary, width: 1.5),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 0, offset: const Offset(3, 3))],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40, height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.accentBlue.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.accentBlue.withOpacity(0.4), width: 1.5),
+                      ),
+                      child: const Icon(Icons.lightbulb_rounded, color: AppColors.accentBlue, size: 18),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(s, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, height: 1.4, fontWeight: FontWeight.w500))),
+                  ],
+                ),
+              ),
+            )),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ── Smart Insights ─────────────────────────────────────────────────────────────
+class _SmartInsightsWidget extends StatelessWidget {
+  final AsyncValue burnoutAsync;
+  final AsyncValue predictionAsync;
+  const _SmartInsightsWidget({required this.burnoutAsync, required this.predictionAsync});
+
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _ActionCard(
-            icon: Icons.smart_toy_rounded,
-            label: 'AI Coach',
-            subtitle: 'Ask anything',
-            color: AppColors.accentBlue,
-            onTap: () => context.push('/ai/chat'),
-          ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: _ActionCard(
-            icon: Icons.bar_chart_rounded,
-            label: 'Analytics',
-            subtitle: 'Your stats',
-            color: AppColors.accentGreen,
-            onTap: () => context.push('/analytics'),
+        _BoldSectionHeader(title: 'Smart Insights', icon: Icons.psychology_rounded, bg: AppColors.surface),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              burnoutAsync.when(
+                loading: () => const LinearProgressIndicator(color: AppColors.primary),
+                error: (_, __) => const SizedBox(),
+                data: (data) {
+                  final d = data as Map<String, dynamic>;
+                  final status = d['status'];
+                  final isHigh = status == 'High Risk';
+                  final isWarn = status == 'Warning';
+                  final color = isHigh ? const Color(0xFFE07A5F) : (isWarn ? AppColors.accentOrange : AppColors.accentGreen);
+                  return _InsightCard(icon: isHigh ? Icons.local_fire_department_rounded : Icons.health_and_safety_rounded, color: color, title: 'Burnout: $status', subtitle: d['suggestion']);
+                },
+              ),
+              const SizedBox(height: 12),
+              predictionAsync.when(
+                loading: () => const SizedBox(),
+                error: (_, __) => const SizedBox(),
+                data: (data) {
+                  final d = data as Map<String, dynamic>;
+                  return _InsightCard(icon: Icons.analytics_rounded, color: AppColors.primary, title: 'Predicted Score: ${d['predictedScore']}%', subtitle: d['suggestion']);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
           ),
         ),
       ],
@@ -539,40 +504,40 @@ class _QuickActions extends StatelessWidget {
   }
 }
 
-class _ActionCard extends StatelessWidget {
+class _InsightCard extends StatelessWidget {
   final IconData icon;
-  final String label;
-  final String subtitle;
   final Color color;
-  final VoidCallback onTap;
-  const _ActionCard({required this.icon, required this.label, required this.subtitle, required this.color, required this.onTap});
+  final String title, subtitle;
+  const _InsightCard({required this.icon, required this.color, required this.title, required this.subtitle});
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.divider),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
-            ],
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
-                child: Icon(icon, color: color, size: 26),
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.4), width: 1.5),
+          boxShadow: [BoxShadow(color: color.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 3))],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontWeight: FontWeight.w800, color: color, fontSize: 13)),
+                  const SizedBox(height: 3),
+                  Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4)),
+                ],
               ),
-              const SizedBox(height: 10),
-              Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-              const SizedBox(height: 2),
-              Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-            ],
-          ),
+            ),
+          ],
         ),
       );
 }
@@ -583,68 +548,53 @@ class _TodaySubjects extends StatelessWidget {
   const _TodaySubjects({required this.breakdown});
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _SectionHeader(title: "Today's Subjects", icon: Icons.auto_stories_rounded),
-          const SizedBox(height: 14),
-          ...breakdown.entries.map((e) {
-            final h = e.value ~/ 60;
-            final m = e.value % 60;
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 2))],
+  Widget build(BuildContext context) {
+    final colors = AppColors.subjectColors;
+    int i = 0;
+    return Column(
+      children: breakdown.entries.map((e) {
+        final h = e.value ~/ 60;
+        final m = e.value % 60;
+        final color = colors[i++ % colors.length];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.divider, width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+              const SizedBox(width: 12),
+              Expanded(child: Text(e.key, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14))),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                child: Text(h > 0 ? '${h}h ${m}m' : '${m}m', style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 12)),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 8, height: 8,
-                        decoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(e.key, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                    ],
-                  ),
-                  Text(
-                    h > 0 ? '${h}h ${m}m' : '${m}m',
-                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13),
-                  ),
-                ],
-              ),
-            );
-          }),
-        ],
-      );
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
 }
 
-// ── Placeholder pages ──────────────────────────────────────────────────────────
 class _StudyPlaceholder extends StatelessWidget {
   const _StudyPlaceholder();
-  @override
-  Widget build(BuildContext context) => const SizedBox();
+  @override Widget build(BuildContext context) => const SizedBox();
 }
-
 class _AnalyticsPlaceholder extends StatelessWidget {
   const _AnalyticsPlaceholder();
-  @override
-  Widget build(BuildContext context) => const SizedBox();
+  @override Widget build(BuildContext context) => const SizedBox();
 }
-
 class _AiPlaceholder extends StatelessWidget {
   const _AiPlaceholder();
-  @override
-  Widget build(BuildContext context) => const SizedBox();
+  @override Widget build(BuildContext context) => const SizedBox();
 }
-
 class _ProfilePlaceholder extends StatelessWidget {
   const _ProfilePlaceholder();
-  @override
-  Widget build(BuildContext context) => const SizedBox();
+  @override Widget build(BuildContext context) => const SizedBox();
 }
