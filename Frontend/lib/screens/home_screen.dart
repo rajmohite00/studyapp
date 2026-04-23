@@ -140,7 +140,8 @@ class _HomePage extends ConsumerWidget {
                     const SizedBox(height: 24),
                     Text(
                       'Study Coach',
-                      style: GoogleFonts.syne(fontSize: 48, fontWeight: FontWeight.w900, color: AppColors.textPrimary, height: 1.0, letterSpacing: -1.5),
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.syne(fontSize: 40, fontWeight: FontWeight.w900, color: AppColors.textPrimary, height: 1.0, letterSpacing: -1.0),
                     ),
                     const SizedBox(height: 12),
                     Container(
