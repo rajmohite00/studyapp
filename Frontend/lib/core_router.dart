@@ -19,6 +19,8 @@ import 'screens/weekly_report_screen.dart';
 import 'screens/ai_chat_screen.dart';
 import 'screens/quiz_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/exam_planner_screen.dart';
+import 'screens/exam_planner_setup_screen.dart';
 import 'app_theme.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -67,6 +69,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (c, s) => QuizScreen(quizData: s.extra as Map<String, dynamic>),
       ),
       GoRoute(path: '/profile', builder: (c, s) => const ProfileScreen()),
+      GoRoute(path: '/exam-planner', builder: (c, s) => const ExamPlannerScreen()),
+      GoRoute(path: '/exam-planner/setup', builder: (c, s) => const ExamPlannerSetupScreen()),
     ],
     errorBuilder: (c, s) => Scaffold(
       body: Center(child: Text('Page not found: ${s.error}')),

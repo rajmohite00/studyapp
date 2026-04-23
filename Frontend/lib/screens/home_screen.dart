@@ -54,94 +54,114 @@ class _HomePage extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+            children: [
+              // Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Good ${_greeting()} 👋', style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                      const SizedBox(height: 2),
+                      Text('Good ${_greeting()} 👋', style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                      const SizedBox(height: 4),
                       Text(user?.name.split(' ').first ?? 'Student',
-                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                      if (user != null) ...[
-                        const SizedBox(height: 6),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.amber.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.amber, width: 1),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.star_rounded, color: Colors.amber, size: 14),
-                                  const SizedBox(width: 4),
-                                  Text('Lvl ${user.gamification.level} ${user.gamification.rank} • ${user.gamification.xp} XP', 
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.amber)),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            SizedBox(
-                              width: 150,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: LinearProgressIndicator(
-                                  value: (user.gamification.xp % 1000) / 1000,
-                                  backgroundColor: AppColors.primary.withOpacity(0.1),
-                                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
-                                  minHeight: 4,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text('${1000 - (user.gamification.xp % 1000)} XP to next level', style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
-                          ],
-                        ),
-                      ],
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
                     ],
                   ),
                   GestureDetector(
                     onTap: () => context.push('/profile'),
                     child: CircleAvatar(
+                      radius: 24,
                       backgroundColor: AppColors.primary.withOpacity(0.1),
                       child: Text(user?.name.substring(0, 1).toUpperCase() ?? 'S',
-                          style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                          style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 18)),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
+
+              // Hero Section (Inspired by reference layout)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 2))],
+                      ),
+                      child: const Text('THE ULTIMATE SHOWDOWN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2, color: AppColors.textSecondary)),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text('Study Coach', style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: AppColors.primary, height: 1.1)),
+                    const SizedBox(height: 12),
+                    const Text('Focus, plan, and execute.\nCrush your next exam.', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: AppColors.textSecondary, height: 1.4)),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: () => context.push('/session/setup'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: const Text('Start Study Session →', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: () => context.push('/exam-planner'),
+                      icon: const Icon(Icons.menu_book, size: 18),
+                      label: const Text('Plan Your Exam'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        side: const BorderSide(color: AppColors.divider, width: 2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+
               dashAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Text('$e'),
                 data: (data) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Today goal ring
+                    const Text('Your Progress', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                    const SizedBox(height: 16),
                     _GoalCard(
                       studied: data.today.totalMinutes,
                       goal: data.dailyGoalMinutes,
                       sessions: data.today.sessionCount,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     StreakCard(
                       currentStreak: data.streak.current,
                       longestStreak: data.streak.longest,
                       freezesAvailable: data.streak.freezesAvailable,
                       nextMilestone: data.streak.nextMilestone,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 32),
+                    const Text('Quick Links', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                    const SizedBox(height: 16),
                     _QuickActions(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 32),
                     _AiSuggestionsWidget(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     _SmartInsightsWidget(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 32),
                     if (data.today.subjectBreakdown.isNotEmpty) _TodaySubjects(breakdown: data.today.subjectBreakdown),
                   ],
                 ),
@@ -322,11 +342,15 @@ class _GoalCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Today\'s Goal', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                const Text('Daily Progress', style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 4),
-                Text('${studied}m / ${goal}m', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text('$sessions session${sessions != 1 ? 's' : ''} completed', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                Text('${studied}m / ${goal}m', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+                  child: Text('$sessions session${sessions != 1 ? 's' : ''} completed', style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+                ),
               ],
             ),
           ),
@@ -342,14 +366,10 @@ class _QuickActions extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: _ActionCard(icon: Icons.play_arrow_rounded, label: 'Start Session', color: AppColors.primary, onTap: () => context.push('/session/setup'))),
-            const SizedBox(width: 12),
             Expanded(child: _ActionCard(icon: Icons.smart_toy_rounded, label: 'AI Coach', color: AppColors.accentBlue, onTap: () => context.push('/ai/chat'))),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(child: _ActionCard(icon: Icons.bar_chart_rounded, label: 'Analytics', color: AppColors.accentGreen, onTap: () => context.push('/analytics'))),
           ],
         ),
@@ -357,6 +377,7 @@ class _QuickActions extends StatelessWidget {
     );
   }
 }
+
 
 class _ActionCard extends StatelessWidget {
   final IconData icon;
@@ -369,13 +390,22 @@ class _ActionCard extends StatelessWidget {
   Widget build(BuildContext context) => GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          decoration: BoxDecoration(
+            color: Colors.white, 
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.divider),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+          ),
           child: Column(
             children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(height: 6),
-              Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+                child: Icon(icon, color: color, size: 28),
+              ),
+              const SizedBox(height: 12),
+              Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
             ],
           ),
         ),

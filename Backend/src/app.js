@@ -9,6 +9,7 @@ const sessionRoutes = require('./routes/sessionRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const intelligenceRoutes = require('./routes/intelligenceRoutes');
+const examPlanRoutes = require('./routes/examPlanRoutes');
 const { errorMiddleware } = require('./middlewares/errorMiddleware');
 const { globalRateLimiter } = require('./middlewares/rateLimiter');
 
@@ -25,6 +26,18 @@ app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'combined'));
 app.use('/api', globalRateLimiter);
 
 // ── Health Check ────────────────────────────────────────────────────────────
+app.get('/', (_req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Study Coach API is running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      api: '/api/v1'
+    }
+  });
+});
+
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -36,6 +49,7 @@ app.use('/api/v1/sessions', sessionRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/intelligence', intelligenceRoutes);
+app.use('/api/v1/exam-plan', examPlanRoutes);
 
 // ── 404 ──────────────────────────────────────────────────────────────────────
 app.use((_req, res) => {
