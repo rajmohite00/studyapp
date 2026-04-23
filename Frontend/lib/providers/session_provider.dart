@@ -98,6 +98,13 @@ class SessionNotifier extends StateNotifier<SessionState> {
     _startTimer();
   }
 
+  Future<void> updateSubject(String subject) async {
+    final id = state.currentSession?.id;
+    if (id == null) return;
+    final session = await _service.updateSession(id, subject: subject);
+    state = state.copyWith(currentSession: session);
+  }
+
   Future<SessionModel?> endSession({String? notes, int? rating, bool? goalCompleted}) async {
     final id = state.currentSession?.id;
     if (id == null) return null;

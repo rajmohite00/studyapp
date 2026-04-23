@@ -7,6 +7,7 @@ class UserModel {
   final UserProfile profile;
   final StreakInfo streak;
   final SubscriptionInfo subscription;
+  final GamificationInfo gamification;
 
   const UserModel({
     required this.id,
@@ -17,6 +18,7 @@ class UserModel {
     required this.profile,
     required this.streak,
     required this.subscription,
+    required this.gamification,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
@@ -28,6 +30,7 @@ class UserModel {
         profile: UserProfile.fromJson(json['profile'] ?? {}),
         streak: StreakInfo.fromJson(json['streak'] ?? {}),
         subscription: SubscriptionInfo.fromJson(json['subscription'] ?? {}),
+        gamification: GamificationInfo.fromJson(json['gamification'] ?? {}),
       );
 
   Map<String, dynamic> toJson() => {
@@ -39,6 +42,35 @@ class UserModel {
         'profile': profile.toJson(),
         'streak': streak.toJson(),
         'subscription': subscription.toJson(),
+        'gamification': gamification.toJson(),
+      };
+}
+
+class GamificationInfo {
+  final int xp;
+  final int level;
+  final String rank;
+  final int coins;
+
+  const GamificationInfo({
+    this.xp = 0,
+    this.level = 1,
+    this.rank = 'Novice',
+    this.coins = 0,
+  });
+
+  factory GamificationInfo.fromJson(Map<String, dynamic> json) => GamificationInfo(
+        xp: json['xp'] ?? 0,
+        level: json['level'] ?? 1,
+        rank: json['rank'] ?? 'Novice',
+        coins: json['coins'] ?? 0,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'xp': xp,
+        'level': level,
+        'rank': rank,
+        'coins': coins,
       };
 }
 

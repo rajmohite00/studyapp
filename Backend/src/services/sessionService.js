@@ -3,6 +3,8 @@ const { AppError } = require('../middlewares/errorMiddleware');
 const { calculateFocusScore } = require('../utils/focusScorer');
 const { buildCursorPage, parsePagination } = require('../utils/pagination');
 const streakService = require('./streakService');
+const analyticsService = require('./analyticsService');
+const gamificationService = require('./gamificationService');
 
 const startSession = async (userId, { subject, topic, mode, plannedDurationMinutes, goal }) => {
   // Check for existing active session
@@ -11,7 +13,7 @@ const startSession = async (userId, { subject, topic, mode, plannedDurationMinut
 
   const session = await StudySession.create({
     userId,
-    subject,
+    subject: subject && subject.trim() !== '' ? subject : 'General',
     topic: topic || null,
     mode: mode || 'custom',
     plannedDurationMinutes: plannedDurationMinutes || 25,
@@ -27,7 +29,11 @@ const updateSession = async (userId, sessionId, updates) => {
   const session = await StudySession.findOne({ _id: sessionId, userId });
   if (!session) throw new AppError('Session not found', 404, 'SESSION_NOT_FOUND');
 
-  const { action, interruptions, notes, rating, goalCompleted } = updates;
+  const { action, subject, interruptions, notes, rating, goalCompleted } = updates;
+
+  if (subject !== undefined && subject.trim() !== '') {
+    session.subject = subject.trim();
+  }
 
   if (action === 'pause') {
     if (session.status !== 'active') throw new AppError('Session is not active', 400, 'INVALID_STATUS');
@@ -56,12 +62,26 @@ const updateSession = async (userId, sessionId, updates) => {
     if (goalCompleted !== undefined) session.goalCompleted = goalCompleted;
 
     // Update streak if session was meaningful (>= 30 min)
+    let currentStreak = 0;
     if (action === 'end' && actualDurationMinutes >= 30) {
-      await streakService.updateStreakAfterSession(userId);
+      const streakResult = await streakService.updateStreakAfterSession(userId);
+      currentStreak = streakResult?.current || 0;
+    }
+    
+    if (action === 'end' && actualDurationMinutes > 0) {
+      // We don't check for goalAchieved here perfectly, but we can pass false for now 
+      // or we can fetch the user to check the daily goal. Let's pass false and let analytics handle it if needed.
+      gamificationService.updateGamification(userId, actualDurationMinutes, false, currentStreak).catch(err => console.error(err));
     }
   }
 
   await session.save();
+
+  if (action === 'end') {
+    // Run analytics aggregation without blocking the response
+    analyticsService.aggregateDailyAnalytics(userId).catch(err => console.error('Analytics aggregation error:', err));
+  }
+
   return session;
 };
 

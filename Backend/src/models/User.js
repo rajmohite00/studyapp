@@ -38,6 +38,13 @@ const userSchema = new mongoose.Schema(
       freezesAvailable: { type: Number, default: 1 },
     },
 
+    gamification: {
+      xp: { type: Number, default: 0 },
+      level: { type: Number, default: 1 },
+      rank: { type: String, default: 'Novice' },
+      coins: { type: Number, default: 0 }
+    },
+
     passwordResetOtp: { type: String, select: false },
     passwordResetOtpExpires: { type: Date, select: false },
     emailVerificationOtp: { type: String, select: false },

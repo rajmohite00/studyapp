@@ -129,7 +129,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               const SizedBox(height: 32),
               PrimaryButton(
                 text: authState.isLoading ? 'Saving...' : 'Start Studying 🚀',
-                onPressed: _subjects.isNotEmpty && !authState.isLoading ? _save : null,
+                onPressed: !authState.isLoading ? _save : null,
               ),
               const SizedBox(height: 16),
             ],

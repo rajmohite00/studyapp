@@ -23,14 +23,16 @@ class SessionService {
 
   Future<SessionModel> updateSession(
     String id, {
-    required String action,
+    String? action,
+    String? subject,
     int? interruptions,
     String? notes,
     int? rating,
     bool? goalCompleted,
   }) async {
     final res = await _dio.patch('/sessions/$id', data: {
-      'action': action,
+      if (action != null) 'action': action,
+      if (subject != null) 'subject': subject,
       if (interruptions != null) 'interruptions': interruptions,
       if (notes != null) 'notes': notes,
       if (rating != null) 'rating': rating,

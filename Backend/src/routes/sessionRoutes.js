@@ -6,7 +6,7 @@ const { validate } = require('../middlewares/validateRequest');
 const { z } = require('zod');
 
 const startSessionSchema = z.object({
-  subject: z.string().min(1).max(100),
+  subject: z.string().max(100).optional().or(z.literal('')),
   topic: z.string().max(200).optional(),
   mode: z.enum(['pomodoro', 'custom']).optional(),
   plannedDurationMinutes: z.number().min(1).max(480).optional(),
@@ -14,7 +14,8 @@ const startSessionSchema = z.object({
 });
 
 const updateSessionSchema = z.object({
-  action: z.enum(['pause', 'resume', 'end', 'abandon']),
+  action: z.enum(['pause', 'resume', 'end', 'abandon']).optional(),
+  subject: z.string().max(100).optional(),
   interruptions: z.number().min(0).optional(),
   notes: z.string().max(2000).optional(),
   rating: z.number().min(1).max(5).optional(),

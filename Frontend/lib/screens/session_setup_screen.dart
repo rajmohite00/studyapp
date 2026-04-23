@@ -21,10 +21,6 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   String _goal = '';
 
   Future<void> _start() async {
-    if (_subject.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a subject')));
-      return;
-    }
     await ref.read(sessionProvider.notifier).startSession(
       subject: _subject,
       topic: _topic.isEmpty ? null : _topic,

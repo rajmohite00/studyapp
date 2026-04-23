@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const studySessionSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    subject: { type: String, required: true, trim: true },
+    subject: { type: String, default: 'General', trim: true },
     topic: { type: String, default: null, trim: true },
     mode: { type: String, enum: ['pomodoro', 'custom'], default: 'custom' },
     status: {

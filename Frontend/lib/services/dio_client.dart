@@ -6,7 +6,9 @@ import 'dart:io' show Platform;
 
 String get _baseUrl {
   if (kIsWeb) return 'http://localhost:3000/api/v1';
-  if (Platform.isAndroid) return 'http://10.0.2.2:3000/api/v1';
+  // Use your computer's local IP for physical devices, and 10.0.2.2 for emulators.
+  // Machine IP: 10.132.127.43
+  if (Platform.isAndroid) return 'http://10.132.127.43:3000/api/v1';
   return 'http://localhost:3000/api/v1';
 }
 

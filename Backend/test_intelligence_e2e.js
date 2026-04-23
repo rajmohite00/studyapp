@@ -88,6 +88,9 @@ async function testAll() {
   });
   data = await res.json();
   console.log('[GET /analytics/summary] success:', data.success);
+  if (data.success) {
+    console.log('Analytics Summary:', JSON.stringify(data.data, null, 2));
+  }
 
   res = await fetch(`${baseUrl}/analytics/heatmap`, {
     headers: { 'Authorization': `Bearer ${token}` }
@@ -104,7 +107,11 @@ async function testAll() {
   });
   data = await res.json();
   console.log('[POST /ai/chat] success:', data.success);
-  if (data.success) console.log('AI Reply:', data.data.reply);
+  if (data.success) {
+    console.log('AI Reply:', data.data.reply);
+  } else {
+    console.error('AI Chat Error:', JSON.stringify(data.error, null, 2));
+  }
 
   // 7. Test Streak
   console.log(`\n--- Testing Streak ---`);

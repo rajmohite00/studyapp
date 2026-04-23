@@ -64,6 +64,46 @@ class _HomePage extends ConsumerWidget {
                       const SizedBox(height: 2),
                       Text(user?.name.split(' ').first ?? 'Student',
                           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                      if (user != null) ...[
+                        const SizedBox(height: 6),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.amber, width: 1),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.star_rounded, color: Colors.amber, size: 14),
+                                  const SizedBox(width: 4),
+                                  Text('Lvl ${user.gamification.level} ${user.gamification.rank} • ${user.gamification.xp} XP', 
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.amber)),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            SizedBox(
+                              width: 150,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: (user.gamification.xp % 1000) / 1000,
+                                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
+                                  minHeight: 4,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text('${1000 - (user.gamification.xp % 1000)} XP to next level', style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                   GestureDetector(

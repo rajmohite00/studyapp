@@ -6,9 +6,9 @@ const { getRedisClient } = require('../config/redis');
 const { AppError } = require('../middlewares/errorMiddleware');
 const crypto = require('crypto');
 
-const SYSTEM_PROMPT = `You are an expert AI Study Coach. Your role is to help students understand academic concepts, 
-answer subject-specific doubts, generate practice questions, and provide study guidance. 
-Stay strictly within academic topics. Refuse off-topic, harmful, or irrelevant requests politely.`;
+const SYSTEM_PROMPT = `You are an expert, highly capable AI Study Coach. Your role is to help students understand concepts, answer doubts, generate practice questions, and provide study guidance across ANY educational or academic subject (e.g., Math, Science, Literature, Programming, History, etc.). 
+Even if the user is currently studying a specific subject, you MUST gladly answer their questions about any other academic subject they ask about. 
+Refuse harmful or completely non-educational requests politely.`;
 
 const MAX_HISTORY_MESSAGES = 20;
 
@@ -47,12 +47,24 @@ const chat = async (userId, { message, conversationId, subject }) => {
     { role: 'user', content: message },
   ];
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages: apiMessages,
-    max_tokens: 1024,
-    temperature: 0.7,
-  });
+  let response;
+  try {
+    response = await openai.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: apiMessages,
+      max_tokens: 1024,
+      temperature: 0.7,
+    });
+  } catch (err) {
+    console.error('Groq Primary Model Error:', err.message);
+    // Fallback to a smaller/faster model if rate-limited or decommissioned
+    response = await openai.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: apiMessages,
+      max_tokens: 1024,
+      temperature: 0.7,
+    });
+  }
 
   const assistantMessage = response.choices[0].message.content;
   const tokensUsed = response.usage?.total_tokens || 0;
@@ -76,14 +88,27 @@ Use simple language, examples, and analogies a student would understand.`;
   const cached = await redis.get(cacheKey);
   if (cached) return JSON.parse(cached);
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: prompt },
-    ],
-    max_tokens: 800,
-  });
+  let response;
+  try {
+    response = await openai.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: 800,
+    });
+  } catch (err) {
+    console.error('Groq Explain Model Error:', err.message);
+    response = await openai.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: 800,
+    });
+  }
 
   const explanation = response.choices[0].message.content;
   await redis.setex(cacheKey, 3600, JSON.stringify({ explanation }));
@@ -99,7 +124,7 @@ for difficulty level: ${difficulty}.
 Return as JSON array: [{ "question": "...", "options": ["A","B","C","D"], "answer": "A", "explanation": "..." }]`;
 
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: 'llama-3.3-70b-versatile',
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: prompt },
@@ -146,7 +171,7 @@ const getRecommendations = async (userId) => {
   const userContext = await buildUserContext(userId);
 
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: 'llama-3.3-70b-versatile',
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: `Based on this student's profile, give 3 specific, actionable study recommendations for this week:\n${userContext}` },
