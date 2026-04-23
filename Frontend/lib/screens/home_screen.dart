@@ -11,6 +11,10 @@ import '../widgets/bottom_nav_bar.dart';
 import '../widgets/animations.dart';
 import '../app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'session_setup_screen.dart';
+import 'analytics_screen.dart';
+import 'ai_chat_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -200,7 +204,8 @@ class _HomePage extends ConsumerWidget {
                     ),
                   ],
                 ),
-              ),
+              ), // closes Container
+              ), // closes FadeSlideIn hero
 
               // ── PROGRESS SECTION ─────────────────────────────
               dashAsync.when(
