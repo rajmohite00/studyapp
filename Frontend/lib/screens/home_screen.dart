@@ -5,7 +5,6 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../providers/auth_provider.dart';
 import '../providers/analytics_provider.dart';
 import '../providers/intelligence_provider.dart';
-import '../providers/session_provider.dart';
 import '../widgets/streak_card.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/animations.dart';
@@ -625,19 +624,3 @@ class _TodaySubjects extends StatelessWidget {
   }
 }
 
-class _StudyPlaceholder extends StatelessWidget {
-  const _StudyPlaceholder();
-  @override Widget build(BuildContext context) => const SizedBox();
-}
-class _AnalyticsPlaceholder extends StatelessWidget {
-  const _AnalyticsPlaceholder();
-  @override Widget build(BuildContext context) => const SizedBox();
-}
-class _AiPlaceholder extends StatelessWidget {
-  const _AiPlaceholder();
-  @override Widget build(BuildContext context) => const SizedBox();
-}
-class _ProfilePlaceholder extends StatelessWidget {
-  const _ProfilePlaceholder();
-  @override Widget build(BuildContext context) => const SizedBox();
-}
