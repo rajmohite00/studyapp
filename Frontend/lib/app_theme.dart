@@ -2,32 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  // Primary Neo-Brutalist
-  static const primary = Color(0xFFFABB1A); // Bright Yellow
-  static const primaryDark = Color(0xFF000000); // Solid Black
-  static const primaryLight = Color(0xFFFDE047); 
+  // Neo-Brutalist / Cyber-Retro Palette
+  static const primary = Color(0xFFFFD800); // Electric Yellow
+  static const primaryDark = Color(0xFF050505); // True Black
+  static const primaryLight = Color(0xFFFFF099); 
 
   // Accents
-  static const accent = Color(0xFFF368A9); // Bright Pink
-  static const accentGreen = Color(0xFF4ADE80); // Bright Green
-  static const accentOrange = Color(0xFFFB923C); // Bright Orange
-  static const accentPurple = Color(0xFFD8B4FE); // Light Purple
-  static const accentBlue = Color(0xFF60A5FA); // Bright Blue
+  static const accent = Color(0xFFFF006E); // Magenta Pink
+  static const accentGreen = Color(0xFF06D6A0); // Mint Green
+  static const accentOrange = Color(0xFFFF8B00); // Vibrant Orange
+  static const accentPurple = Color(0xFF8338EC); // Deep Purple
+  static const accentBlue = Color(0xFF3A86FF); // Azure Blue
 
-  // Neutral
-  static const surface = Color(0xFFFABB1A); // Main bg is yellow now
-  static const card = Color(0xFFFFFFFF);
-  static const divider = Color(0xFF000000); // Solid black dividers
+  // Neutral (Backgrounds & Surfaces)
+  static const surface = Color(0xFFF4F0EA); // Raw Paper / Cream (Fixes yellow blindness)
+  static const card = Color(0xFFFFFFFF); // White cards
+  static const divider = Color(0xFF050505); // Thick black dividers
 
-  // Dark Mode (not used much in neo-brutalism, but keeping safe fallback)
-  static const darkBg = Color(0xFF1E2128);
-  static const darkSurface = Color(0xFF242830);
-  static const darkCard = Color(0xFF2A2F38);
+  // Dark Mode
+  static const darkBg = Color(0xFF111111);
+  static const darkSurface = Color(0xFF1A1A1A);
+  static const darkCard = Color(0xFF222222);
 
   // Text
-  static const textPrimary = Color(0xFF000000); // Pure Black
-  static const textSecondary = Color(0xFF333333); // Dark Grey
-  static const textLight = Color(0xFF666666);
+  static const textPrimary = Color(0xFF050505); // Ink Black
+  static const textSecondary = Color(0xFF4A4A4A); // Charcoal
+  static const textLight = Color(0xFF888888);
 
   // Subject Colors (Bold Neo-Brutalist)
   static const subjectColors = [
@@ -52,20 +52,26 @@ class AppTheme {
           surface: AppColors.card,
         ),
         scaffoldBackgroundColor: AppColors.surface,
-        textTheme: GoogleFonts.interTextTheme().apply(
+        textTheme: GoogleFonts.epilogueTextTheme().apply(
           bodyColor: AppColors.textPrimary,
           displayColor: AppColors.textPrimary,
+        ).copyWith(
+          displayLarge: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+          displayMedium: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+          displaySmall: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+          headlineLarge: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+          headlineMedium: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+          headlineSmall: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
         ),
-        appBarTheme: const AppBarTheme(
+        appBarTheme: AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
-          iconTheme: IconThemeData(color: AppColors.textPrimary),
-          titleTextStyle: TextStyle(
+          iconTheme: const IconThemeData(color: AppColors.textPrimary),
+          titleTextStyle: GoogleFonts.syne(
             color: AppColors.textPrimary,
             fontSize: 20,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Inter',
+            fontWeight: FontWeight.w800,
           ),
         ),
         cardTheme: CardThemeData(
@@ -78,22 +84,20 @@ class AppTheme {
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: AppColors.textPrimary, // True black text on yellow
             minimumSize: const Size(double.infinity, 56),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: 0,
-            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
+            textStyle: GoogleFonts.syne(fontSize: 16, fontWeight: FontWeight.w700),
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.textPrimary,
-            backgroundColor: Colors.white,
             minimumSize: const Size(double.infinity, 56),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            side: const BorderSide(color: AppColors.divider, width: 1.5),
-            elevation: 0,
-            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
+            side: const BorderSide(color: AppColors.textPrimary, width: 2),
+            textStyle: GoogleFonts.syne(fontSize: 16, fontWeight: FontWeight.w700),
           ),
         ),
         textButtonTheme: TextButtonThemeData(

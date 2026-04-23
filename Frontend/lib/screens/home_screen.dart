@@ -9,6 +9,11 @@ import '../providers/session_provider.dart';
 import '../widgets/streak_card.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'session_setup_screen.dart';
+import 'analytics_screen.dart';
+import 'ai_chat_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -18,17 +23,22 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _navIndex = 0;
-  final _pages = const [_HomePage(), _StudyPlaceholder(), _AnalyticsPlaceholder(), _AiPlaceholder(), _ProfilePlaceholder()];
+  final List<Widget> _pages = const [
+    _HomePage(),
+    SessionSetupScreen(),
+    AnalyticsScreen(),
+    AiChatScreen(),
+    ProfileScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_navIndex],
+      body: IndexedStack(
+        index: _navIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavBar(currentIndex: _navIndex, onTap: (i) {
-        if (i == 1) { context.push('/session/setup'); return; }
-        if (i == 2) { context.push('/analytics'); return; }
-        if (i == 3) { context.push('/ai/chat'); return; }
-        if (i == 4) { context.push('/profile'); return; }
         setState(() => _navIndex = i);
       }),
     );
@@ -103,58 +113,70 @@ class _HomePage extends ConsumerWidget {
               // ── HERO SECTION ─────────────────────────────────
               Container(
                 width: double.infinity,
-                color: AppColors.primary.withOpacity(0.05),
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
+                // Neo-brutalist layered grid background
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  border: const Border(
+                    bottom: BorderSide(color: AppColors.textPrimary, width: 3),
+                  ),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 36, 20, 36),
                 child: Column(
                   children: [
                     // Badge pill
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const Text(
-                        '✦  YOUR DAILY STUDY COMPANION',
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1.2),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'Study Coach',
-                      style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: AppColors.textPrimary, height: 1.0, letterSpacing: -1.5),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.divider, width: 1.5),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: AppColors.textPrimary, width: 2),
+                        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
+                      ),
+                      child: Text(
+                        '✦  YOUR DAILY STUDY COMPANION',
+                        style: GoogleFonts.syne(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: 1.2),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Study Coach',
+                      style: GoogleFonts.syne(fontSize: 48, fontWeight: FontWeight.w900, color: AppColors.textPrimary, height: 1.0, letterSpacing: -1.5),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.textPrimary, width: 2),
+                        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
                       ),
                       child: const Text(
                         'Focus. Plan. Execute.\nCrush your next exam with AI.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5, fontWeight: FontWeight.w500),
+                        style: TextStyle(fontSize: 15, color: AppColors.textPrimary, height: 1.5, fontWeight: FontWeight.w700),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 32),
                     // Primary CTA
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () => context.push('/session/setup'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.textPrimary,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
-                            side: BorderSide(color: AppColors.primaryDark, width: 2),
+                            side: const BorderSide(color: AppColors.textPrimary, width: 3),
                           ),
                           elevation: 0,
+                        ).copyWith(
+                          shadowColor: MaterialStateProperty.all(AppColors.textPrimary),
+                          elevation: MaterialStateProperty.all(6),
                         ),
-                        child: const Text('Start Study Session  →', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.3)),
+                        child: Text('Start Study Session  →', style: GoogleFonts.syne(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -168,10 +190,12 @@ class _HomePage extends ConsumerWidget {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textPrimary,
                           backgroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: AppColors.textPrimary, width: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          side: const BorderSide(color: AppColors.textPrimary, width: 3),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                        ).copyWith(
+                          shadowColor: MaterialStateProperty.all(AppColors.textPrimary),
+                          elevation: MaterialStateProperty.all(6),
                         ),
                       ),
                     ),
@@ -252,21 +276,23 @@ class _BoldSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         width: double.infinity,
         color: bg,
-        padding: const EdgeInsets.fromLTRB(20, 28, 20, 16),
+        padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary,
                 borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.textPrimary, width: 2),
+                boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
               ),
-              child: Icon(icon, size: 20, color: AppColors.primary),
+              child: Icon(icon, size: 22, color: AppColors.textPrimary),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Text(
               title,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.5),
+              style: GoogleFonts.syne(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.5),
             ),
           ],
         ),
@@ -323,33 +349,37 @@ class _FloatingIconCard extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Text(feature.label, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+                    Text(feature.label, style: GoogleFonts.syne(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
                     const SizedBox(height: 8),
-                    Text(feature.desc, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5)),
-                    const SizedBox(height: 16),
+                    Text(feature.desc, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 20),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       decoration: BoxDecoration(
                         color: feature.color,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.textPrimary, width: 1.5),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.textPrimary, width: 2),
+                        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
                       ),
-                      child: Text('Open  →', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13)),
+                      child: Text('Open  →', style: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 14)),
                     ),
                   ],
                 ),
               ),
             ),
             // Floating circular icon
-            Container(
-              width: 60, height: 60,
-              decoration: BoxDecoration(
-                color: feature.color,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.textPrimary, width: 2.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 3))],
+            Positioned(
+              top: 0,
+              child: Container(
+                width: 64, height: 64,
+                decoration: BoxDecoration(
+                  color: feature.color,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.textPrimary, width: 3),
+                  boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
+                ),
+                child: Icon(feature.icon, color: AppColors.textPrimary, size: 30),
               ),
-              child: Icon(feature.icon, color: Colors.white, size: 28),
             ),
           ],
         ),
@@ -424,30 +454,33 @@ class _AiSuggestionsWidget extends ConsumerWidget {
         if (suggestions.isEmpty) return const SizedBox();
         return Column(
           children: [
-            _BoldSectionHeader(title: 'AI Suggestions', icon: Icons.tips_and_updates_rounded, bg: Colors.white),
+            _BoldSectionHeader(title: 'AI Suggestions', icon: Icons.tips_and_updates_rounded, bg: AppColors.surface),
             ...suggestions.take(3).map((s) => Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.textPrimary, width: 1.5),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 0, offset: const Offset(3, 3))],
+                  border: Border.all(color: AppColors.textPrimary, width: 3),
+                  boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 40, height: 40,
+                      margin: const EdgeInsets.only(top: 2),
+                      width: 44, height: 44,
                       decoration: BoxDecoration(
-                        color: AppColors.accentBlue.withOpacity(0.1),
+                        color: AppColors.accentBlue,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.accentBlue.withOpacity(0.4), width: 1.5),
+                        border: Border.all(color: AppColors.textPrimary, width: 2),
+                        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
                       ),
-                      child: const Icon(Icons.lightbulb_rounded, color: AppColors.accentBlue, size: 18),
+                      child: const Icon(Icons.lightbulb_rounded, color: AppColors.textPrimary, size: 22),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(child: Text(s, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, height: 1.4, fontWeight: FontWeight.w500))),
+                    const SizedBox(width: 16),
+                    Expanded(child: Text(s, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, height: 1.5, fontWeight: FontWeight.w600))),
                   ],
                 ),
               ),
