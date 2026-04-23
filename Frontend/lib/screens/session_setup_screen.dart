@@ -37,71 +37,176 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
     final subjects = user?.profile.subjects ?? [];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('New Study Session')),
+      backgroundColor: AppColors.surface,
+      appBar: AppBar(
+        title: const Text('New Study Session'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.divider),
+        ),
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Subject', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            // ── Subject picker ───────────────────────────
+            _FieldLabel(label: 'Subject', icon: Icons.book_outlined),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: subjects.map((s) {
-                final selected = _subject == s;
-                return GestureDetector(
-                  onTap: () => setState(() => _subject = s),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: selected ? AppColors.primary : Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: selected ? AppColors.primary : AppColors.divider),
-                    ),
-                    child: Text(s, style: TextStyle(color: selected ? Colors.white : AppColors.textPrimary, fontWeight: FontWeight.w500)),
+            subjects.isEmpty
+                ? Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.divider)),
+                    child: const Text('No subjects set up — go to Profile to add them.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  )
+                : Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: subjects.map((s) {
+                      final selected = _subject == s;
+                      return GestureDetector(
+                        onTap: () => setState(() => _subject = s),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: selected ? AppColors.primary : Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: selected ? AppColors.primary : AppColors.divider,
+                              width: selected ? 2 : 1,
+                            ),
+                            boxShadow: selected
+                                ? [BoxShadow(color: AppColors.primary.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 3))]
+                                : [],
+                          ),
+                          child: Text(
+                            s,
+                            style: TextStyle(
+                              color: selected ? Colors.white : AppColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              }).toList(),
-            ),
             const SizedBox(height: 24),
+
+            // ── Topic ───────────────────────────────────
+            _FieldLabel(label: 'Topic', icon: Icons.label_outline_rounded),
+            const SizedBox(height: 12),
             TextField(
-              decoration: const InputDecoration(labelText: 'Topic (optional)', prefixIcon: Icon(Icons.book_outlined)),
+              decoration: const InputDecoration(
+                hintText: 'Optional — e.g. Chapter 5: Thermodynamics',
+                prefixIcon: Icon(Icons.edit_note_rounded, size: 20),
+              ),
               onChanged: (v) => setState(() => _topic = v),
             ),
             const SizedBox(height: 24),
-            const Text('Timer Mode', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+
+            // ── Timer Mode ──────────────────────────────
+            _FieldLabel(label: 'Timer Mode', icon: Icons.timer_outlined),
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _ModeCard(label: 'Pomodoro', subtitle: '25/5 min', icon: Icons.timer_rounded, selected: _mode == 'pomodoro', onTap: () => setState(() { _mode = 'pomodoro'; _durationMinutes = 25; }))),
+                Expanded(
+                  child: _ModeCard(
+                    label: 'Pomodoro',
+                    subtitle: '25 min focus',
+                    icon: Icons.timer_rounded,
+                    selected: _mode == 'pomodoro',
+                    onTap: () => setState(() { _mode = 'pomodoro'; _durationMinutes = 25; }),
+                  ),
+                ),
                 const SizedBox(width: 12),
-                Expanded(child: _ModeCard(label: 'Custom', subtitle: 'Set duration', icon: Icons.tune_rounded, selected: _mode == 'custom', onTap: () => setState(() => _mode = 'custom'))),
+                Expanded(
+                  child: _ModeCard(
+                    label: 'Custom',
+                    subtitle: 'Set your own',
+                    icon: Icons.tune_rounded,
+                    selected: _mode == 'custom',
+                    onTap: () => setState(() => _mode = 'custom'),
+                  ),
+                ),
               ],
             ),
+
+            // ── Duration slider (custom mode) ───────────
             if (_mode == 'custom') ...[
-              const SizedBox(height: 20),
-              Text('Duration: $_durationMinutes min', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-              Slider(
-                value: _durationMinutes.toDouble(),
-                min: 5, max: 180, divisions: 35,
-                label: '$_durationMinutes min',
-                activeColor: AppColors.primary,
-                onChanged: (v) => setState(() => _durationMinutes = v.round()),
+              const SizedBox(height: 24),
+              _FieldLabel(label: 'Duration: $_durationMinutes min', icon: Icons.hourglass_empty_rounded),
+              const SizedBox(height: 4),
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: AppColors.primary,
+                  inactiveTrackColor: AppColors.primary.withOpacity(0.15),
+                  thumbColor: AppColors.primary,
+                  overlayColor: AppColors.primary.withOpacity(0.1),
+                  trackHeight: 4,
+                ),
+                child: Slider(
+                  value: _durationMinutes.toDouble(),
+                  min: 5, max: 180, divisions: 35,
+                  label: '$_durationMinutes min',
+                  onChanged: (v) => setState(() => _durationMinutes = v.round()),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    Text('5 min', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+                    Text('3 hrs', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+                  ],
+                ),
               ),
             ],
             const SizedBox(height: 24),
+
+            // ── Goal ────────────────────────────────────
+            _FieldLabel(label: 'Session Goal', icon: Icons.flag_outlined),
+            const SizedBox(height: 12),
             TextField(
-              decoration: const InputDecoration(labelText: 'Session goal (optional)', hintText: 'e.g. Complete Chapter 5', prefixIcon: Icon(Icons.flag_outlined)),
+              decoration: const InputDecoration(
+                hintText: 'Optional — e.g. Complete Chapter 5',
+                prefixIcon: Icon(Icons.flag_rounded, size: 20),
+              ),
               onChanged: (v) => setState(() => _goal = v),
             ),
-            const SizedBox(height: 32),
-            PrimaryButton(text: 'Start Session ▶', onPressed: _start),
+            const SizedBox(height: 36),
+
+            // ── Start button ────────────────────────────
+            PrimaryButton(
+              text: _subject.isEmpty ? 'Select a Subject to Start' : 'Start Session ▶',
+              onPressed: _subject.isEmpty ? null : _start,
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  const _FieldLabel({required this.label, required this.icon});
+
+  @override
+  Widget build(BuildContext context) => Row(
+        children: [
+          Icon(icon, size: 16, color: AppColors.primary),
+          const SizedBox(width: 6),
+          Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+        ],
+      );
 }
 
 class _ModeCard extends StatelessWidget {
@@ -114,19 +219,34 @@ class _ModeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => GestureDetector(
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
           decoration: BoxDecoration(
-            color: selected ? AppColors.primary.withOpacity(0.1) : Colors.white,
+            color: selected ? AppColors.primary.withOpacity(0.07) : Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: selected ? AppColors.primary : AppColors.divider, width: selected ? 2 : 1),
+            border: Border.all(
+              color: selected ? AppColors.primary : AppColors.divider,
+              width: selected ? 2 : 1,
+            ),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3)),
+            ],
           ),
           child: Column(
             children: [
-              Icon(icon, color: selected ? AppColors.primary : AppColors.textSecondary, size: 28),
-              const SizedBox(height: 8),
-              Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: selected ? AppColors.primary : AppColors.textPrimary)),
-              Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: (selected ? AppColors.primary : AppColors.textLight).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: selected ? AppColors.primary : AppColors.textSecondary, size: 24),
+              ),
+              const SizedBox(height: 10),
+              Text(label, style: TextStyle(fontWeight: FontWeight.w700, color: selected ? AppColors.primary : AppColors.textPrimary, fontSize: 14)),
+              const SizedBox(height: 2),
+              Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             ],
           ),
         ),

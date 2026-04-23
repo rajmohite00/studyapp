@@ -21,11 +21,18 @@ class StreakCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6C63FF), Color(0xFF9D97FF)],
+          colors: [AppColors.primary, AppColors.accentGreen],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,27 +40,66 @@ class StreakCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('🔥 Study Streak', style: TextStyle(color: Colors.white70, fontSize: 14)),
+              const Text(
+                '🔥  Study Streak',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('$freezesAvailable freeze${freezesAvailable != 1 ? 's' : ''}',
-                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                child: Text(
+                  '${freezesAvailable} freeze${freezesAvailable != 1 ? 's' : ''}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text('$currentStreak', style: const TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.bold, height: 1)),
-          const Text('days', style: TextStyle(color: Colors.white70, fontSize: 16)),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '$currentStreak',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 52,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                  letterSpacing: -2,
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 8, left: 6),
+                child: Text(
+                  'days',
+                  style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
+          Container(
+            height: 1,
+            color: Colors.white.withOpacity(0.15),
+          ),
+          const SizedBox(height: 14),
           Row(
             children: [
-              _Stat(label: 'Longest', value: '$longestStreak days'),
-              const SizedBox(width: 24),
-              if (nextMilestone != null) _Stat(label: 'Next milestone', value: '$nextMilestone days'),
+              _Stat(label: 'Best Streak', value: '$longestStreak days'),
+              const SizedBox(width: 28),
+              if (nextMilestone != null)
+                _Stat(label: 'Next Milestone', value: '$nextMilestone days'),
             ],
           ),
         ],
@@ -71,8 +117,9 @@ class _Stat extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 11)),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.w500, letterSpacing: 0.3)),
+          const SizedBox(height: 2),
+          Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
         ],
       );
 }

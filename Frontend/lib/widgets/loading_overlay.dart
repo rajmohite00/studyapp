@@ -1,6 +1,35 @@
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
 
+/// Wraps any widget in a translucent loading overlay.
+class LoadingOverlay extends StatelessWidget {
+  final bool isLoading;
+  final Widget child;
+
+  const LoadingOverlay({super.key, required this.isLoading, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        child,
+        if (isLoading)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.12),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primary,
+                  strokeWidth: 2.5,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class AppTextField extends StatefulWidget {
   final String label;
   final String? hint;

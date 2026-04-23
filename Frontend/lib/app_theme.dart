@@ -69,7 +69,7 @@ class AppTheme {
         ),
         cardTheme: CardThemeData(
           color: AppColors.card,
-          elevation: 2,
+          elevation: 0,
           shadowColor: Colors.black.withOpacity(0.05),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           margin: EdgeInsets.zero,
@@ -104,6 +104,7 @@ class AppTheme {
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
+          labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(color: AppColors.divider),
@@ -117,12 +118,31 @@ class AppTheme {
             borderSide: const BorderSide(color: AppColors.primary, width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          hintStyle: const TextStyle(color: AppColors.textLight),
+          hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 14),
         ),
         dividerTheme: const DividerThemeData(
           color: AppColors.divider,
           thickness: 1,
           space: 24,
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          indicatorColor: AppColors.primary.withOpacity(0.1),
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary);
+            }
+            return const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textSecondary);
+          }),
+        ),
+        checkboxTheme: CheckboxThemeData(
+          fillColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) return AppColors.primary;
+            return Colors.transparent;
+          }),
+          side: const BorderSide(color: AppColors.divider, width: 1.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
       );
 

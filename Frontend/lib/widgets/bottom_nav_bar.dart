@@ -9,38 +9,53 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationBar(
-      selectedIndex: currentIndex,
-      onDestinationSelected: onTap,
-      backgroundColor: Theme.of(context).cardColor,
-      indicatorColor: AppColors.primary.withOpacity(0.12),
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home_rounded, color: AppColors.primary),
-          label: 'Home',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.timer_outlined),
-          selectedIcon: Icon(Icons.timer_rounded, color: AppColors.primary),
-          label: 'Study',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.bar_chart_outlined),
-          selectedIcon: Icon(Icons.bar_chart_rounded, color: AppColors.primary),
-          label: 'Analytics',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.smart_toy_outlined),
-          selectedIcon: Icon(Icons.smart_toy_rounded, color: AppColors.primary),
-          label: 'AI Coach',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline_rounded),
-          selectedIcon: Icon(Icons.person_rounded, color: AppColors.primary),
-          label: 'Profile',
-        ),
-      ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: NavigationBar(
+        selectedIndex: currentIndex,
+        onDestinationSelected: onTap,
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: AppColors.primary.withOpacity(0.1),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        height: 68,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined, size: 22),
+            selectedIcon: Icon(Icons.home_rounded, color: AppColors.primary, size: 22),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.timer_outlined, size: 22),
+            selectedIcon: Icon(Icons.timer_rounded, color: AppColors.primary, size: 22),
+            label: 'Study',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bar_chart_outlined, size: 22),
+            selectedIcon: Icon(Icons.bar_chart_rounded, color: AppColors.primary, size: 22),
+            label: 'Analytics',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.smart_toy_outlined, size: 22),
+            selectedIcon: Icon(Icons.smart_toy_rounded, color: AppColors.primary, size: 22),
+            label: 'AI Coach',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline_rounded, size: 22),
+            selectedIcon: Icon(Icons.person_rounded, color: AppColors.primary, size: 22),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
 }

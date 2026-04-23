@@ -71,9 +71,12 @@ class _SetupState extends ConsumerState<ExamPlannerSetupScreen> {
     if (err == null) {
       context.go('/exam-planner');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $err'), backgroundColor: Colors.red),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Error: $err'),
+        backgroundColor: const Color(0xFFE07A5F),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ));
     }
   }
 
@@ -83,10 +86,18 @@ class _SetupState extends ConsumerState<ExamPlannerSetupScreen> {
       backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: Text(_step == 0 ? 'Select Subjects' : 'Exam Details',
-            style: const TextStyle(fontWeight: FontWeight.bold)),
+            style: const TextStyle(fontWeight: FontWeight.w700)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         leading: _step == 1
-            ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => setState(() => _step = 0))
+            ? IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => setState(() => _step = 0))
             : null,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.divider),
+        ),
       ),
       body: Column(
         children: [
@@ -113,30 +124,44 @@ class _SetupState extends ConsumerState<ExamPlannerSetupScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(24),
-            child: ElevatedButton(
-              onPressed: _loading ? null : () {
-                if (_step == 0) {
-                  if (_selected.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please select at least one subject.')),
-                    );
-                    return;
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _loading ? null : () {
+                  if (_step == 0) {
+                    if (_selected.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: const Text('Please select at least one subject.'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: const Color(0xFFE07A5F),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ));
+                      return;
+                    }
+                    setState(() => _step = 1);
+                  } else {
+                    if (_examDate == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: const Text('Please pick your exam date.'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: const Color(0xFFE07A5F),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ));
+                      return;
+                    }
+                    _create();
                   }
-                  setState(() => _step = 1);
-                } else {
-                  if (_examDate == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please pick your exam date.')),
-                    );
-                    return;
-                  }
-                  _create();
-                }
-              },
-              child: _loading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(_step == 0 ? 'Next →' : 'Generate Plan ✨'),
+                },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: _loading
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                    : Text(_step == 0 ? 'Next  →' : 'Generate AI Plan ✨',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              ),
             ),
           ),
         ],
@@ -311,12 +336,20 @@ class _DateStep extends StatelessWidget {
             ),
           ]),
           const SizedBox(height: 8),
-          Slider(
-            value: dailyHours,
-            min: 1, max: 10, divisions: 9,
-            activeColor: AppColors.primary,
-            label: '${dailyHours.toInt()} hours',
-            onChanged: onHoursChanged,
+          SliderTheme(
+            data: SliderThemeData(
+              activeTrackColor: AppColors.primary,
+              inactiveTrackColor: AppColors.primary.withOpacity(0.12),
+              thumbColor: AppColors.primary,
+              overlayColor: AppColors.primary.withOpacity(0.1),
+              trackHeight: 4,
+            ),
+            child: Slider(
+              value: dailyHours,
+              min: 1, max: 10, divisions: 9,
+              label: '${dailyHours.toInt()} hours',
+              onChanged: onHoursChanged,
+            ),
           ),
           const SizedBox(height: 8),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: const [
