@@ -31,6 +31,7 @@ const getDashboardSummary = async (userId) => {
     },
     week: {
       totalMinutes: weekTotal,
+      sessionCount: weekDocs.reduce((sum, d) => sum + (d.sessionCount || 0), 0),
       avgFocusScore:
         weekDocs.length > 0
           ? Math.round(weekDocs.reduce((s, d) => s + d.averageFocusScore, 0) / weekDocs.length)

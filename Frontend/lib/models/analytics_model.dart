@@ -45,12 +45,14 @@ class TodaySummary {
 class WeekSummary {
   final int totalMinutes;
   final int avgFocusScore;
+  final int sessionCount;
 
-  const WeekSummary({this.totalMinutes = 0, this.avgFocusScore = 0});
+  const WeekSummary({this.totalMinutes = 0, this.avgFocusScore = 0, this.sessionCount = 0});
 
   factory WeekSummary.fromJson(Map<String, dynamic> json) => WeekSummary(
         totalMinutes: json['totalMinutes'] ?? 0,
         avgFocusScore: json['avgFocusScore'] ?? 0,
+        sessionCount: json['sessionCount'] ?? 0,
       );
 }
 

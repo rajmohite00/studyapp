@@ -2,42 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  // Primary
-  static const primary = Color(0xFF4A90E2); // Soft Blue
-  static const primaryLight = Color(0xFF8EBAEA);
-  static const primaryDark = Color(0xFF357ABD);
+  // Primary Neo-Brutalist
+  static const primary = Color(0xFFFABB1A); // Bright Yellow
+  static const primaryDark = Color(0xFF000000); // Solid Black
+  static const primaryLight = Color(0xFFFDE047); 
 
-  // Accent
-  static const accent = Color(0xFFB5A1F5); // Light purple
-  static const accentGreen = Color(0xFF48C9B0); // Soft teal/green
-  static const accentOrange = Color(0xFFF8B179); // Muted orange
-  static const accentBlue = Color(0xFF74B9FF); // Light soft blue
+  // Accents
+  static const accent = Color(0xFFF368A9); // Bright Pink
+  static const accentGreen = Color(0xFF4ADE80); // Bright Green
+  static const accentOrange = Color(0xFFFB923C); // Bright Orange
+  static const accentPurple = Color(0xFFD8B4FE); // Light Purple
+  static const accentBlue = Color(0xFF60A5FA); // Bright Blue
 
   // Neutral
-  static const surface = Color(0xFFF5F7FA); // Off-white / light grey
+  static const surface = Color(0xFFFABB1A); // Main bg is yellow now
   static const card = Color(0xFFFFFFFF);
-  static const divider = Color(0xFFE2E8F0); // Subtle divider
+  static const divider = Color(0xFF000000); // Solid black dividers
 
-  // Dark Mode (Softened)
+  // Dark Mode (not used much in neo-brutalism, but keeping safe fallback)
   static const darkBg = Color(0xFF1E2128);
   static const darkSurface = Color(0xFF242830);
   static const darkCard = Color(0xFF2A2F38);
 
   // Text
-  static const textPrimary = Color(0xFF222222); // Dark grey / near black
-  static const textSecondary = Color(0xFF64748B); // Muted slate grey
-  static const textLight = Color(0xFF94A3B8);
+  static const textPrimary = Color(0xFF000000); // Pure Black
+  static const textSecondary = Color(0xFF333333); // Dark Grey
+  static const textLight = Color(0xFF666666);
 
-  // Subject Colors (Softened)
+  // Subject Colors (Bold Neo-Brutalist)
   static const subjectColors = [
-    Color(0xFF4A90E2), // Blue
-    Color(0xFFB5A1F5), // Purple
-    Color(0xFF48C9B0), // Teal
-    Color(0xFFF8B179), // Orange
-    Color(0xFF74B9FF), // Light Blue
-    Color(0xFFE07A5F), // Muted red/rust
-    Color(0xFF81B29A), // Sage green
-    Color(0xFFF2CC8F), // Soft yellow
+    Color(0xFFF368A9), // Pink
+    Color(0xFFD8B4FE), // Purple
+    Color(0xFF4ADE80), // Green
+    Color(0xFF60A5FA), // Blue
+    Color(0xFFFB923C), // Orange
+    Color(0xFFF87171), // Red
+    Color(0xFF2DD4BF), // Teal
+    Color(0xFFFDE047), // Light Yellow
   ];
 }
 
