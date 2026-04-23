@@ -25,7 +25,14 @@ class DonutChart extends StatelessWidget {
         SizedBox(
           width: size,
           height: size,
-          child: PieChart(
+          child: total == 0 
+            ? Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.divider, width: size * 0.32),
+                ),
+              )
+            : PieChart(
             PieChartData(
               sectionsSpace: 3,
               centerSpaceRadius: size * 0.28,
