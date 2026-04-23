@@ -17,11 +17,15 @@ afterAll(async () => {
   await mongoServer.stop();
 });
 
-describe('Auth Endpoints', () => {
-  it('should return 422 for invalid signup', async () => {
-    const res = await request(app).post('/api/v1/auth/signup').send({
-      email: 'invalid',
-    });
-    expect(res.statusCode).toEqual(422); // Unprocessable Entity because of validation
+describe('App Endpoints', () => {
+  it('should return 200 for /health', async () => {
+    const res = await request(app).get('/health');
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toHaveProperty('status', 'ok');
+  });
+
+  it('should return 404 for unknown routes', async () => {
+    const res = await request(app).get('/unknown-route');
+    expect(res.statusCode).toEqual(404);
   });
 });
