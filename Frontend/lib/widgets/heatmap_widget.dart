@@ -7,8 +7,12 @@ class HeatmapWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // A simplified heatmap representation since we can't use complex 3rd party heatmaps easily here
-    // In a real app you'd use a package like flutter_heatmap_calendar
+    // Determine the past 30 days of data, pad with empty days if needed
+    final past30 = data.length > 30 ? data.sublist(data.length - 30) : data;
+    final displayData = List.generate(30, (i) {
+      if (i < past30.length) return past30[i];
+      return null;
+    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,10 +45,11 @@ class HeatmapWidget extends StatelessWidget {
               mainAxisSpacing: 4,
               crossAxisSpacing: 4,
             ),
-            itemCount: 30, // Simplified to 30 squares
+            itemCount: 30,
             itemBuilder: (context, index) {
-              // Mocking intensities for display
-              final intensity = (index * 7) % 5; 
+              final entry = displayData[index];
+              final intensity = entry != null ? entry.intensity : 0; 
+              
               return Container(
                 decoration: BoxDecoration(
                   color: intensity == 0 

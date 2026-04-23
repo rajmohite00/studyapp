@@ -45,4 +45,10 @@ class AnalyticsService {
         queryParameters: {if (weekStart != null) 'weekStart': weekStart});
     return res.data['data'];
   }
+
+  Future<List<String>> getSuggestions() async {
+    final res = await _dio.get('/analytics/suggestions');
+    final List list = res.data['data']['suggestions'];
+    return list.map((e) => e.toString()).toList();
+  }
 }

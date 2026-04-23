@@ -23,3 +23,7 @@ final heatmapProvider = FutureProvider.autoDispose<List<HeatmapEntry>>((ref) asy
 final weeklyReportProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   return ref.read(analyticsServiceProvider).getWeeklyReport();
 });
+
+final suggestionsProvider = FutureProvider.autoDispose<List<String>>((ref) async {
+  return ref.read(analyticsServiceProvider).getSuggestions();
+});

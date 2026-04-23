@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../providers/auth_provider.dart';
 import '../providers/analytics_provider.dart';
+import '../providers/intelligence_provider.dart';
 import '../providers/session_provider.dart';
 import '../widgets/streak_card.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -97,6 +98,10 @@ class _HomePage extends ConsumerWidget {
                     const SizedBox(height: 20),
                     _QuickActions(),
                     const SizedBox(height: 20),
+                    _AiSuggestionsWidget(),
+                    const SizedBox(height: 20),
+                    _SmartInsightsWidget(),
+                    const SizedBox(height: 20),
                     if (data.today.subjectBreakdown.isNotEmpty) _TodaySubjects(breakdown: data.today.subjectBreakdown),
                   ],
                 ),
@@ -113,6 +118,134 @@ class _HomePage extends ConsumerWidget {
     if (h < 12) return 'Morning';
     if (h < 17) return 'Afternoon';
     return 'Evening';
+  }
+}
+
+class _SmartInsightsWidget extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final burnoutAsync = ref.watch(burnoutProvider);
+    final predictionAsync = ref.watch(predictionProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Smart Insights', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 12),
+        burnoutAsync.when(
+          loading: () => const LinearProgressIndicator(),
+          error: (_, __) => const SizedBox(),
+          data: (data) {
+            final status = data['status'];
+            final isHighRisk = status == 'High Risk';
+            final isWarning = status == 'Warning';
+            final color = isHighRisk ? Colors.red : (isWarning ? AppColors.accentOrange : AppColors.accentGreen);
+            
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: color.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(isHighRisk ? Icons.local_fire_department : Icons.health_and_safety, color: color),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Burnout: $status', style: TextStyle(fontWeight: FontWeight.bold, color: color)),
+                        const SizedBox(height: 4),
+                        Text(data['suggestion'], style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        predictionAsync.when(
+          loading: () => const SizedBox(),
+          error: (_, __) => const SizedBox(),
+          data: (data) {
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.analytics_rounded, color: AppColors.primary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Predicted Score: ${data['predictedScore']}%', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        const SizedBox(height: 4),
+                        Text(data['suggestion'], style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _AiSuggestionsWidget extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncSugg = ref.watch(suggestionsProvider);
+
+    return asyncSugg.when(
+      loading: () => const SizedBox(),
+      error: (_, __) => const SizedBox(),
+      data: (suggestions) {
+        if (suggestions.isEmpty) return const SizedBox();
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.accentBlue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.accentBlue.withOpacity(0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.tips_and_updates_rounded, color: AppColors.accentBlue, size: 20),
+                  SizedBox(width: 8),
+                  Text('AI Suggestions', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.accentBlue)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ...suggestions.map((s) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('• ', style: TextStyle(color: AppColors.accentBlue, fontWeight: FontWeight.bold)),
+                    Expanded(child: Text(s, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary))),
+                  ],
+                ),
+              )),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 

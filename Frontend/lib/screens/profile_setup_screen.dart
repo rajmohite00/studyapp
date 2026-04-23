@@ -21,6 +21,22 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _grades = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12', 'UG Year 1', 'UG Year 2', 'UG Year 3', 'UG Year 4', 'PG', 'Self-study'];
   final _exams = ['JEE', 'NEET', 'UPSC', 'GATE', 'SAT', 'CAT', 'CA', 'Other', 'None'];
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(authStateProvider).user;
+      if (user != null) {
+        setState(() {
+          _grade = user.profile.grade.isNotEmpty ? user.profile.grade : _grade;
+          _targetExam = user.profile.targetExam.isNotEmpty ? user.profile.targetExam : _targetExam;
+          _dailyGoal = user.profile.dailyGoalMinutes > 0 ? user.profile.dailyGoalMinutes : _dailyGoal;
+          _subjects.addAll(user.profile.subjects);
+        });
+      }
+    });
+  }
+
   void _addSubject() {
     final s = _subjectCtrl.text.trim();
     if (s.isNotEmpty && !_subjects.contains(s)) {
@@ -29,8 +45,26 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     }
   }
 
+  Future<void> _save() async {
+    try {
+      await ref.read(authStateProvider.notifier).updateProfile({
+        'profile': {
+          'grade': _grade,
+          'targetExam': _targetExam,
+          'dailyGoalMinutes': _dailyGoal,
+          'subjects': _subjects,
+        }
+      });
+      if (mounted) context.go('/home');
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save profile: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authStateProvider);
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -93,8 +127,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               Center(child: Text('${_dailyGoal ~/ 60}h ${_dailyGoal % 60}m per day', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16))),
               const SizedBox(height: 32),
               PrimaryButton(
-                text: 'Start Studying 🚀',
-                onPressed: _subjects.isNotEmpty ? () => context.go('/home') : null,
+                text: authState.isLoading ? 'Saving...' : 'Start Studying 🚀',
+                onPressed: _subjects.isNotEmpty && !authState.isLoading ? _save : null,
               ),
               const SizedBox(height: 16),
             ],

@@ -45,3 +45,8 @@ exports.getReportHistory = catchAsync(async (req, res) => {
   const reports = await reportService.getReportHistory(req.user.sub, type, parseInt(limit) || 12);
   sendSuccess(res, reports);
 });
+
+exports.getBasicSuggestions = catchAsync(async (req, res) => {
+  const suggestions = await analyticsService.getBasicSuggestions(req.user.sub);
+  sendSuccess(res, { suggestions });
+});

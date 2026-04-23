@@ -59,4 +59,9 @@ class AuthService {
       'newPassword': newPassword,
     });
   }
+
+  Future<UserModel> updateProfile(Map<String, dynamic> data) async {
+    final res = await _dio.patch('/users/profile', data: data);
+    return UserModel.fromJson(res.data['data']);
+  }
 }

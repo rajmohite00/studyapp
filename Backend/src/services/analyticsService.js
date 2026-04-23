@@ -133,4 +133,35 @@ const aggregateDailyAnalytics = async (userId) => {
   await redis.del(`analytics:${userId}:summary`);
 };
 
-module.exports = { getDashboardSummary, getDailyAnalytics, getSubjectBreakdown, getHeatmap, aggregateDailyAnalytics };
+const getBasicSuggestions = async (userId) => {
+  const summary = await getDashboardSummary(userId);
+  const suggestions = [];
+
+  if (summary.today.totalMinutes === 0) {
+    suggestions.push("You haven't studied yet today. Start a short session to get going!");
+  } else if (summary.today.totalMinutes < summary.dailyGoalMinutes) {
+    suggestions.push("You studied a bit today, try to increase your time to hit your daily goal.");
+  } else if (summary.today.goalAchieved) {
+    suggestions.push("Great job! You've reached your daily study goal. Keep it up!");
+  }
+
+  if (summary.streak.current >= 3) {
+    suggestions.push(`You're on a ${summary.streak.current}-day streak! Consistency is key, keep the momentum going.`);
+  } else if (summary.streak.current === 0 && summary.streak.longest > 0) {
+    suggestions.push("Your streak reset. Don't worry, start today and build a new one!");
+  }
+
+  if (summary.week.avgFocusScore > 0 && summary.week.avgFocusScore < 60) {
+    suggestions.push("Your focus score has been a bit low. Try using the Pomodoro mode or putting away distractions.");
+  } else if (summary.week.avgFocusScore >= 80) {
+    suggestions.push("Excellent focus recently! You are making the most out of your study time.");
+  }
+
+  if (suggestions.length === 0) {
+    suggestions.push("Keep up the good work! Stay consistent with your schedule.");
+  }
+
+  return suggestions;
+};
+
+module.exports = { getDashboardSummary, getDailyAnalytics, getSubjectBreakdown, getHeatmap, aggregateDailyAnalytics, getBasicSuggestions };

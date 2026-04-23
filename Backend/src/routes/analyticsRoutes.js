@@ -13,5 +13,6 @@ router.get('/heatmap', analyticsController.getHeatmap);
 router.get('/reports/daily', analyticsController.getDailyReport);
 router.get('/reports/weekly', analyticsController.getWeeklyReport);
 router.get('/reports/history', analyticsController.getReportHistory);
+router.get('/suggestions', analyticsController.getBasicSuggestions);
 
 module.exports = router;
