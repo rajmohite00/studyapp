@@ -10,6 +10,7 @@ const String _kBaseUrl = 'https://studyapp-e1sp.onrender.com/api/v1';
 
 class DioClient {
   static Dio? _instance;
+  static VoidCallback? onUnauthorized;
 
   static Dio get instance {
     _instance ??= _createDio();
@@ -39,7 +40,7 @@ class DioClient {
 
 class _AuthInterceptor extends Interceptor {
   final Dio _dio;
-  bool _isRefreshing = false;
+  Future<bool>? _refreshFuture;
 
   _AuthInterceptor(this._dio);
 
@@ -54,22 +55,38 @@ class _AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401 && !_isRefreshing) {
-      _isRefreshing = true;
-      try {
-        final refreshed = await _refreshTokens();
-        if (refreshed) {
-          // Retry original request
-          final token = await StorageService.getAccessToken();
-          err.requestOptions.headers['Authorization'] = 'Bearer $token';
-          final response = await _dio.fetch(err.requestOptions);
-          handler.resolve(response);
-          return;
+    if (err.response?.statusCode == 401) {
+      // If a refresh is already in progress, wait for it
+      if (_refreshFuture != null) {
+        try {
+          final refreshed = await _refreshFuture!;
+          if (refreshed) {
+            final token = await StorageService.getAccessToken();
+            err.requestOptions.headers['Authorization'] = 'Bearer $token';
+            final response = await _dio.fetch(err.requestOptions);
+            return handler.resolve(response);
+          }
+        } catch (_) {}
+      } else {
+        // Start a new refresh process
+        _refreshFuture = _refreshTokens();
+        try {
+          final refreshed = await _refreshFuture!;
+          if (refreshed) {
+            final token = await StorageService.getAccessToken();
+            err.requestOptions.headers['Authorization'] = 'Bearer $token';
+            final response = await _dio.fetch(err.requestOptions);
+            return handler.resolve(response);
+          } else {
+            await StorageService.clearTokens();
+            DioClient.onUnauthorized?.call();
+          }
+        } catch (_) {
+          await StorageService.clearTokens();
+          DioClient.onUnauthorized?.call();
+        } finally {
+          _refreshFuture = null;
         }
-      } catch (_) {
-        await StorageService.clearTokens();
-      } finally {
-        _isRefreshing = false;
       }
     }
     handler.next(err);

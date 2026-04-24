@@ -86,6 +86,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState(initialized: true);
   }
 
+  void forceLogout() {
+    state = const AuthState(initialized: true);
+  }
+
   String _parseError(dynamic e) {
     if (e.runtimeType.toString() == 'DioException' || e.toString().contains('DioException')) {
       try {

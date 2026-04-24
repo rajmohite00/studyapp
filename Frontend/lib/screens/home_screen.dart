@@ -291,7 +291,36 @@ class _HomePage extends ConsumerWidget {
                   padding: EdgeInsets.all(40),
                   child: Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2.5)),
                 ),
-                error: (e, _) => Padding(padding: const EdgeInsets.all(20), child: Text('$e', style: const TextStyle(color: AppColors.textSecondary))),
+                error: (e, _) => Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.divider, width: 2),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.cloud_off_rounded, size: 40, color: AppColors.textSecondary),
+                        const SizedBox(height: 12),
+                        const Text('Unable to load dashboard', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: () => ref.refresh(dashboardProvider.future),
+                          icon: const Icon(Icons.refresh_rounded, size: 16),
+                          label: const Text('Retry'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.surface,
+                            foregroundColor: AppColors.primary,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3))),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
                 data: (data) => Column(
                   children: [
                     // Progress section header
