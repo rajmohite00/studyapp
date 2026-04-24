@@ -55,10 +55,15 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen>
     final subject = widget.session['subject'] ?? '';
     final mins = (widget.session['actualDurationMinutes'] ?? 0) as int;
     final secs = (widget.session['durationSeconds'] ?? 0) as int;
+    final plannedMins = (widget.session['plannedDurationMinutes'] ?? 0) as int;
     final focus = ((widget.session['focusScore'] ?? 0) as num).toDouble();
     final interruptions = (widget.session['interruptions'] ?? 0) as int;
     final focusColor = _focusColor(focus);
     final focusPct = (focus / 100).clamp(0.0, 1.0);
+
+    // Overtime calculation
+    final extraMins = plannedMins > 0 ? (mins - plannedMins) : 0;
+    final hasOvertime = extraMins > 0;
 
     // Live streak + XP from provider (already invalidated in session_active_screen)
     final dashAsync = ref.watch(dashboardProvider);
@@ -113,6 +118,44 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen>
                 ),
               ),
               const SizedBox(height: 24),
+
+              // ── Overtime banner ────────────────────────────────────────
+              if (hasOvertime)
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 420),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF059669), Color(0xFF10B981)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [BoxShadow(color: const Color(0xFF059669).withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 6))],
+                    ),
+                    child: Row(
+                      children: [
+                        const Text('🔥', style: TextStyle(fontSize: 24)),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'You studied $extraMins min extra!',
+                                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15),
+                              ),
+                              Text(
+                                'Incredible dedication — keep pushing! 🚀',
+                                style: GoogleFonts.outfit(color: Colors.white.withValues(alpha: 0.85), fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
               // ── Stats card ─────────────────────────────────────────────
               FadeSlideIn(

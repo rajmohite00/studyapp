@@ -89,16 +89,21 @@ const getHeatmap = async (userId) => {
   return heatmap;
 };
 
-// Called by Bull worker after session end
+// Called after session end — aggregates all completed sessions for today (IST)
 const aggregateDailyAnalytics = async (userId) => {
-  const today = getTodayDate();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  // IST = UTC+5:30, so IST midnight = 18:30 UTC previous day
+  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+  const now = new Date();
+  // Get IST date string
+  const istDateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+  // IST day starts at 18:30 UTC the previous calendar day
+  const dayStartUTC = new Date(`${istDateStr}T00:00:00+05:30`); // midnight IST
+  const dayEndUTC   = new Date(dayStartUTC.getTime() + 24 * 60 * 60 * 1000); // next midnight IST
 
   const sessions = await StudySession.find({
     userId,
     status: 'completed',
-    startTime: { $gte: today, $lt: tomorrow },
+    startTime: { $gte: dayStartUTC, $lt: dayEndUTC },
   });
 
   const subjectBreakdown = {};
@@ -113,6 +118,9 @@ const aggregateDailyAnalytics = async (userId) => {
 
   const user = await User.findById(userId).select('profile streak');
   const goalAchieved = totalMinutes >= (user?.profile?.dailyGoalMinutes || 120);
+
+  // Use IST date as the key for the analytics document
+  const today = new Date(`${istDateStr}T00:00:00.000Z`);
 
   await Analytics.findOneAndUpdate(
     { userId, date: today },
@@ -129,9 +137,12 @@ const aggregateDailyAnalytics = async (userId) => {
     { upsert: true, new: true }
   );
 
-  // Invalidate cache
+  // Invalidate both summary and heatmap cache
   const redis = getRedisClient();
-  await redis.del(`analytics:${userId}:summary`);
+  await Promise.all([
+    redis.del(`analytics:${userId}:summary`),
+    redis.del(`analytics:${userId}:heatmap`),
+  ]);
 };
 
 const getBasicSuggestions = async (userId) => {
