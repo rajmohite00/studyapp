@@ -41,7 +41,11 @@ const getDashboardSummary = async (userId) => {
     dailyGoalMinutes: user?.profile?.dailyGoalMinutes || 120,
   };
 
-  await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(result));
+  // Only cache when there's real data — prevents stale zeros blocking fresh reads
+  const hasData = result.today.totalMinutes > 0 || result.today.sessionCount > 0 || result.streak.current > 0;
+  if (hasData) {
+    await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(result));
+  }
   return result;
 };
 
