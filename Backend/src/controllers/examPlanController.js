@@ -1,4 +1,5 @@
 const examPlanService = require('../services/examPlanService');
+const aiService = require('../services/aiService');
 const { catchAsync } = require('../middlewares/errorMiddleware');
 const { sendSuccess } = require('../utils/responseHelper');
 
@@ -22,4 +23,11 @@ exports.markTask = catchAsync(async (req, res) => {
   const { planId, taskIndex, completed } = req.body;
   const plan = await examPlanService.markTaskCompleted(req.user.sub, planId, taskIndex, completed);
   sendSuccess(res, { generatedPlan: plan.generatedPlan });
+});
+
+exports.getSubjectInfo = catchAsync(async (req, res) => {
+  const { subject } = req.query;
+  if (!subject) return res.status(400).json({ success: false, error: { message: 'subject query param required' } });
+  const info = await aiService.getSubjectInfo(subject);
+  sendSuccess(res, info);
 });

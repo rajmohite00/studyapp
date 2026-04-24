@@ -21,6 +21,7 @@ import 'screens/quiz_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/exam_planner_screen.dart';
 import 'screens/exam_planner_setup_screen.dart';
+import 'screens/subject_info_screen.dart';
 import 'screens/change_password_screen.dart';
 
 // ── Smooth fade+slide transition ──────────────────────────────────────────────
@@ -143,6 +144,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ExamPlannerScreen())),
       GoRoute(path: '/exam-planner/setup',
           pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ExamPlannerSetupScreen())),
+      GoRoute(
+        path: '/exam-planner/subject-info',
+        pageBuilder: (c, s) => _slideFade(context: c, state: s, child: SubjectInfoScreen(subject: s.extra as String)),
+      ),
       GoRoute(path: '/change-password',
           pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ChangePasswordScreen())),
     ],

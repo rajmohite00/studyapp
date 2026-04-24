@@ -114,7 +114,7 @@ class _ExamPlannerScreenState extends ConsumerState<ExamPlannerScreen>
             controller: _tab,
             children: [
               _StudyPlanTab(plan: plan),
-              _TopicsPyqTab(topics: plan.importantTopics),
+              _TopicsPyqTab(subjects: plan.subjects),
               _ProgressTab(plan: plan),
             ],
           );
@@ -408,128 +408,58 @@ class _TaskTile extends ConsumerWidget {
 }
 
 // ── Topics & PYQ Tab ─────────────────────────────────────────────────────────
-class _TopicsPyqTab extends StatefulWidget {
-  final List<ImportantTopicModel> topics;
-  const _TopicsPyqTab({required this.topics});
-  @override
-  State<_TopicsPyqTab> createState() => _TopicsPyqTabState();
-}
-
-class _TopicsPyqTabState extends State<_TopicsPyqTab> {
-  int? _expanded;
+class _TopicsPyqTab extends StatelessWidget {
+  final List<String> subjects;
+  const _TopicsPyqTab({required this.subjects});
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      itemCount: widget.topics.length,
+      itemCount: subjects.length,
       itemBuilder: (ctx, i) {
-        final topic = widget.topics[i];
-        final isOpen = _expanded == i;
-        return _TopicCard(
-          topic: topic,
-          isExpanded: isOpen,
-          onTap: () => setState(() => _expanded = isOpen ? null : i),
-        );
-      },
-    );
-  }
-}
-
-class _TopicCard extends StatelessWidget {
-  final ImportantTopicModel topic;
-  final bool isExpanded;
-  final VoidCallback onTap;
-  const _TopicCard({required this.topic, required this.isExpanded, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final priority = topic.priority;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: priority.color.withOpacity(0.3)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
-        ),
-        child: Column(
-          children: [
-            Padding(
+        final subject = subjects[i];
+        final color = AppColors.subjectColors[i % AppColors.subjectColors.length];
+        
+        return FadeSlideIn(
+          delay: Duration(milliseconds: 60 * i),
+          child: InkWell(
+            onTap: () => context.push('/exam-planner/subject-info', extra: subject),
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: color.withOpacity(0.3)),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
+              ),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: priority.color.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-                    child: Text(priority.label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: priority.color)),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+                    child: Icon(Icons.auto_awesome_rounded, color: color, size: 20),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(topic.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text('${topic.frequencyScore}%', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: priority.color)),
-                      const Text('freq', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
-                    ],
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(subject, style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.textPrimary)),
+                        const SizedBox(height: 4),
+                        Text('Generate AI Topics & PYQs', style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary)),
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: AppColors.textSecondary),
+                  const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textLight),
                 ],
               ),
             ),
-            if (isExpanded) ...[
-              const Divider(height: 1),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Previous Year Questions', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textSecondary)),
-                    const SizedBox(height: 12),
-                    ...topic.pyqs.map((pyq) => _PYQTile(pyq: pyq)),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PYQTile extends StatelessWidget {
-  final PYQModel pyq;
-  const _PYQTile({required this.pyq});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: pyq.isHighlighted ? const Color(0xFFFFF9E6) : AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: pyq.isHighlighted ? Border.all(color: Colors.amber.withOpacity(0.5)) : null,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            if (pyq.isHighlighted) const Icon(Icons.star_rounded, color: Colors.amber, size: 14),
-            if (pyq.isHighlighted) const SizedBox(width: 4),
-            if (pyq.year != null) Text('${pyq.year}', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
-            const Spacer(),
-            Row(children: List.generate(pyq.frequency, (_) => const Icon(Icons.circle, size: 6, color: AppColors.primary))),
-          ]),
-          const SizedBox(height: 6),
-          Text(pyq.question, style: const TextStyle(fontSize: 13, height: 1.5)),
-        ],
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -42,4 +42,9 @@ class ExamPlanService {
     final rawList = res.data['data']['generatedPlan'] as List<dynamic>;
     return rawList.map((t) => DailyTaskModel.fromJson(t)).toList();
   }
+
+  Future<Map<String, dynamic>> getSubjectInfo(String subject) async {
+    final res = await _dio.get('/exam-plan/subject-info', queryParameters: {'subject': subject});
+    return Map<String, dynamic>.from(res.data['data'] as Map);
+  }
 }

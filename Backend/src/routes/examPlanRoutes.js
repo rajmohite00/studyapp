@@ -9,5 +9,6 @@ router.post('/create', examPlanController.createPlan);
 router.get('/', examPlanController.getPlan);
 router.get('/progress', examPlanController.getProgress);
 router.patch('/task', examPlanController.markTask);
+router.get('/subject-info', examPlanController.getSubjectInfo);
 
 module.exports = router;

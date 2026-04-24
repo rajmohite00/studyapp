@@ -202,4 +202,64 @@ const getConversation = async (userId, conversationId) => {
   return conv;
 };
 
-module.exports = { chat, explain, generateQuiz, submitQuiz, getRecommendations, getWeakTopics, getConversations, getConversation };
+const getSubjectInfo = async (subject) => {
+  const openai = getOpenAIClient();
+  const redis = getRedisClient();
+
+  const cacheKey = `ai:subjectinfo:${crypto.createHash('md5').update(subject.toLowerCase()).digest('hex')}`;
+  const cached = await redis.get(cacheKey);
+  if (cached) return JSON.parse(cached);
+
+  const prompt = `You are an expert academic curriculum designer.
+For the subject: "${subject}"
+
+Return a JSON object with EXACTLY this structure:
+{
+  "topics": [
+    { "name": "Topic Name", "weightage": "High/Medium/Low", "description": "1 sentence" }
+  ],
+  "pyqs": [
+    { "year": 2023, "question": "Full question text", "marks": 5, "difficulty": "Easy/Medium/Hard" }
+  ]
+}
+
+Rules:
+- topics: list 8-12 most important topics for this subject
+- pyqs: list 6-8 realistic previous year exam questions (mix of years 2019-2024)
+- weightage should reflect actual exam importance
+- questions should be realistic, exam-style questions
+- Return ONLY valid JSON, no explanation text`;
+
+  let response;
+  try {
+    response = await openai.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 2000,
+      temperature: 0.3,
+      response_format: { type: 'json_object' },
+    });
+  } catch (err) {
+    console.error('Groq subject info error, falling back:', err.message);
+    response = await openai.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 2000,
+      temperature: 0.3,
+      response_format: { type: 'json_object' },
+    });
+  }
+
+  const parsed = JSON.parse(response.choices[0].message.content);
+  const result = {
+    subject,
+    topics: parsed.topics || [],
+    pyqs: parsed.pyqs || [],
+  };
+
+  // Cache for 24 hours — subject info rarely changes
+  await redis.setex(cacheKey, 86400, JSON.stringify(result));
+  return result;
+};
+
+module.exports = { chat, explain, generateQuiz, submitQuiz, getRecommendations, getWeakTopics, getConversations, getConversation, getSubjectInfo };
