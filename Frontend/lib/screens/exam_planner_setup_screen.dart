@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../app_theme.dart';
 import '../providers/exam_plan_provider.dart';
+import '../widgets/loading_overlay.dart';
 
 // Common subjects list
 const _kSubjects = [
@@ -82,8 +83,10 @@ class _SetupState extends ConsumerState<ExamPlannerSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surface,
+    return LoadingOverlay(
+      isLoading: _loading,
+      child: Scaffold(
+        backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: Text(_step == 0 ? 'Select Subjects' : 'Exam Details',
             style: const TextStyle(fontWeight: FontWeight.w700)),
@@ -166,7 +169,7 @@ class _SetupState extends ConsumerState<ExamPlannerSetupScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

@@ -34,6 +34,10 @@ class _ExamPlannerScreenState extends ConsumerState<ExamPlannerScreen>
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => context.go('/home'),
+        ),
         title: const Text('Exam Planner', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           if (planAsync.valueOrNull != null)

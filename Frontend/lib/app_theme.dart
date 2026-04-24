@@ -52,23 +52,23 @@ class AppTheme {
           surface: AppColors.card,
         ),
         scaffoldBackgroundColor: AppColors.surface,
-        textTheme: GoogleFonts.epilogueTextTheme().apply(
+        textTheme: GoogleFonts.outfitTextTheme().apply(
           bodyColor: AppColors.textPrimary,
           displayColor: AppColors.textPrimary,
         ).copyWith(
-          displayLarge: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
-          displayMedium: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
-          displaySmall: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
-          headlineLarge: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
-          headlineMedium: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
-          headlineSmall: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+          displayLarge: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+          displayMedium: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+          displaySmall: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+          headlineLarge: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+          headlineMedium: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+          headlineSmall: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
         ),
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
           iconTheme: const IconThemeData(color: AppColors.textPrimary),
-          titleTextStyle: GoogleFonts.syne(
+          titleTextStyle: GoogleFonts.outfit(
             color: AppColors.textPrimary,
             fontSize: 20,
             fontWeight: FontWeight.w800,
@@ -84,11 +84,11 @@ class AppTheme {
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textPrimary, // True black text on yellow
+            foregroundColor: AppColors.textPrimary,
             minimumSize: const Size(double.infinity, 56),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: 0,
-            textStyle: GoogleFonts.syne(fontSize: 16, fontWeight: FontWeight.w700),
+            textStyle: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700),
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
@@ -97,13 +97,13 @@ class AppTheme {
             minimumSize: const Size(double.infinity, 56),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             side: const BorderSide(color: AppColors.textPrimary, width: 2),
-            textStyle: GoogleFonts.syne(fontSize: 16, fontWeight: FontWeight.w700),
+            textStyle: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700),
           ),
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
             foregroundColor: AppColors.primary,
-            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
+            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'Outfit'),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -148,38 +148,6 @@ class AppTheme {
           }),
           side: const BorderSide(color: AppColors.divider, width: 1.5),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        ),
-      );
-
-  static ThemeData get darkTheme => ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-          brightness: Brightness.dark,
-          background: AppColors.darkBg,
-          surface: AppColors.darkCard,
-        ),
-        scaffoldBackgroundColor: AppColors.darkBg,
-        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).apply(
-          bodyColor: Colors.white,
-          displayColor: Colors.white,
-        ),
-        cardTheme: CardThemeData(
-          color: AppColors.darkCard,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          centerTitle: true,
-          iconTheme: IconThemeData(color: Colors.white),
-          titleTextStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Inter',
-          ),
         ),
       );
 }

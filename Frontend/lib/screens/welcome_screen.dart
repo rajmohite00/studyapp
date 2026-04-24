@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -24,7 +24,7 @@ class WelcomeScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       Text(
                         'Study Coach',
-                        style: GoogleFonts.syne(
+                        style: GoogleFonts.outfit(
                           color: const Color(0xFF1A1A1A),
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
@@ -53,7 +53,7 @@ class WelcomeScreen extends StatelessWidget {
                       ),
                       child: Text(
                         'AI-POWERED LEARNING',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.outfit(
                           color: const Color(0xFF1A1A1A),
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -64,7 +64,7 @@ class WelcomeScreen extends StatelessWidget {
                     const SizedBox(height: 32),
                     Text(
                       'Study\nSmarter.',
-                      style: GoogleFonts.syne(
+                      style: GoogleFonts.outfit(
                         color: const Color(0xFF1A1A1A),
                         fontSize: 64,
                         fontWeight: FontWeight.w800,
@@ -75,7 +75,7 @@ class WelcomeScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                     Text(
                       'Your personal AI coach, smart exam planning, and streak tracking to help you achieve your academic goals.',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.outfit(
                         color: const Color(0xFF4A4A4A),
                         fontSize: 16,
                         height: 1.6,
@@ -106,7 +106,7 @@ class WelcomeScreen extends StatelessWidget {
                       ),
                       child: Text(
                         'Get Started',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.outfit(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -119,7 +119,7 @@ class WelcomeScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Already have an account?',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.outfit(
                           color: const Color(0xFF4A4A4A),
                           fontSize: 14,
                         ),
@@ -132,7 +132,7 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                         child: Text(
                           'Log in',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.outfit(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),

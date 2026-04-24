@@ -24,7 +24,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 500),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -33,7 +33,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
 
     _controller.forward();
 
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         setState(() {
           _minDurationPassed = true;
@@ -83,19 +83,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                 color: Colors.white,
               ),
               const SizedBox(height: 24),
-              Text(
-                'AI Study Coach',
-                style: GoogleFonts.syne(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'AI Study Coach',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Study Smarter.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.outfit(
                   color: Colors.white54,
                   fontSize: 15,
                   fontWeight: FontWeight.w400,

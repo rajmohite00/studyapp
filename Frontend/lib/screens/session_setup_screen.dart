@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/session_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/loading_overlay.dart';
 import '../app_theme.dart';
 
 class SessionSetupScreen extends ConsumerStatefulWidget {
@@ -20,6 +21,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   String _mode = 'custom';
   int _durationMinutes = 25;
   String _goal = '';
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -28,14 +30,19 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   }
 
   Future<void> _start() async {
-    await ref.read(sessionProvider.notifier).startSession(
-      subject: _subject,
-      topic: _topic.isEmpty ? null : _topic,
-      mode: _mode,
-      durationMinutes: _durationMinutes,
-      goal: _goal.isEmpty ? null : _goal,
-    );
-    if (mounted) context.pushReplacement('/session/active', extra: {'subject': _subject});
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(sessionProvider.notifier).startSession(
+        subject: _subject,
+        topic: _topic.isEmpty ? null : _topic,
+        mode: _mode,
+        durationMinutes: _durationMinutes,
+        goal: _goal.isEmpty ? null : _goal,
+      );
+      if (mounted) context.pushReplacement('/session/active', extra: {'subject': _subject});
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -43,8 +50,10 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
     final user = ref.watch(authStateProvider).user;
     final subjects = user?.profile.subjects ?? [];
 
-    return Scaffold(
-      backgroundColor: AppColors.surface,
+    return LoadingOverlay(
+      isLoading: _isLoading,
+      child: Scaffold(
+        backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text('New Study Session'),
         backgroundColor: Colors.white,
@@ -207,7 +216,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

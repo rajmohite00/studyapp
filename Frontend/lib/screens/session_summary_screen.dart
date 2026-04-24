@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_theme.dart';
@@ -80,7 +80,7 @@ class _SessionSummaryScreenState extends State<SessionSummaryScreen>
                 delay: const Duration(milliseconds: 350),
                 child: Text(
                   'Session Complete! 🎉',
-                  style: GoogleFonts.syne(fontSize: 26, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.5),
+                  style: GoogleFonts.outfit(fontSize: 26, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.5),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -142,7 +142,7 @@ class _SessionSummaryScreenState extends State<SessionSummaryScreen>
                           ),
                           Text(
                             '${focus.toInt()}%',
-                            style: GoogleFonts.syne(color: focusColor, fontWeight: FontWeight.w900, fontSize: 18),
+                            style: GoogleFonts.outfit(color: focusColor, fontWeight: FontWeight.w900, fontSize: 18),
                           ),
                         ],
                       ),
@@ -178,7 +178,7 @@ class _SessionSummaryScreenState extends State<SessionSummaryScreen>
                         child: Text(
                           'Back to Home',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.syne(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
                         ),
                       ),
                     ),
@@ -197,7 +197,7 @@ class _SessionSummaryScreenState extends State<SessionSummaryScreen>
                         child: Text(
                           'Start Another Session',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.syne(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                          style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                         ),
                       ),
                     ),
@@ -250,7 +250,7 @@ class _StatBox extends StatelessWidget {
           Icon(icon, color: color, size: 24),
           const SizedBox(height: 6),
           Text(value,
-              style: GoogleFonts.syne(fontSize: 22, fontWeight: FontWeight.w900, color: color, letterSpacing: -0.5)),
+              style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w900, color: color, letterSpacing: -0.5)),
           const SizedBox(height: 2),
           Text(label,
               style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),

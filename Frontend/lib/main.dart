@@ -34,9 +34,8 @@ class StudyCoachApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'AI Study Coach',
       debugShowCheckedModeBanner: false,
-      themeMode: themeMode,
+      themeMode: ThemeMode.light,
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
       routerConfig: router,
     );
   }

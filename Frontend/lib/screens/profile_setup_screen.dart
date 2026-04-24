@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/loading_overlay.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
@@ -77,8 +78,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.surface,
+    return LoadingOverlay(
+      isLoading: authState.isLoading,
+      child: Scaffold(
+        backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text('Setup Profile'),
         backgroundColor: Colors.white,
@@ -248,7 +251,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

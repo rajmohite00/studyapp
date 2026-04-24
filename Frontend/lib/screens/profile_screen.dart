@@ -13,7 +13,7 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider).user;
-    final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
+    final isDark = false; // Dark mode removed
 
     if (user == null) {
       return const Scaffold(
@@ -31,7 +31,7 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: Text('Profile', style: GoogleFonts.syne(fontWeight: FontWeight.w800)),
+        title: Text('Profile', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -73,36 +73,26 @@ class ProfileScreen extends ConsumerWidget {
                         boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
                       ),
                       child: Center(
-                        child: Text(
-                          initials,
-                          style: GoogleFonts.syne(fontSize: 30, color: AppColors.textPrimary, fontWeight: FontWeight.w900),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              initials,
+                              style: GoogleFonts.outfit(fontSize: 30, color: AppColors.textPrimary, fontWeight: FontWeight.w900),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(user.name,
-                      style: GoogleFonts.syne(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+                      style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
                   const SizedBox(height: 4),
                   Text(user.email,
                       style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
                   const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: user.subscription.isPremium ? AppColors.accentOrange : AppColors.textPrimary,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      user.subscription.isPremium ? '⭐  PRO MEMBER' : 'FREE PLAN',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -118,15 +108,6 @@ class ProfileScreen extends ConsumerWidget {
                     icon: Icons.notifications_outlined,
                     title: 'Notifications',
                     trailing: Switch(value: true, onChanged: (_) {}, activeColor: AppColors.primary)),
-                _AnimatedTile(
-                  icon: isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
-                  title: 'Dark Mode',
-                  trailing: Switch(
-                    value: isDark,
-                    onChanged: (_) => ref.read(themeModeProvider.notifier).toggle(),
-                    activeColor: AppColors.primary,
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -136,8 +117,6 @@ class ProfileScreen extends ConsumerWidget {
               title: 'Account',
               children: [
                 _AnimatedTile(icon: Icons.lock_outline_rounded, title: 'Change Password', onTap: () {}),
-                _AnimatedTile(icon: Icons.star_outline_rounded, title: 'Upgrade to Pro',
-                    color: AppColors.accentOrange, onTap: () {}),
                 _AnimatedTile(
                   icon: Icons.logout_rounded,
                   title: 'Log Out',
@@ -175,7 +154,7 @@ class _SectionCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
               child: Text(title,
-                  style: GoogleFonts.syne(
+                  style: GoogleFonts.outfit(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textSecondary,

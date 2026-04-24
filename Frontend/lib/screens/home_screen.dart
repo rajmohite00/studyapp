@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -139,14 +139,14 @@ class _HomePage extends ConsumerWidget {
                       ),
                       child: Text(
                         '✦  YOUR DAILY STUDY COMPANION',
-                        style: GoogleFonts.syne(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: 1.2),
+                        style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: 1.2),
                       ),
                     ),
                     const SizedBox(height: 24),
                     Text(
                       'Study Coach',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.syne(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.textPrimary, height: 1.0, letterSpacing: -1.0),
+                      style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.textPrimary, height: 1.0, letterSpacing: -1.0),
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -182,7 +182,7 @@ class _HomePage extends ConsumerWidget {
                           shadowColor: MaterialStateProperty.all(AppColors.textPrimary),
                           elevation: MaterialStateProperty.all(6),
                         ),
-                        child: Text('Start Study Session  →', style: GoogleFonts.syne(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                        child: Text('Start Study Session  →', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -306,7 +306,7 @@ class _BoldSectionHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: GoogleFonts.syne(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.5),
+                style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.5),
               ),
             ),
           ],
@@ -364,7 +364,7 @@ class _FloatingIconCard extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Text(feature.label, style: GoogleFonts.syne(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                    Text(feature.label, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
                     const SizedBox(height: 8),
                     Text(feature.desc, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 20),
@@ -376,7 +376,7 @@ class _FloatingIconCard extends StatelessWidget {
                         border: Border.all(color: AppColors.textPrimary, width: 2),
                         boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
                       ),
-                      child: Text('Open  →', style: GoogleFonts.syne(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 14)),
+                      child: Text('Open  →', style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 14)),
                     ),
                   ],
                 ),
