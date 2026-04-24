@@ -73,16 +73,20 @@ class SessionActiveScreen extends ConsumerWidget {
                         if (context.mounted) context.go('/home');
                       }),
                       // Subject badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: Colors.white.withOpacity(0.4), width: 1.5),
-                        ),
-                        child: Text(
-                          session['subject'] ?? '',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5),
+                      Flexible(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: Colors.white.withOpacity(0.4), width: 1.5),
+                          ),
+                          child: Text(
+                            session['subject'] ?? '',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       _RoundBtn(icon: Icons.flag_outlined, onTap: () => ref.read(sessionProvider.notifier).recordInterruption()),

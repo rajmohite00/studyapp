@@ -14,11 +14,18 @@ class SessionSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
+  final TextEditingController _subjectController = TextEditingController();
   String _subject = '';
   String _topic = '';
   String _mode = 'custom';
   int _durationMinutes = 25;
   String _goal = '';
+
+  @override
+  void dispose() {
+    _subjectController.dispose();
+    super.dispose();
+  }
 
   Future<void> _start() async {
     await ref.read(sessionProvider.notifier).startSession(
@@ -57,45 +64,55 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
             // ── Subject picker ───────────────────────────
             _FieldLabel(label: 'Subject', icon: Icons.book_outlined),
             const SizedBox(height: 12),
-            subjects.isEmpty
-                ? Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.divider)),
-                    child: const Text('No subjects set up — go to Profile to add them.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                  )
-                : Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: subjects.map((s) {
-                      final selected = _subject == s;
-                      return GestureDetector(
-                        onTap: () => setState(() => _subject = s),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: selected ? AppColors.primary : Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: selected ? AppColors.primary : AppColors.divider,
-                              width: selected ? 2 : 1,
-                            ),
-                            boxShadow: selected
-                                ? [BoxShadow(color: AppColors.primary.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 3))]
-                                : [],
-                          ),
-                          child: Text(
-                            s,
-                            style: TextStyle(
-                              color: selected ? Colors.white : AppColors.textPrimary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
+            TextField(
+              controller: _subjectController,
+              decoration: const InputDecoration(
+                hintText: 'Enter or search subject name...',
+                prefixIcon: Icon(Icons.search_rounded, size: 20),
+              ),
+              onChanged: (v) => setState(() => _subject = v.trim()),
+            ),
+            if (subjects.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: subjects.map((s) {
+                  final selected = _subject.toLowerCase() == s.toLowerCase();
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _subject = s;
+                        _subjectController.text = s;
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: selected ? AppColors.primary : Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: selected ? AppColors.primary : AppColors.divider,
+                          width: selected ? 2 : 1,
                         ),
-                      );
-                    }).toList(),
-                  ),
+                        boxShadow: selected
+                            ? [BoxShadow(color: AppColors.primary.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 3))]
+                            : [],
+                      ),
+                      child: Text(
+                        s,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
             const SizedBox(height: 24),
 
             // ── Topic ───────────────────────────────────

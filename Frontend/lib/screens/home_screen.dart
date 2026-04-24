@@ -69,24 +69,28 @@ class _HomePage extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'STUDY COACH',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.primary,
-                            letterSpacing: 1.5,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'STUDY COACH',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.primary,
+                              letterSpacing: 1.5,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Good ${_greeting()}, ${user?.name.split(' ').first ?? 'Student'} 👋',
-                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
-                        ),
-                      ],
+                          Text(
+                            'Good ${_greeting()}, ${user?.name.split(' ').first ?? 'Student'} 👋',
+                            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () => context.push('/profile'),
                       child: Container(
@@ -142,7 +146,7 @@ class _HomePage extends ConsumerWidget {
                     Text(
                       'Study Coach',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.syne(fontSize: 40, fontWeight: FontWeight.w900, color: AppColors.textPrimary, height: 1.0, letterSpacing: -1.0),
+                      style: GoogleFonts.syne(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.textPrimary, height: 1.0, letterSpacing: -1.0),
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -299,9 +303,11 @@ class _BoldSectionHeader extends StatelessWidget {
               child: Icon(icon, size: 22, color: AppColors.textPrimary),
             ),
             const SizedBox(width: 14),
-            Text(
-              title,
-              style: GoogleFonts.syne(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.5),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.syne(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.5),
+              ),
             ),
           ],
         ),
@@ -358,7 +364,7 @@ class _FloatingIconCard extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Text(feature.label, style: GoogleFonts.syne(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+                    Text(feature.label, style: GoogleFonts.syne(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
                     const SizedBox(height: 8),
                     Text(feature.desc, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 20),
