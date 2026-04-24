@@ -26,7 +26,7 @@ const generateDailyReport = async (userId, date) => {
     sessionCount: 0, // enhanced by session query if needed
   }));
 
-  const suggestions = generateSuggestions(analytics, user);
+  const suggestions = await generateSuggestions(analytics, user, subjectBreakdown);
 
   report = await Report.create({
     userId,
@@ -76,7 +76,7 @@ const generateWeeklyReport = async (userId, weekStartDate) => {
     sessionCount: 0,
   }));
 
-  const suggestions = generateSuggestions({ totalMinutes, averageFocusScore: avgFocus }, user);
+  const suggestions = await generateSuggestions({ totalMinutes, averageFocusScore: avgFocus }, user, subjectBreakdown);
 
   report = await Report.create({
     userId,
@@ -97,19 +97,61 @@ const getReportHistory = async (userId, type, limit = 12) => {
   return Report.find({ userId, reportType: type }).sort({ periodStart: -1 }).limit(limit);
 };
 
-// Simple rule-based suggestions (AI-enhanced version calls aiService)
-const generateSuggestions = (analytics, user) => {
-  const suggestions = [];
+// ── Real AI suggestions using Groq LLM ───────────────────────────────────────
+const generateSuggestions = async (analytics, user, subjectBreakdown = []) => {
   const minutes = analytics?.totalMinutes || 0;
-  const goal = user?.profile?.dailyGoalMinutes || 120;
-  const focus = analytics?.averageFocusScore || 0;
+  const focus   = analytics?.averageFocusScore || 0;
+  const goal    = user?.profile?.dailyGoalMinutes || 120;
+  const streak  = user?.streak?.current || 0;
 
-  if (minutes < goal * 0.5) suggestions.push('You studied less than half your daily goal. Try shorter, more frequent sessions.');
-  if (focus < 60) suggestions.push('Your focus score was low. Try enabling Do Not Disturb during sessions.');
-  if (minutes >= goal) suggestions.push('Great job hitting your daily goal! Keep the momentum going.');
-  if (!suggestions.length) suggestions.push('Consistent effort leads to big results. Keep studying daily!');
+  // Build a rich context string from real student data
+  const subjectLines = subjectBreakdown.length
+    ? subjectBreakdown.map(s => `  - ${s.subject}: ${s.minutes} min`).join('\n')
+    : '  - No subjects recorded yet';
 
-  return suggestions;
+  const prompt = `You are an expert academic study coach AI. A student's real weekly data is below.
+Give exactly 3 SHORT, specific, and actionable suggestions to help them improve. 
+Each suggestion must be 1 sentence max. Be warm and encouraging. No bullet points, just return a JSON array of 3 strings.
+
+Student Data:
+- Total study time this week: ${minutes} minutes (goal: ${goal} min/day = ${goal * 7} min/week)
+- Average focus score: ${focus}%  (ideal: 75%+)
+- Current streak: ${streak} days
+- Subject breakdown:
+${subjectLines}
+- Name: ${user?.name || 'Student'}
+
+Return ONLY a JSON array like: ["suggestion 1", "suggestion 2", "suggestion 3"]`;
+
+  try {
+    const { getOpenAIClient } = require('../config/openai');
+    const openai = getOpenAIClient();
+
+    const response = await openai.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 300,
+      temperature: 0.6,
+    });
+
+    const content = response.choices[0].message.content.trim();
+    // Extract JSON array safely
+    const match = content.match(/\[[\s\S]*\]/);
+    if (match) {
+      const parsed = JSON.parse(match[0]);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (err) {
+    console.error('AI suggestions fallback to rules:', err.message);
+  }
+
+  // ── Fallback: rule-based (if AI call fails) ──────────────────────────────
+  const fallback = [];
+  if (minutes < goal * 0.5) fallback.push('You studied less than half your weekly goal — try 3 focused 30-min sessions this week to get back on track!');
+  if (focus < 60) fallback.push('Your focus score was low — try a quiet space and enable Do Not Disturb during study sessions.');
+  if (minutes >= goal * 7) fallback.push('Amazing — you hit your weekly goal! Challenge yourself with a harder topic next week.');
+  if (!fallback.length) fallback.push('Consistency is your superpower — keep showing up daily and results will follow!');
+  return fallback;
 };
 
 module.exports = { generateDailyReport, generateWeeklyReport, getReportHistory };
