@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../app_theme.dart';
 import '../providers/exam_plan_provider.dart';
 import '../models/exam_plan_model.dart';
+import '../widgets/animations.dart';
 
 class ExamPlannerScreen extends ConsumerStatefulWidget {
   const ExamPlannerScreen({super.key});
@@ -93,28 +94,31 @@ class _NoPlanView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 100, height: 100,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
+      child: FadeSlideIn(
+        duration: const Duration(milliseconds: 400),
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 100, height: 100,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.calendar_today_rounded, size: 48, color: AppColors.primary),
               ),
-              child: const Icon(Icons.calendar_today_rounded, size: 48, color: AppColors.primary),
-            ),
-            const SizedBox(height: 24),
-            const Text('No Exam Plan Yet', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            const Text(
-              'Create your personalized AI study plan with PYQ-prioritized topics and daily tasks.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-            ),
-          ],
+              const SizedBox(height: 24),
+              const Text('No Exam Plan Yet', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              const Text(
+                'Create your personalized AI study plan with PYQ-prioritized topics and daily tasks.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              ),
+            ],
+          ),
         ),
       ),
     );

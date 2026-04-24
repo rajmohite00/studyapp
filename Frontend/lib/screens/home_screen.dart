@@ -63,7 +63,9 @@ class _HomePage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── TOP APP BAR ─────────────────────────────────
-              Container(
+              FadeSlideIn(
+                duration: const Duration(milliseconds: 400),
+                child: Container(
                 color: Colors.white,
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                 child: Row(
@@ -91,7 +93,8 @@ class _HomePage extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    GestureDetector(
+                    PressButton(
+                      scaleDown: 0.92,
                       onTap: () => context.push('/profile'),
                       child: Container(
                         width: 44, height: 44,
@@ -111,7 +114,7 @@ class _HomePage extends ConsumerWidget {
                     ),
                   ],
                 ),
-              ),
+              )),
               Container(height: 1.5, color: AppColors.divider),
 
               // ── HERO SECTION
@@ -243,7 +246,10 @@ class _HomePage extends ConsumerWidget {
                     const SizedBox(height: 8),
 
                     // Exam Planner Quick Access
-                    _ExamPlannerCard(),
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 220),
+                      child: _ExamPlannerCard(),
+                    ),
 
                     // AI Suggestions (mentor-card style)
                     _AiSuggestionsWidget(),
@@ -319,7 +325,9 @@ class _ExamPlannerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-      child: GestureDetector(
+      child: PressButton(
+        scaleDown: 0.97,
+        borderRadius: BorderRadius.circular(20),
         onTap: () => context.push('/exam-planner'),
         child: Container(
           width: double.infinity,

@@ -59,8 +59,8 @@ class ProfileScreen extends ConsumerWidget {
                 children: [
                   // Animated avatar
                   TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0.6, end: 1.0),
-                    duration: const Duration(milliseconds: 500),
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: const Duration(milliseconds: 600),
                     curve: Curves.easeOutBack,
                     builder: (_, v, child) => Transform.scale(scale: v, child: child),
                     child: Container(
