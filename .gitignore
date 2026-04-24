@@ -1,15 +1,49 @@
-node_modules/
+# ── Root ──────────────────────────────────────────────────────────────────────
+# Secrets & environment
 .env
-Backend/.env
-Frontend/.env
 .env.*
 !.env.example
+*.env.local
+
+# OS
 .DS_Store
-coverage/
-build/
-dist/
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Backend ───────────────────────────────────────────────────────────────────
+node_modules/
+Backend/node_modules/
+Backend/.env
+Backend/.env.*
+!Backend/.env.example
+Backend/coverage/
+Backend/dist/
+Backend/logs/
+Backend/*.log
+npm-debug.log*
+yarn-debug.log*
+
+# ── Frontend (Flutter) ────────────────────────────────────────────────────────
+Frontend/.env
+Frontend/.env.*
 .dart_tool/
 .packages
 .pub/
 .flutter-plugins
 .flutter-plugins-dependencies
+Frontend/build/
+build/
+Frontend/.dart_tool/
+*.g.dart
+*.freezed.dart
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+coverage/
+dist/
+analyze_out.txt
+*.log

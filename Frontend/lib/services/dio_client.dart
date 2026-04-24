@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'storage_service.dart';
-
 import 'package:flutter/foundation.dart';
-import 'dart:io' show Platform;
 
-String get _baseUrl {
-  return 'https://studyapp-e1sp.onrender.com/api/v1';
-}
+// ── App Config ─────────────────────────────────────────────────────────────
+// To use a local backend during development:
+//   Change _kBaseUrl to 'http://10.0.2.2:3000/api/v1' (Android emulator)
+//   or     'http://localhost:3000/api/v1'              (Windows/iOS simulator)
+const String _kBaseUrl = 'https://studyapp-e1sp.onrender.com/api/v1';
 
 class DioClient {
   static Dio? _instance;
@@ -18,16 +18,20 @@ class DioClient {
 
   static Dio _createDio() {
     final dio = Dio(BaseOptions(
-      baseUrl: _baseUrl,
+      baseUrl: _kBaseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},
     ));
 
-    dio.interceptors.addAll([
-      _AuthInterceptor(dio),
-      LogInterceptor(requestBody: true, responseBody: true, error: true),
-    ]);
+    dio.interceptors.add(_AuthInterceptor(dio));
+
+    // Only log in debug builds — never log tokens/bodies in production
+    if (kDebugMode) {
+      dio.interceptors.add(
+        LogInterceptor(requestBody: false, responseBody: false, error: true),
+      );
+    }
 
     return dio;
   }
