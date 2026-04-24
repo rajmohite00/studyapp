@@ -60,9 +60,20 @@ class ExamPlanNotifier extends StateNotifier<AsyncValue<ExamPlanModel?>> {
     final current = state.valueOrNull;
     if (current == null) return;
 
-    // Optimistic update
-    current.generatedPlan[taskIndex].isCompleted = completed;
-    state = AsyncValue.data(current);
+    // Optimistic update - MUST create a new object instance for Riverpod to trigger UI rebuild
+    final newTasks = List<DailyTaskModel>.from(current.generatedPlan);
+    newTasks[taskIndex].isCompleted = completed;
+    
+    final optimisticPlan = ExamPlanModel(
+      id: current.id,
+      subjects: current.subjects,
+      examDate: current.examDate,
+      totalDays: current.totalDays,
+      dailyStudyHours: current.dailyStudyHours,
+      generatedPlan: newTasks,
+      importantTopics: current.importantTopics,
+    );
+    state = AsyncValue.data(optimisticPlan);
 
     try {
       final updatedTasks = await _service.markTask(
@@ -81,13 +92,14 @@ class ExamPlanNotifier extends StateNotifier<AsyncValue<ExamPlanModel?>> {
         importantTopics: current.importantTopics,
       );
       state = AsyncValue.data(updated);
-      _ref.invalidate(examProgressProvider);
+      // Fire-and-forget invalidate so progress updates in background
+      Future.microtask(() => _ref.invalidate(examProgressProvider));
     } catch (_) {
       // Revert optimistic update on error
-      current.generatedPlan[taskIndex].isCompleted = !completed;
       state = AsyncValue.data(current);
     }
   }
+
 
   Future<void> refresh() => _load();
 }
