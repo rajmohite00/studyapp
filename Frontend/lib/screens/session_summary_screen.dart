@@ -1,18 +1,20 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_theme.dart';
 import '../widgets/animations.dart';
+import '../providers/analytics_provider.dart';
 
-class SessionSummaryScreen extends StatefulWidget {
+class SessionSummaryScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> session;
   const SessionSummaryScreen({super.key, required this.session});
 
   @override
-  State<SessionSummaryScreen> createState() => _SessionSummaryScreenState();
+  ConsumerState<SessionSummaryScreen> createState() => _SessionSummaryScreenState();
 }
 
-class _SessionSummaryScreenState extends State<SessionSummaryScreen>
+class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _badgeCtrl;
   late final Animation<double> _badgeScale;
@@ -30,7 +32,6 @@ class _SessionSummaryScreenState extends State<SessionSummaryScreen>
       TweenSequenceItem(tween: Tween(begin: 0.95, end: 1.0), weight: 20),
     ]).animate(CurvedAnimation(parent: _badgeCtrl, curve: Curves.easeOut));
 
-    // Delay so it fires after screen slide-in
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) _badgeCtrl.forward();
     });
@@ -42,40 +43,59 @@ class _SessionSummaryScreenState extends State<SessionSummaryScreen>
     super.dispose();
   }
 
+  // XP calculation mirrors backend gamificationService
+  int _calcXP(int mins, int streak) {
+    int xp = mins * 10;
+    if (streak > 0) xp += 50 * streak.clamp(1, 10);
+    return xp;
+  }
+
   @override
   Widget build(BuildContext context) {
     final subject = widget.session['subject'] ?? '';
-    final mins = widget.session['actualDurationMinutes'] ?? 0;
-    final focus = (widget.session['focusScore'] ?? 0).toDouble();
-    final interruptions = widget.session['interruptions'] ?? 0;
+    final mins = (widget.session['actualDurationMinutes'] ?? 0) as int;
+    final secs = (widget.session['durationSeconds'] ?? 0) as int;
+    final focus = ((widget.session['focusScore'] ?? 0) as num).toDouble();
+    final interruptions = (widget.session['interruptions'] ?? 0) as int;
     final focusColor = _focusColor(focus);
     final focusPct = (focus / 100).clamp(0.0, 1.0);
 
+    // Live streak + XP from provider (already invalidated in session_active_screen)
+    final dashAsync = ref.watch(dashboardProvider);
+    final streak = dashAsync.valueOrNull?.streak?.current ?? 0;
+    final xpEarned = _calcXP(mins, streak);
+
+    // Format time nicely: show sec if < 1 min
+    final timeDisplay = mins > 0 ? '${mins}m' : '${secs}s';
+
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
           child: Column(
             children: [
-              // ── Animated badge ────────────────────────────────────────
+              // ── Animated badge ─────────────────────────────────────────
               ScaleTransition(
                 scale: _badgeScale,
                 child: Container(
-                  width: 96,
-                  height: 96,
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
-                    color: focusColor,
+                    gradient: LinearGradient(
+                      colors: [focusColor.withValues(alpha: 0.8), focusColor],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.textPrimary, width: 3),
-                    boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
+                    boxShadow: [BoxShadow(color: focusColor.withValues(alpha: 0.4), blurRadius: 24, offset: const Offset(0, 8))],
                   ),
-                  child: Icon(_focusIcon(focus), color: AppColors.textPrimary, size: 44),
+                  child: Icon(_focusIcon(focus), color: Colors.white, size: 48),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
-              // ── Title ─────────────────────────────────────────────────
+              // ── Title ──────────────────────────────────────────────────
               FadeSlideIn(
                 delay: const Duration(milliseconds: 350),
                 child: Text(
@@ -84,51 +104,83 @@ class _SessionSummaryScreenState extends State<SessionSummaryScreen>
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               FadeSlideIn(
                 delay: const Duration(milliseconds: 400),
                 child: Text(
                   subject,
-                  style: const TextStyle(fontSize: 15, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.outfit(fontSize: 15, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-              // ── Stats card ────────────────────────────────────────────
+              // ── Stats card ─────────────────────────────────────────────
               FadeSlideIn(
                 delay: const Duration(milliseconds: 450),
                 child: Container(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.textPrimary, width: 3),
-                    boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
+                    boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.08), blurRadius: 24, offset: const Offset(0, 8))],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _StatBox(label: 'Duration', value: '${mins}m', icon: Icons.timer_rounded, color: AppColors.primary),
-                      Container(width: 1.5, height: 44, color: AppColors.divider.withOpacity(0.4)),
-                      _StatBox(label: 'Focus', value: '${focus.toInt()}', icon: Icons.bolt_rounded, color: AppColors.accentGreen),
-                      Container(width: 1.5, height: 44, color: AppColors.divider.withOpacity(0.4)),
-                      _StatBox(label: 'Breaks', value: '$interruptions', icon: Icons.notifications_off_outlined, color: AppColors.accentOrange),
+                      _StatBox(label: 'Duration', value: timeDisplay, icon: Icons.timer_rounded, color: AppColors.primary),
+                      Container(width: 1, height: 48, color: AppColors.divider),
+                      _StatBox(label: 'Focus', value: '${focus.toInt()}%', icon: Icons.bolt_rounded, color: focusColor),
+                      Container(width: 1, height: 48, color: AppColors.divider),
+                      _StatBox(label: 'Breaks', value: '$interruptions', icon: Icons.pause_circle_outline_rounded, color: AppColors.accentOrange),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
 
-              // ── Focus progress bar ────────────────────────────────────
+              // ── XP + Streak reward card ─────────────────────────────────
               FadeSlideIn(
-                delay: const Duration(milliseconds: 500),
+                delay: const Duration(milliseconds: 490),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.primary.withValues(alpha: 0.08), AppColors.accentTeal.withValues(alpha: 0.08)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _RewardChip(icon: '⚡', label: '+$xpEarned XP', color: const Color(0xFFF59E0B)),
+                      Container(width: 1, height: 36, color: AppColors.divider),
+                      _RewardChip(
+                        icon: '🔥',
+                        label: streak > 0 ? '$streak day streak!' : 'Keep it up!',
+                        color: AppColors.accentOrange,
+                      ),
+                      Container(width: 1, height: 36, color: AppColors.divider),
+                      _RewardChip(
+                        icon: '🪙',
+                        label: '+${(xpEarned / 10).floor()} coins',
+                        color: const Color(0xFF10B981),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // ── Focus bar ──────────────────────────────────────────────
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 530),
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.textPrimary, width: 2),
-                    boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12)],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,7 +190,7 @@ class _SessionSummaryScreenState extends State<SessionSummaryScreen>
                         children: [
                           Text(
                             _focusLabel(focus),
-                            style: TextStyle(color: focusColor, fontWeight: FontWeight.w800, fontSize: 15),
+                            style: GoogleFonts.outfit(color: focusColor, fontWeight: FontWeight.w800, fontSize: 14),
                           ),
                           Text(
                             '${focus.toInt()}%',
@@ -146,59 +198,50 @@ class _SessionSummaryScreenState extends State<SessionSummaryScreen>
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       AnimatedProgressBar(value: focusPct, color: focusColor, height: 10),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Text(
                         _focusTip(focus, interruptions),
-                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5, fontWeight: FontWeight.w500),
+                        style: GoogleFonts.outfit(fontSize: 13, color: AppColors.textSecondary, height: 1.5),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
 
-              // ── Actions ───────────────────────────────────────────────
+              // ── Actions ────────────────────────────────────────────────
               FadeSlideIn(
-                delay: const Duration(milliseconds: 560),
+                delay: const Duration(milliseconds: 580),
                 child: Column(
                   children: [
-                    PressButton(
-                      onTap: () => context.go('/home'),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.textPrimary, width: 3),
-                          boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: () => context.go('/home'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          elevation: 0,
                         ),
-                        child: Text(
-                          'Back to Home',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
-                        ),
+                        child: Text('Back to Home', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700)),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    PressButton(
-                      onTap: () => context.pushReplacement('/session/setup'),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.textPrimary, width: 2.5),
-                          boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: () => context.pushReplacement('/session/setup'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4), width: 1.5),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
-                        child: Text(
-                          'Start Another Session',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-                        ),
+                        child: Text('Start Another Session', style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ],
@@ -223,7 +266,9 @@ class _SessionSummaryScreenState extends State<SessionSummaryScreen>
       ? Icons.star_rounded
       : f >= 60
           ? Icons.thumb_up_rounded
-          : Icons.info_rounded;
+          : f >= 40
+              ? Icons.sentiment_neutral_rounded
+              : Icons.info_rounded;
 
   String _focusLabel(double f) => f >= 80
       ? 'Excellent Focus! ⭐'
@@ -233,9 +278,11 @@ class _SessionSummaryScreenState extends State<SessionSummaryScreen>
               ? 'Fair Focus'
               : 'Poor Focus — keep going!';
 
-  String _focusTip(double f, int i) => i == 0
-      ? 'Zero interruptions — incredible discipline! Keep it up.'
-      : 'You had $i interruption${i != 1 ? 's' : ''}. Try enabling Do Not Disturb next time.';
+  String _focusTip(double f, int i) {
+    if (i == 0) return 'Zero interruptions — incredible discipline! Keep it up.';
+    if (i <= 2) return 'You had $i interruption${i != 1 ? 's' : ''}. Great effort — try Do Not Disturb next time.';
+    return 'You had $i interruptions. A quiet space and phone-free sessions will boost your score significantly!';
+  }
 }
 
 class _StatBox extends StatelessWidget {
@@ -247,13 +294,26 @@ class _StatBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          Icon(icon, color: color, size: 24),
+          Icon(icon, color: color, size: 22),
           const SizedBox(height: 6),
-          Text(value,
-              style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w900, color: color, letterSpacing: -0.5)),
+          Text(value, style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900, color: color, letterSpacing: -0.3)),
           const SizedBox(height: 2),
-          Text(label,
-              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+        ],
+      );
+}
+
+class _RewardChip extends StatelessWidget {
+  final String icon, label;
+  final Color color;
+  const _RewardChip({required this.icon, required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) => Column(
+        children: [
+          Text(icon, style: const TextStyle(fontSize: 20)),
+          const SizedBox(height: 4),
+          Text(label, style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w700, color: color)),
         ],
       );
 }
