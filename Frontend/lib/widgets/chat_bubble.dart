@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/chat_message_model.dart';
 import '../app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
-
   const ChatBubble({super.key, required this.message});
 
   @override
@@ -12,37 +12,64 @@ class ChatBubble extends StatelessWidget {
     final isUser = message.isUser;
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsets.only(
-          top: 6, bottom: 6,
-          left: isUser ? 64 : 0,
-          right: isUser ? 0 : 64,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isUser ? AppColors.primary : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(18),
-            topRight: const Radius.circular(18),
-            bottomLeft: Radius.circular(isUser ? 18 : 4),
-            bottomRight: Radius.circular(isUser ? 4 : 18),
-          ),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2)),
+      child: Row(
+        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // AI avatar dot
+          if (!isUser) ...[
+            Container(
+              width: 30, height: 30,
+              margin: const EdgeInsets.only(right: 8, bottom: 2),
+              decoration: BoxDecoration(
+                gradient: AppColors.heroGradient,
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 6)],
+              ),
+              child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 16),
+            ),
           ],
-        ),
-        child: Text(
-          message.content,
-          style: TextStyle(
-            color: isUser ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
-            fontSize: 14,
-            height: 1.5,
+
+          Flexible(
+            child: Container(
+              margin: EdgeInsets.only(
+                top: 4, bottom: 4,
+                left: isUser ? 56 : 0,
+                right: isUser ? 0 : 56,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: isUser ? AppColors.heroGradient : null,
+                color: isUser ? null : Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(20),
+                  topRight: const Radius.circular(20),
+                  bottomLeft: Radius.circular(isUser ? 20 : 4),
+                  bottomRight: Radius.circular(isUser ? 4 : 20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isUser
+                        ? AppColors.primary.withOpacity(0.2)
+                        : Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Text(
+                message.content,
+                style: GoogleFonts.outfit(
+                  color: isUser ? Colors.white : AppColors.textPrimary,
+                  fontSize: 14,
+                  height: 1.55,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
-
-
-

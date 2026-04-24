@@ -75,18 +75,21 @@ class _HomePage extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'STUDY COACH',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.primary,
-                              letterSpacing: 1.5,
+                          ShaderMask(
+                            shaderCallback: (bounds) => AppColors.heroGradient.createShader(bounds),
+                            child: Text(
+                              'StudyCoach',
+                              style: GoogleFonts.outfit(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                              ),
                             ),
                           ),
                           Text(
-                            'Good ${_greeting()}, ${user?.name.split(' ').first ?? 'Student'} 👋',
-                            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                            'Hi, ${user?.name.split(' ').first ?? 'Student'} 👋',
+                            style: GoogleFonts.outfit(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],

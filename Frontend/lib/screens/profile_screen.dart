@@ -107,7 +107,7 @@ class ProfileScreen extends ConsumerWidget {
                 _AnimatedTile(
                     icon: Icons.notifications_outlined,
                     title: 'Notifications',
-                    trailing: Switch(value: true, onChanged: (_) {}, activeColor: AppColors.primary)),
+                    trailing: _NotifSwitch()),
               ],
             ),
             const SizedBox(height: 16),
@@ -116,7 +116,8 @@ class ProfileScreen extends ConsumerWidget {
             _SectionCard(
               title: 'Account',
               children: [
-                _AnimatedTile(icon: Icons.lock_outline_rounded, title: 'Change Password', onTap: () {}),
+                _AnimatedTile(icon: Icons.lock_outline_rounded, title: 'Change Password',
+                    onTap: () => context.push('/change-password')),
                 _AnimatedTile(
                   icon: Icons.logout_rounded,
                   title: 'Log Out',
@@ -315,5 +316,38 @@ class _AnimatedTileState extends State<_AnimatedTile> {
             minLeadingWidth: 0,
           ),
         ),
+      );
+}
+
+// ── Notification toggle (stateful local) ──────────────────────────────────────
+class _NotifSwitch extends StatefulWidget {
+  const _NotifSwitch();
+
+  @override
+  State<_NotifSwitch> createState() => _NotifSwitchState();
+}
+
+class _NotifSwitchState extends State<_NotifSwitch> {
+  bool _enabled = true;
+
+  @override
+  Widget build(BuildContext context) => Switch(
+        value: _enabled,
+        onChanged: (v) {
+          setState(() => _enabled = v);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                v ? '🔔 Notifications enabled' : '🔕 Notifications disabled',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+              ),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: v ? AppColors.accentGreen : AppColors.textSecondary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+        activeColor: AppColors.primary,
       );
 }

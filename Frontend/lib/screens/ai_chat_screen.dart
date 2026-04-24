@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/ai_coach_provider.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/animations.dart';
@@ -15,13 +16,29 @@ class AiChatScreen extends ConsumerStatefulWidget {
 class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   final _ctrl = TextEditingController();
   final _scrollCtrl = ScrollController();
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl.addListener(() {
+      final has = _ctrl.text.trim().isNotEmpty;
+      if (has != _hasText) setState(() => _hasText = has);
+    });
+  }
 
   void _send() {
     final text = _ctrl.text.trim();
     if (text.isEmpty) return;
     _ctrl.clear();
+    setState(() => _hasText = false);
     ref.read(aiCoachProvider.notifier).sendMessage(text);
     _scrollToBottom();
+  }
+
+  void _sendQuick(String text) {
+    _ctrl.text = text;
+    _send();
   }
 
   void _scrollToBottom() {
@@ -46,83 +63,107 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiCoachProvider);
-
-    // auto-scroll when new messages arrive
     ref.listen(aiCoachProvider, (_, __) => _scrollToBottom());
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.background,
+      // ── App Bar ────────────────────────────────────────────────────────────
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0,
         surfaceTintColor: Colors.transparent,
+        elevation: 0,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.5),
-          child: Container(height: 1.5, color: AppColors.divider.withOpacity(0.3)),
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.divider),
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: state.isLoading
-                    ? AppColors.accentGreen.withOpacity(0.15)
-                    : AppColors.primary.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                Icons.smart_toy_rounded,
-                color: state.isLoading ? AppColors.accentGreen : AppColors.primary,
-                size: 18,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('AI Coach', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 200),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: state.isLoading ? AppColors.accentGreen : AppColors.textLight,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  child: Text(state.isLoading ? 'Thinking...' : 'Ready to help'),
+        titleSpacing: 0,
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
+            children: [
+              // Animated AI avatar
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                width: 40, height: 40,
+                decoration: BoxDecoration(
+                  gradient: state.isLoading
+                      ? const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF14B8A6)])
+                      : AppColors.heroGradient,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: (state.isLoading ? AppColors.accentGreen : AppColors.primary).withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ],
+                child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'AI Study Coach',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: Text(
+                      state.isLoading ? '✦ Thinking...' : '● Online',
+                      key: ValueKey(state.isLoading),
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: state.isLoading ? AppColors.accentGreen : const Color(0xFF22C55E),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         actions: [
           PressButton(
+            scaleDown: 0.88,
             onTap: () => ref.read(aiCoachProvider.notifier).clearChat(),
             child: Container(
-              margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.all(8),
+              margin: const EdgeInsets.only(right: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.divider.withOpacity(0.4)),
+                border: Border.all(color: AppColors.divider),
               ),
-              child: const Icon(Icons.refresh_rounded, size: 18, color: AppColors.textSecondary),
+              child: Row(children: [
+                Icon(Icons.refresh_rounded, size: 15, color: AppColors.textSecondary),
+                const SizedBox(width: 4),
+                Text('Clear', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+              ]),
             ),
           ),
         ],
       ),
+
       body: Column(
         children: [
+          // ── Messages ──────────────────────────────────────────────────────
           Expanded(
             child: state.messages.isEmpty
                 ? const _EmptyChat()
                 : ListView.builder(
                     controller: _scrollCtrl,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
                     itemCount: state.messages.length + (state.isLoading ? 1 : 0),
                     itemBuilder: (context, i) {
-                      if (i == state.messages.length) return const TypingIndicator();
+                      if (i == state.messages.length) return const _TypingBubble();
                       final msg = state.messages[i];
                       return AnimatedChatBubble(
                         isUser: msg.isUser,
@@ -131,85 +172,94 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                     },
                   ),
           ),
+
+          // ── Error banner ──────────────────────────────────────────────────
           if (state.error != null)
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              color: const Color(0xFFFFF0F0),
+              color: const Color(0xFFFFF4F0),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline_rounded, color: Color(0xFFE07A5F), size: 16),
+                  const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       state.error!,
-                      style: const TextStyle(color: Color(0xFFE07A5F), fontSize: 12),
+                      style: GoogleFonts.outfit(color: const Color(0xFFEF4444), fontSize: 12),
                     ),
                   ),
                 ],
               ),
             ),
+
           // ── Input bar ─────────────────────────────────────────────────────
           Container(
             padding: EdgeInsets.only(
-              left: 16, right: 16, top: 10,
-              bottom: MediaQuery.of(context).padding.bottom + 10,
+              left: 14, right: 14, top: 12,
+              bottom: MediaQuery.of(context).padding.bottom + 12,
             ),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border(top: BorderSide(color: AppColors.divider.withOpacity(0.25), width: 1.5)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 12,
-                  offset: const Offset(0, -3),
-                )
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 16,
+                  offset: const Offset(0, -4),
+                ),
               ],
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
+                // Text field
                 Expanded(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                  child: Container(
+                    constraints: const BoxConstraints(maxHeight: 120),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(24),
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(22),
                       border: Border.all(
-                        color: AppColors.divider.withOpacity(0.5),
+                        color: _hasText ? AppColors.primary.withOpacity(0.4) : AppColors.divider,
+                        width: _hasText ? 1.5 : 1,
                       ),
                     ),
                     child: TextField(
                       controller: _ctrl,
-                      decoration: const InputDecoration(
-                        hintText: 'Ask me anything...',
-                        hintStyle: TextStyle(color: AppColors.textLight, fontSize: 14),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 13),
-                      ),
-                      style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
-                      onSubmitted: (_) => _send(),
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
                       textCapitalization: TextCapitalization.sentences,
+                      style: GoogleFonts.outfit(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+                      decoration: InputDecoration(
+                        hintText: 'Ask your AI coach...',
+                        hintStyle: GoogleFonts.outfit(color: AppColors.textLight, fontSize: 14),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      ),
+                      onSubmitted: (_) => _send(),
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
+
+                // Send button
                 PressButton(
-                  onTap: state.isLoading ? null : _send,
+                  scaleDown: 0.9,
+                  onTap: (state.isLoading || !_hasText) ? null : _send,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
-                    width: 46,
-                    height: 46,
+                    width: 48, height: 48,
                     decoration: BoxDecoration(
-                      color: state.isLoading ? AppColors.textLight : AppColors.primary,
+                      gradient: (_hasText && !state.isLoading) ? AppColors.heroGradient : null,
+                      color: (_hasText && !state.isLoading) ? null : AppColors.divider,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.textPrimary, width: 2),
-                      boxShadow: state.isLoading
-                          ? []
-                          : const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
+                      boxShadow: (_hasText && !state.isLoading)
+                          ? [BoxShadow(color: AppColors.primary.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4))]
+                          : [],
                     ),
                     child: Icon(
-                      state.isLoading ? Icons.hourglass_empty_rounded : Icons.send_rounded,
-                      color: AppColors.textPrimary,
+                      state.isLoading ? Icons.more_horiz_rounded : Icons.send_rounded,
+                      color: (_hasText && !state.isLoading) ? Colors.white : AppColors.textLight,
                       size: 20,
                     ),
                   ),
@@ -223,6 +273,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   }
 }
 
+// ── Empty state ─────────────────────────────────────────────────────────────
 class _EmptyChat extends StatelessWidget {
   const _EmptyChat();
 
@@ -230,42 +281,56 @@ class _EmptyChat extends StatelessWidget {
   Widget build(BuildContext context) => Center(
         child: FadeSlideIn(
           duration: const Duration(milliseconds: 500),
-          beginOffset: const Offset(0, 0.1),
+          beginOffset: const Offset(0, 0.08),
           child: Padding(
-            padding: const EdgeInsets.all(40),
+            padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Glowing avatar
                 Container(
-                  padding: const EdgeInsets.all(24),
+                  width: 90, height: 90,
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    gradient: AppColors.heroGradient,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.textPrimary, width: 3),
-                    boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
+                    boxShadow: [
+                      BoxShadow(color: AppColors.primary.withOpacity(0.35), blurRadius: 24, offset: const Offset(0, 8)),
+                    ],
                   ),
-                  child: const Icon(Icons.smart_toy_rounded, size: 48, color: AppColors.textPrimary),
+                  child: const Icon(Icons.smart_toy_rounded, size: 44, color: Colors.white),
                 ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Your AI Study Coach',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+                const SizedBox(height: 20),
+
+                Text(
+                  'Your AI Study Coach 🤖',
+                  style: GoogleFonts.outfit(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Ask me anything about your subjects,\nget study tips, or generate a quiz.',
+                const SizedBox(height: 10),
+                Text(
+                  'Ask me anything — concepts, quiz me,\nor get a personalised study plan!',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5, fontWeight: FontWeight.w500),
+                  style: GoogleFonts.outfit(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                    height: 1.55,
+                  ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
+
+                // Quick action chips
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   alignment: WrapAlignment.center,
-                  children: [
-                    _QuickChip(label: '📚 Explain a concept'),
-                    _QuickChip(label: '📝 Quiz me'),
-                    _QuickChip(label: '🎯 Study tips'),
+                  children: const [
+                    _QuickChip(emoji: '📚', label: 'Explain a concept'),
+                    _QuickChip(emoji: '🧠', label: 'Quiz me'),
+                    _QuickChip(emoji: '🎯', label: 'Study tips'),
+                    _QuickChip(emoji: '📝', label: 'Summarise notes'),
                   ],
                 ),
               ],
@@ -275,24 +340,120 @@ class _EmptyChat extends StatelessWidget {
       );
 }
 
+// ── Quick chip ───────────────────────────────────────────────────────────────
 class _QuickChip extends StatelessWidget {
+  final String emoji;
   final String label;
-  const _QuickChip({required this.label});
+  const _QuickChip({required this.emoji, required this.label});
 
   @override
-  Widget build(BuildContext context) => PressButton(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.textPrimary, width: 2),
-            boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
-          ),
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, fontWeight: FontWeight.w700),
-          ),
+  Widget build(BuildContext context) {
+    final ref = ProviderScope.containerOf(context);
+    return PressButton(
+      scaleDown: 0.94,
+      onTap: () => ref.read(aiCoachProvider.notifier).sendMessage('$emoji $label'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.divider, width: 1.5),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 14)),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Typing indicator bubble ──────────────────────────────────────────────────
+class _TypingBubble extends StatefulWidget {
+  const _TypingBubble();
+
+  @override
+  State<_TypingBubble> createState() => _TypingBubbleState();
+}
+
+class _TypingBubbleState extends State<_TypingBubble> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Align(
+        alignment: Alignment.centerLeft,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Container(
+              width: 30, height: 30,
+              margin: const EdgeInsets.only(right: 8, bottom: 2),
+              decoration: BoxDecoration(
+                gradient: AppColors.heroGradient,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 16),
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                  bottomLeft: Radius.circular(4),
+                ),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
+              ),
+              child: AnimatedBuilder(
+                animation: _ctrl,
+                builder: (_, __) => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(3, (i) {
+                    final delay = i / 3;
+                    final value = ((_ctrl.value - delay) % 1.0).clamp(0.0, 1.0);
+                    final scale = 0.6 + 0.4 * (value < 0.5 ? value * 2 : (1 - value) * 2);
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: 8, height: 8,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.3 + scale * 0.7),
+                        shape: BoxShape.circle,
+                      ),
+                      transform: Matrix4.identity()..scale(scale),
+                      transformAlignment: Alignment.center,
+                    );
+                  }),
+                ),
+              ),
+            ),
+          ],
         ),
       );
 }

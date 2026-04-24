@@ -21,6 +21,7 @@ import 'screens/quiz_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/exam_planner_screen.dart';
 import 'screens/exam_planner_setup_screen.dart';
+import 'screens/change_password_screen.dart';
 
 // ── Smooth fade+slide transition ──────────────────────────────────────────────
 CustomTransitionPage<T> _slideFade<T>({
@@ -142,6 +143,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ExamPlannerScreen())),
       GoRoute(path: '/exam-planner/setup',
           pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ExamPlannerSetupScreen())),
+      GoRoute(path: '/change-password',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ChangePasswordScreen())),
     ],
     errorBuilder: (c, s) => Scaffold(
       body: Center(child: Text('Page not found: ${s.error}')),

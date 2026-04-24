@@ -64,4 +64,14 @@ class AuthService {
     final res = await _dio.patch('/users/profile', data: data);
     return UserModel.fromJson(res.data['data']);
   }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _dio.patch('/users/password', data: {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
+  }
 }
