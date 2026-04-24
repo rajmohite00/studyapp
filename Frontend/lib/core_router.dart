@@ -107,13 +107,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/session/active',
         pageBuilder: (c, s) => _slideFade(
             context: c, state: s,
-            child: SessionActiveScreen(session: s.extra as Map<String, dynamic>)),
+            child: SessionActiveScreen(session: Map<String, dynamic>.from(s.extra as Map))),
       ),
       GoRoute(
         path: '/session/summary',
         pageBuilder: (c, s) => _slideFade(
             context: c, state: s,
-            child: SessionSummaryScreen(session: s.extra as Map<String, dynamic>)),
+            child: SessionSummaryScreen(session: Map<String, dynamic>.from(s.extra as Map))),
       ),
 
       // Analytics
