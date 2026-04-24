@@ -4,7 +4,7 @@ const User = require('../models/User');
 const { getRedisClient } = require('../config/redis');
 const { getTodayDate, startOfWeek, endOfWeek, formatDate } = require('../utils/dateHelper');
 
-const CACHE_TTL = 60 * 10; // 10 min
+const CACHE_TTL = 60; // 60 seconds — keeps data near real-time
 
 const getDashboardSummary = async (userId) => {
   const redis = getRedisClient();

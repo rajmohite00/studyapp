@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/session_provider.dart';
+import '../providers/analytics_provider.dart';
 import '../app_theme.dart';
 
 class SessionActiveScreen extends ConsumerWidget {
@@ -70,6 +71,12 @@ class SessionActiveScreen extends ConsumerWidget {
                     children: [
                       _RoundBtn(icon: Icons.close_rounded, onTap: () async {
                         await ref.read(sessionProvider.notifier).endSession();
+                        // Invalidate all analytics so home/analytics screens refresh
+                        ref.invalidate(dashboardProvider);
+                        ref.invalidate(subjectBreakdownProvider);
+                        ref.invalidate(streakProvider);
+                        ref.invalidate(heatmapProvider);
+                        ref.invalidate(weeklyReportProvider);
                         if (context.mounted) context.go('/home');
                       }),
                       // Subject badge
@@ -164,6 +171,12 @@ class SessionActiveScreen extends ConsumerWidget {
                         color: Colors.white.withOpacity(0.3),
                         onTap: () async {
                           final sess = await ref.read(sessionProvider.notifier).endSession();
+                          // Invalidate all analytics so home/analytics screens refresh
+                          ref.invalidate(dashboardProvider);
+                          ref.invalidate(subjectBreakdownProvider);
+                          ref.invalidate(streakProvider);
+                          ref.invalidate(heatmapProvider);
+                          ref.invalidate(weeklyReportProvider);
                           if (context.mounted) context.pushReplacement('/session/summary', extra: sess?.toJson() ?? {});
                         },
                       ),

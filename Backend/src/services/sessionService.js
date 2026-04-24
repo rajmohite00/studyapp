@@ -61,9 +61,9 @@ const updateSession = async (userId, sessionId, updates) => {
     if (rating !== undefined) session.rating = rating;
     if (goalCompleted !== undefined) session.goalCompleted = goalCompleted;
 
-    // Update streak if session was meaningful (>= 30 min)
+    // Update streak for any completed session (any duration counts)
     let currentStreak = 0;
-    if (action === 'end' && actualDurationMinutes >= 30) {
+    if (action === 'end' && actualDurationMinutes > 0) {
       const streakResult = await streakService.updateStreakAfterSession(userId);
       currentStreak = streakResult?.current || 0;
     }
@@ -78,8 +78,12 @@ const updateSession = async (userId, sessionId, updates) => {
   await session.save();
 
   if (action === 'end') {
-    // Run analytics aggregation without blocking the response
-    analyticsService.aggregateDailyAnalytics(userId).catch(err => console.error('Analytics aggregation error:', err));
+    // Run analytics aggregation — await it so cache is fresh before client refreshes
+    try {
+      await analyticsService.aggregateDailyAnalytics(userId);
+    } catch (err) {
+      console.error('Analytics aggregation error:', err);
+    }
   }
 
   return session;

@@ -40,6 +40,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       bottomNavigationBar: BottomNavBar(currentIndex: _navIndex, onTap: (i) {
         setState(() => _navIndex = i);
+        // Refresh analytics data when switching back to Home or Analytics tab
+        if (i == 0 || i == 2) {
+          ref.invalidate(dashboardProvider);
+          ref.invalidate(subjectBreakdownProvider);
+          ref.invalidate(streakProvider);
+        }
       }),
     );
   }
