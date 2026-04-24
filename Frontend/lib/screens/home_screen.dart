@@ -313,91 +313,65 @@ class _BoldSectionHeader extends StatelessWidget {
       );
 }
 
-// ── Floating Icon Cards (like Guidelines section in reference) ─────────────────
-class _FloatingIconCards extends StatelessWidget {
+// ── Exam Planner Quick Access Card ───────────────────────────────────────────
+class _ExamPlannerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final features = [
-      _FeatureData(icon: Icons.timer_rounded, label: 'Study Timer', desc: 'Pomodoro & custom focus sessions', color: AppColors.primary, route: '/session/setup'),
-      _FeatureData(icon: Icons.smart_toy_rounded, label: 'AI Coach', desc: 'Ask anything, get personalized help', color: AppColors.accentGreen, route: '/ai/chat'),
-      _FeatureData(icon: Icons.calendar_today_rounded, label: 'Exam Planner', desc: 'AI-generated study plan with PYQs', color: AppColors.accent, route: '/exam-planner'),
-      _FeatureData(icon: Icons.bar_chart_rounded, label: 'Analytics', desc: 'Heatmaps, focus scores & insights', color: AppColors.accentOrange, route: '/analytics'),
-    ];
-
-    return Column(
-      children: features.map((f) => _FloatingIconCard(feature: f)).toList(),
-    );
-  }
-}
-
-class _FeatureData {
-  final IconData icon;
-  final String label, desc, route;
-  final Color color;
-  const _FeatureData({required this.icon, required this.label, required this.desc, required this.color, required this.route});
-}
-
-class _FloatingIconCard extends StatelessWidget {
-  final _FeatureData feature;
-  const _FloatingIconCard({required this.feature});
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.topCenter,
-          children: [
-            // Card body
-            GestureDetector(
-              onTap: () => context.push(feature.route),
-              child: Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(top: 28),
-                padding: const EdgeInsets.fromLTRB(20, 36, 20, 24),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: GestureDetector(
+        onTap: () => context.push('/exam-planner'),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.textPrimary, width: 2),
+            boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52, height: 52,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: AppColors.textPrimary, width: 2),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 0, offset: const Offset(4, 4))],
+                  boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
                 ),
+                child: const Icon(Icons.calendar_today_rounded, color: AppColors.textPrimary, size: 26),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(feature.label, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
-                    const SizedBox(height: 8),
-                    Text(feature.desc, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 20),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: feature.color,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.textPrimary, width: 2),
-                        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
-                      ),
-                      child: Text('Open  →', style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 14)),
-                    ),
+                    Text('Exam Planner',
+                        style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                    const SizedBox(height: 4),
+                    const Text('AI-generated study plan with PYQs',
+                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
-            ),
-            // Floating circular icon
-            Positioned(
-              top: 0,
-              child: Container(
-                width: 64, height: 64,
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                 decoration: BoxDecoration(
-                  color: feature.color,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.textPrimary, width: 3),
-                  boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.textPrimary, width: 2),
+                  boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
                 ),
-                child: Icon(feature.icon, color: AppColors.textPrimary, size: 30),
+                child: Text('Open →', style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 13)),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      );
+      ),
+    );
+  }
 }
 
 // ── Goal Card ──────────────────────────────────────────────────────────────────
