@@ -364,6 +364,10 @@ const markTaskCompleted = async (userId, planId, taskIndex, completed) => {
 
   plan.generatedPlan[taskIndex].isCompleted = completed;
   plan.generatedPlan[taskIndex].completedAt = completed ? new Date() : null;
+  
+  // Mongoose does not detect array updates via index automatically
+  plan.markModified('generatedPlan');
+  
   await plan.save();
   return plan;
 };
