@@ -28,7 +28,7 @@ class StreakCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.primaryDark, width: 2),
         boxShadow: [
-          BoxShadow(color: AppColors.primary.withOpacity(0.25), blurRadius: 0, offset: const Offset(4, 4)),
+          BoxShadow(color: AppColors.primary.withValues(alpha: 0.25), blurRadius: 0, offset: const Offset(4, 4)),
         ],
       ),
       child: Column(
@@ -41,12 +41,12 @@ class StreakCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                 ),
                 child: Text(
-                  '${freezesAvailable} freeze${freezesAvailable != 1 ? 's' : ''}',
+                  '$freezesAvailable freeze${freezesAvailable != 1 ? 's' : ''}',
                   style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
                 ),
               ),
@@ -67,7 +67,7 @@ class StreakCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Container(height: 1, color: Colors.white.withOpacity(0.2)),
+          Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
           const SizedBox(height: 14),
           Row(
             children: [

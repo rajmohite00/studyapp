@@ -24,7 +24,7 @@ class ChatBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: AppColors.heroGradient,
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 6)],
+                boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 6)],
               ),
               child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 16),
             ),
@@ -50,8 +50,8 @@ class ChatBubble extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     color: isUser
-                        ? AppColors.primary.withOpacity(0.2)
-                        : Colors.black.withOpacity(0.05),
+                        ? AppColors.primary.withValues(alpha: 0.2)
+                        : Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),

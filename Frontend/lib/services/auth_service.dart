@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'dio_client.dart';
 import 'storage_service.dart';
 import '../models/user_model.dart';

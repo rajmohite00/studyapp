@@ -212,7 +212,7 @@ class _AnimatedProgressBarState extends State<AnimatedProgressBar>
     return Container(
       height: widget.height,
       decoration: BoxDecoration(
-        color: widget.backgroundColor ?? AppColors.primary.withOpacity(0.12),
+        color: widget.backgroundColor ?? AppColors.primary.withValues(alpha: 0.12),
         borderRadius: bar,
       ),
       child: AnimatedBuilder(
@@ -378,10 +378,10 @@ class _TypingIndicatorState extends State<TypingIndicator>
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.divider.withOpacity(0.3)),
+              border: Border.all(color: AppColors.divider.withValues(alpha: 0.3)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 )
@@ -494,7 +494,7 @@ class AnimatedNavItem extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary.withOpacity(0.15)
+                    ? AppColors.primary.withValues(alpha: 0.15)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
               ),

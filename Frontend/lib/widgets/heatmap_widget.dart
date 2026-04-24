@@ -25,9 +25,9 @@ class HeatmapWidget extends StatelessWidget {
               children: [
                 const Text('Less', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
                 const SizedBox(width: 4),
-                _ColorBox(AppColors.primary.withOpacity(0.1)),
-                _ColorBox(AppColors.primary.withOpacity(0.4)),
-                _ColorBox(AppColors.primary.withOpacity(0.7)),
+                _ColorBox(AppColors.primary.withValues(alpha: 0.1)),
+                _ColorBox(AppColors.primary.withValues(alpha: 0.4)),
+                _ColorBox(AppColors.primary.withValues(alpha: 0.7)),
                 _ColorBox(AppColors.primary),
                 const SizedBox(width: 4),
                 const Text('More', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
@@ -54,7 +54,7 @@ class HeatmapWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: intensity == 0 
                       ? AppColors.divider 
-                      : AppColors.primary.withOpacity((intensity / 4).clamp(0.2, 1.0)),
+                      : AppColors.primary.withValues(alpha: (intensity / 4).clamp(0.2, 1.0)),
                   borderRadius: BorderRadius.circular(4),
                 ),
               );

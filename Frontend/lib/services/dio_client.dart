@@ -80,7 +80,7 @@ class _AuthInterceptor extends Interceptor {
     if (refreshToken == null) return false;
 
     try {
-      final response = await Dio(BaseOptions(baseUrl: _baseUrl))
+      final response = await Dio(BaseOptions(baseUrl: _kBaseUrl))
           .post('/auth/refresh', data: {'refreshToken': refreshToken});
 
       final data = response.data['data'];
