@@ -55,7 +55,7 @@ class AnalyticsScreen extends ConsumerWidget {
                     scaleDown: 0.92,
                     onTap: () => context.push('/analytics/weekly-report'),
                     child: Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
                         gradient: AppColors.heroGradient,
                         borderRadius: BorderRadius.circular(12),
@@ -67,7 +67,15 @@ class AnalyticsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.picture_as_pdf_rounded, color: Colors.white, size: 20),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.picture_as_pdf_rounded, color: Colors.white, size: 16),
+                          const SizedBox(width: 6),
+                          Text('Weekly Report',
+                              style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
+                        ],
+                      ),
                     ),
                   ),
                 ],
