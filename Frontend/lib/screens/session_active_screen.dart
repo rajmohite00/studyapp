@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/session_provider.dart';
@@ -240,50 +241,105 @@ class SessionActiveScreen extends ConsumerWidget {
   }
 }
 
-class _RoundBtn extends StatelessWidget {
+class _RoundBtn extends StatefulWidget {
   final IconData icon;
   final VoidCallback onTap;
   const _RoundBtn({required this.icon, required this.onTap});
+  @override
+  State<_RoundBtn> createState() => _RoundBtnState();
+}
+
+class _RoundBtnState extends State<_RoundBtn> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 80));
+    _scale = Tween<double>(begin: 1.0, end: 0.82).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() { _ctrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 44, height: 44,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1.5),
+        onTapDown: (_) {
+          HapticFeedback.lightImpact();
+          _ctrl.forward();
+        },
+        onTapUp: (_) { _ctrl.reverse(); widget.onTap(); },
+        onTapCancel: () => _ctrl.reverse(),
+        child: ScaleTransition(
+          scale: _scale,
+          child: Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1.5),
+            ),
+            child: Icon(widget.icon, color: Colors.white, size: 20),
           ),
-          child: Icon(icon, color: Colors.white, size: 20),
         ),
       );
 }
 
-class _LabeledBtn extends StatelessWidget {
+class _LabeledBtn extends StatefulWidget {
   final IconData icon;
   final VoidCallback onTap;
   final String label;
   final Color? color;
   const _LabeledBtn({required this.icon, required this.onTap, required this.label, this.color});
+  @override
+  State<_LabeledBtn> createState() => _LabeledBtnState();
+}
+
+class _LabeledBtnState extends State<_LabeledBtn> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 80));
+    _scale = Tween<double>(begin: 1.0, end: 0.88).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() { _ctrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: Column(
-          children: [
-            Container(
-              width: 80, height: 80,
-              decoration: BoxDecoration(
-                color: color ?? Colors.white.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
+        onTapDown: (_) {
+          HapticFeedback.mediumImpact();
+          _ctrl.forward();
+        },
+        onTapUp: (_) { _ctrl.reverse(); widget.onTap(); },
+        onTapCancel: () => _ctrl.reverse(),
+        child: ScaleTransition(
+          scale: _scale,
+          child: Column(
+            children: [
+              Container(
+                width: 80, height: 80,
+                decoration: BoxDecoration(
+                  color: widget.color ?? Colors.white.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
+                  boxShadow: [BoxShadow(color: Colors.white.withValues(alpha: 0.1), blurRadius: 16, spreadRadius: 2)],
+                ),
+                child: Icon(widget.icon, color: Colors.white, size: 38),
               ),
-              child: Icon(icon, color: Colors.white, size: 38),
-            ),
-            const SizedBox(height: 8),
-            Text(label, style: const TextStyle(color: Colors.white60, fontSize: 12, fontWeight: FontWeight.w600)),
-          ],
+              const SizedBox(height: 8),
+              Text(widget.label, style: const TextStyle(color: Colors.white60, fontSize: 12, fontWeight: FontWeight.w600)),
+            ],
+          ),
         ),
       );
 }
