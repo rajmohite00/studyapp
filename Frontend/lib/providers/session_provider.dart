@@ -86,8 +86,14 @@ class SessionNotifier extends StateNotifier<SessionState> {
     final id = state.currentSession?.id;
     if (id == null) return;
     _timer?.cancel();
+    // Each pause counts as an interruption
+    final newInterruptions = state.interruptions + 1;
     final session = await _service.updateSession(id, action: 'pause');
-    state = state.copyWith(currentSession: session, status: SessionStatus.paused);
+    state = state.copyWith(
+      currentSession: session,
+      status: SessionStatus.paused,
+      interruptions: newInterruptions,
+    );
   }
 
   Future<void> resumeSession() async {
