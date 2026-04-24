@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -242,9 +242,8 @@ class _HomePage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // Features section (Guidelines-style floating icon cards)
-                    _BoldSectionHeader(title: 'What You Can Do', icon: Icons.apps_rounded, bg: AppColors.surface),
-                    _FloatingIconCards(),
+                    // Exam Planner Quick Access
+                    _ExamPlannerCard(),
 
                     // AI Suggestions (mentor-card style)
                     _AiSuggestionsWidget(),
