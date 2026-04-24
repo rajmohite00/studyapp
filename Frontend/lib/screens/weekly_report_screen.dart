@@ -30,7 +30,10 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
       final avgFocus = data['avgFocusScore'] ?? 0;
       final totalSessions = data['totalSessions'] ?? 0;
       final suggestions = List<String>.from(data['aiSuggestions'] ?? []);
-      final subjectBreakdown = Map<String, dynamic>.from(data['subjectBreakdown'] ?? {});
+      final subjectBreakdown = <String, int>{
+        for (final item in (data['subjectBreakdown'] as List? ?? []))
+          (item['subject'] ?? 'Other'): ((item['minutes'] ?? 0) as num).toInt()
+      };
       final weekOf = DateFormat('MMM d, yyyy').format(DateTime.now().subtract(const Duration(days: 7)));
       final now = DateFormat('MMM d, yyyy').format(DateTime.now());
 
@@ -116,7 +119,7 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
                     _pdfSectionTitle('Subject Breakdown', slateGrey),
                     pw.SizedBox(height: 12),
                     ...subjectBreakdown.entries.map((e) {
-                      final mins = (e.value as num).toInt();
+                      final mins = e.value;
                       final pct = totalMins > 0 ? (mins / totalMins).clamp(0.0, 1.0) : 0.0;
                       return pw.Padding(
                         padding: const pw.EdgeInsets.only(bottom: 10),
@@ -321,7 +324,10 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
           final avgFocus = data['avgFocusScore'] ?? 0;
           final totalSessions = data['totalSessions'] ?? 0;
           final suggestions = List<String>.from(data['aiSuggestions'] ?? []);
-          final subjectBreakdown = Map<String, dynamic>.from(data['subjectBreakdown'] ?? {});
+          final subjectBreakdown = <String, int>{
+            for (final item in (data['subjectBreakdown'] as List? ?? []))
+              (item['subject'] ?? 'Other'): ((item['minutes'] ?? 0) as num).toInt()
+          };
 
           return SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
@@ -390,7 +396,7 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
                       ),
                       child: Column(
                         children: subjectBreakdown.entries.map((e) {
-                          final mins = (e.value as num).toInt();
+                          final mins = e.value;
                           final pct = totalMins > 0 ? (mins / totalMins).clamp(0.0, 1.0) : 0.0;
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 14),
