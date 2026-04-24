@@ -117,101 +117,167 @@ class _HomePage extends ConsumerWidget {
               )),
               Container(height: 1.5, color: AppColors.divider),
 
-              // ── HERO SECTION
+              // ── HERO SECTION ─────────────────────────────────
               FadeSlideIn(
-                beginOffset: const Offset(0, 0.05),
+                beginOffset: const Offset(0, 0.04),
                 child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  border: Border(
-                    bottom: BorderSide(color: AppColors.textPrimary, width: 3),
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: AppColors.heroGradient,
+                  ),
+                  child: Stack(
+                    clipBehavior: Clip.hardEdge,
+                    children: [
+                      // Decorative blobs
+                      Positioned(
+                        top: -30, right: -30,
+                        child: Container(
+                          width: 140, height: 140,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.08),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: -20, right: 60,
+                        child: Container(
+                          width: 80, height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.06),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 30, right: 30,
+                        child: Text('✦', style: TextStyle(fontSize: 22, color: Colors.white.withOpacity(0.4))),
+                      ),
+                      Positioned(
+                        top: 80, right: 100,
+                        child: Text('✦', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.3))),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(22, 28, 22, 28),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Emoji + greeting
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.22),
+                                    borderRadius: BorderRadius.circular(30),
+                                    border: Border.all(color: Colors.white.withOpacity(0.35), width: 1),
+                                  ),
+                                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                    const Text('📚', style: TextStyle(fontSize: 13)),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'TIME TO LEVEL UP!',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                        letterSpacing: 1.1,
+                                      ),
+                                    ),
+                                  ]),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 18),
+
+                            // Headline
+                            Text(
+                              'Let\'s Crush\nYour Exams 🎯',
+                              style: GoogleFonts.outfit(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                height: 1.15,
+                                letterSpacing: -0.8,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'AI-powered study sessions, smart plans\n& streak rewards for every student!',
+                              style: GoogleFonts.outfit(
+                                fontSize: 13.5,
+                                color: Colors.white.withOpacity(0.85),
+                                height: 1.55,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Quick-stat chips row
+                            Row(
+                              children: [
+                                _HeroStatChip(emoji: '⚡', label: 'AI Coach'),
+                                const SizedBox(width: 8),
+                                _HeroStatChip(emoji: '🔥', label: 'Streaks'),
+                                const SizedBox(width: 8),
+                                _HeroStatChip(emoji: '📊', label: 'Analytics'),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Primary CTA
+                            PressButton(
+                              scaleDown: 0.97,
+                              onTap: () => context.push('/session/setup'),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 17),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(18),
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 16, offset: const Offset(0, 6))],
+                                ),
+                                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                  const Text('⚡', style: TextStyle(fontSize: 18)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Start Studying Now',
+                                    style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                  ),
+                                ]),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+
+                            // Secondary CTA
+                            PressButton(
+                              scaleDown: 0.97,
+                              onTap: () => context.push('/exam-planner'),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.18),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(color: Colors.white.withOpacity(0.45), width: 1.5),
+                                ),
+                                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                  const Text('📅', style: TextStyle(fontSize: 16)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Plan My Exam',
+                                    style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white),
+                                  ),
+                                ]),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                padding: const EdgeInsets.fromLTRB(20, 36, 20, 36),
-                child: Column(
-                  children: [
-                    // Badge pill
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: AppColors.textPrimary, width: 2),
-                        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
-                      ),
-                      child: Text(
-                        '✦  YOUR DAILY STUDY COMPANION',
-                        style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: 1.2),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Study Coach',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.textPrimary, height: 1.0, letterSpacing: -1.0),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.textPrimary, width: 2),
-                        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
-                      ),
-                      child: const Text(
-                        'Focus. Plan. Execute.\nCrush your next exam with AI.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 15, color: AppColors.textPrimary, height: 1.5, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    // Primary CTA
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => context.push('/session/setup'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.textPrimary,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            side: const BorderSide(color: AppColors.textPrimary, width: 3),
-                          ),
-                          elevation: 0,
-                        ).copyWith(
-                          shadowColor: MaterialStateProperty.all(AppColors.textPrimary),
-                          elevation: MaterialStateProperty.all(6),
-                        ),
-                        child: Text('Start Study Session  →', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Secondary CTA
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => context.push('/exam-planner'),
-                        icon: const Icon(Icons.menu_book_rounded, size: 18),
-                        label: const Text('Plan Your Exam'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.textPrimary,
-                          backgroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          side: const BorderSide(color: AppColors.textPrimary, width: 3),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        ).copyWith(
-                          shadowColor: MaterialStateProperty.all(AppColors.textPrimary),
-                          elevation: MaterialStateProperty.all(6),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ), // closes Container
-              ), // closes FadeSlideIn hero
+              ),
 
               // ── PROGRESS SECTION ─────────────────────────────
               dashAsync.when(
@@ -571,7 +637,6 @@ class _InsightCard extends StatelessWidget {
       );
 }
 
-// ── Today's Subjects ───────────────────────────────────────────────────────────
 class _TodaySubjects extends StatelessWidget {
   final Map<String, int> breakdown;
   const _TodaySubjects({required this.breakdown});
@@ -611,3 +676,34 @@ class _TodaySubjects extends StatelessWidget {
   }
 }
 
+// ── Hero stat chip ─────────────────────────────────────────────────────────────
+class _HeroStatChip extends StatelessWidget {
+  final String emoji;
+  final String label;
+  const _HeroStatChip({required this.emoji, required this.label});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.18),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.35), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 13)),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+}

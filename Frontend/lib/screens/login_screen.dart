@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/loading_overlay.dart';
+import '../widgets/animations.dart';
 import '../app_theme.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -40,7 +42,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (state.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(state.error!),
-        backgroundColor: const Color(0xFFE07A5F),
+        backgroundColor: AppColors.accent,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ));
@@ -54,106 +56,212 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return LoadingOverlay(
       isLoading: state.isLoading,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Back button
-                  IconButton(
-                    onPressed: () => context.pop(),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    padding: EdgeInsets.zero,
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      fixedSize: const Size(44, 44),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-
-                  // Header
-                  const Text(
-                    'Welcome back 👋',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Log in to continue your study journey',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 15, height: 1.4),
-                  ),
-                  const SizedBox(height: 40),
-
-                  // Email field
-                  TextFormField(
-                    controller: _emailCtrl,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined, size: 20),
-                    ),
-                    validator: (v) => v == null || !v.contains('@') ? 'Enter a valid email' : null,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Password field
-                  TextFormField(
-                    controller: _passCtrl,
-                    obscureText: _obscure,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                          size: 20,
-                          color: AppColors.textSecondary,
-                        ),
-                        onPressed: () => setState(() => _obscure = !_obscure),
-                      ),
-                    ),
-                    validator: (v) => v == null || v.length < 6 ? 'Password too short' : null,
-                  ),
-
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () => context.push('/otp', extra: _emailCtrl.text.trim()),
-                      child: const Text('Forgot password?'),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  PrimaryButton(
-                    text: 'Log In',
-                    isLoading: state.isLoading,
-                    onPressed: _login,
-                  ),
-                  const SizedBox(height: 28),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+        backgroundColor: AppColors.background,
+        body: Stack(
+          children: [
+            // Gradient blob top-right
+            Positioned(
+              top: -80,
+              right: -80,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: [
+                    AppColors.primary.withOpacity(0.15),
+                    AppColors.primary.withOpacity(0.0),
+                  ]),
+                ),
+              ),
+            ),
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Don't have an account?", style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
-                      TextButton(
-                        onPressed: () => context.pushReplacement('/signup'),
-                        child: const Text('Sign up', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                      // Back button
+                      FadeSlideIn(
+                        child: PressButton(
+                          scaleDown: 0.88,
+                          onTap: () => context.pop(),
+                          child: Container(
+                            width: 44, height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.1), blurRadius: 8)],
+                            ),
+                            child: const Icon(Icons.arrow_back_rounded, size: 20, color: AppColors.textPrimary),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Header
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 80),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Gradient icon
+                            Container(
+                              width: 56, height: 56,
+                              decoration: BoxDecoration(
+                                gradient: AppColors.heroGradient,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.35), blurRadius: 16, offset: const Offset(0, 6))],
+                              ),
+                              child: const Icon(Icons.school_rounded, color: Colors.white, size: 28),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Welcome back 👋',
+                              style: GoogleFonts.outfit(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.8,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Log in to continue your study journey',
+                              style: GoogleFonts.outfit(color: AppColors.textSecondary, fontSize: 15, height: 1.4),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 36),
+
+                      // Form card
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 160),
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.07),
+                                blurRadius: 32,
+                                offset: const Offset(0, 12),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Email field
+                              Text('Email', style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _emailCtrl,
+                                keyboardType: TextInputType.emailAddress,
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.w500),
+                                decoration: InputDecoration(
+                                  hintText: 'you@example.com',
+                                  prefixIcon: Container(
+                                    margin: const EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(7),
+                                    decoration: BoxDecoration(gradient: AppColors.heroGradient, borderRadius: BorderRadius.circular(8)),
+                                    child: const Icon(Icons.email_rounded, color: Colors.white, size: 16),
+                                  ),
+                                ),
+                                validator: (v) => v == null || !v.contains('@') ? 'Enter a valid email' : null,
+                              ),
+                              const SizedBox(height: 20),
+
+                              // Password field
+                              Text('Password', style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _passCtrl,
+                                obscureText: _obscure,
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.w500),
+                                decoration: InputDecoration(
+                                  hintText: '••••••••',
+                                  prefixIcon: Container(
+                                    margin: const EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(7),
+                                    decoration: BoxDecoration(gradient: AppColors.heroGradient, borderRadius: BorderRadius.circular(8)),
+                                    child: const Icon(Icons.lock_rounded, color: Colors.white, size: 16),
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                                      size: 20,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    onPressed: () => setState(() => _obscure = !_obscure),
+                                  ),
+                                ),
+                                validator: (v) => v == null || v.length < 6 ? 'Password too short' : null,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () => context.push('/otp', extra: _emailCtrl.text.trim()),
+                          child: Text('Forgot password?', style: GoogleFonts.outfit(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+
+                      // CTA Button
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 240),
+                        child: PrimaryButton(
+                          text: 'Log In  →',
+                          isLoading: state.isLoading,
+                          onPressed: _login,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+
+                      // Divider
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 300),
+                        child: Row(
+                          children: [
+                            const Expanded(child: Divider(color: AppColors.divider)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text('or', style: GoogleFonts.outfit(color: AppColors.textLight, fontSize: 13)),
+                            ),
+                            const Expanded(child: Divider(color: AppColors.divider)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 340),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Don't have an account?", style: GoogleFonts.outfit(color: AppColors.textSecondary, fontSize: 14)),
+                            TextButton(
+                              onPressed: () => context.pushReplacement('/signup'),
+                              child: Text('Sign up', style: GoogleFonts.outfit(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 14)),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

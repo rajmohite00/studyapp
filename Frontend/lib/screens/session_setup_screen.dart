@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/session_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/loading_overlay.dart';
+import '../widgets/animations.dart';
 import '../app_theme.dart';
 
 class SessionSetupScreen extends ConsumerStatefulWidget {
@@ -53,23 +55,25 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
     return LoadingOverlay(
       isLoading: _isLoading,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        title: const Text('New Study Session'),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        shadowColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: AppColors.divider),
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          title: Text(
+            'New Study Session',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+          ),
+          centerTitle: false,
+          surfaceTintColor: Colors.transparent,
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(height: 1, color: AppColors.divider),
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // ── Subject picker ───────────────────────────
             _FieldLabel(label: 'Subject', icon: Icons.book_outlined),
             const SizedBox(height: 12),
@@ -228,9 +232,19 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          Icon(icon, size: 16, color: AppColors.primary),
-          const SizedBox(width: 6),
-          Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              gradient: AppColors.heroGradient,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 14, color: Colors.white),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+          ),
         ],
       );
 }
@@ -243,36 +257,47 @@ class _ModeCard extends StatelessWidget {
   const _ModeCard({required this.label, required this.subtitle, required this.icon, required this.selected, required this.onTap});
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => PressButton(
+        scaleDown: 0.95,
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
           decoration: BoxDecoration(
-            color: selected ? AppColors.primary.withOpacity(0.07) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: selected ? AppColors.primary : AppColors.divider,
-              width: selected ? 2 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3)),
-            ],
+            gradient: selected ? AppColors.heroGradient : null,
+            color: selected ? null : Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: selected
+                ? [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 6))]
+                : [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 3))],
           ),
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: (selected ? AppColors.primary : AppColors.textLight).withOpacity(0.1),
+                  color: selected ? Colors.white.withOpacity(0.25) : AppColors.primaryLight,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: selected ? AppColors.primary : AppColors.textSecondary, size: 24),
+                child: Icon(icon, color: selected ? Colors.white : AppColors.primary, size: 24),
               ),
               const SizedBox(height: 10),
-              Text(label, style: TextStyle(fontWeight: FontWeight.w700, color: selected ? AppColors.primary : AppColors.textPrimary, fontSize: 14)),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.w800,
+                  color: selected ? Colors.white : AppColors.textPrimary,
+                  fontSize: 14,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+              Text(
+                subtitle,
+                style: GoogleFonts.outfit(
+                  fontSize: 11,
+                  color: selected ? Colors.white.withOpacity(0.8) : AppColors.textSecondary,
+                ),
+              ),
             ],
           ),
         ),

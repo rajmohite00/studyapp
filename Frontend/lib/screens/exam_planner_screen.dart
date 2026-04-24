@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../app_theme.dart';
 import '../providers/exam_plan_provider.dart';
 import '../models/exam_plan_model.dart';
@@ -33,37 +34,79 @@ class _ExamPlannerScreenState extends ConsumerState<ExamPlannerScreen>
     final planAsync = ref.watch(examPlanNotifierProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.go('/home'),
+        backgroundColor: AppColors.background,
+        leading: PressButton(
+          scaleDown: 0.88,
+          onTap: () => context.go('/home'),
+          child: Container(
+            margin: const EdgeInsets.only(left: 12),
+            width: 38, height: 38,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.1), blurRadius: 8)],
+            ),
+            child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: AppColors.textPrimary),
+          ),
         ),
-        title: const Text('Exam Planner', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Exam Planner',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 20, color: AppColors.textPrimary),
+        ),
+        centerTitle: false,
         actions: [
           if (planAsync.valueOrNull != null)
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
-              tooltip: 'New Plan',
-              onPressed: () => context.push('/exam-planner/setup'),
+            PressButton(
+              scaleDown: 0.88,
+              onTap: () => context.push('/exam-planner/setup'),
+              child: Container(
+                margin: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.all(9),
+                decoration: BoxDecoration(
+                  gradient: AppColors.heroGradient,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                ),
+                child: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+              ),
             ),
         ],
         bottom: planAsync.valueOrNull != null
-            ? TabBar(
-                controller: _tab,
-                labelColor: AppColors.primary,
-                unselectedLabelColor: AppColors.textSecondary,
-                indicatorColor: AppColors.primary,
-                tabs: const [
-                  Tab(text: 'Study Plan'),
-                  Tab(text: 'Topics & PYQ'),
-                  Tab(text: 'Progress'),
-                ],
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(52),
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.07), blurRadius: 12)],
+                  ),
+                  child: TabBar(
+                    controller: _tab,
+                    labelColor: Colors.white,
+                    unselectedLabelColor: AppColors.textSecondary,
+                    indicator: BoxDecoration(
+                      gradient: AppColors.heroGradient,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    dividerColor: Colors.transparent,
+                    labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 13),
+                    unselectedLabelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w500, fontSize: 13),
+                    tabs: const [
+                      Tab(text: 'Study Plan'),
+                      Tab(text: 'Topics & PYQ'),
+                      Tab(text: 'Progress'),
+                    ],
+                  ),
+                ),
               )
             : null,
       ),
       body: planAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (plan) {
           if (plan == null) return _NoPlanView();
@@ -78,11 +121,19 @@ class _ExamPlannerScreenState extends ConsumerState<ExamPlannerScreen>
         },
       ),
       floatingActionButton: planAsync.valueOrNull == null
-          ? FloatingActionButton.extended(
-              onPressed: () => context.push('/exam-planner/setup'),
-              backgroundColor: AppColors.primary,
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('Create Plan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ? Container(
+              decoration: BoxDecoration(
+                gradient: AppColors.heroGradient,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 8))],
+              ),
+              child: FloatingActionButton.extended(
+                onPressed: () => context.push('/exam-planner/setup'),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: Text('Create Plan', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w700)),
+              ),
             )
           : null,
     );
@@ -169,62 +220,92 @@ class _DayCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final allDone = tasks.every((t) => t.isCompleted);
     final date = tasks.first.date;
+    final headerGradient = isToday
+        ? AppColors.heroGradient
+        : allDone
+            ? AppColors.cardGradientGreen
+            : null;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: isToday ? Border.all(color: AppColors.primary, width: 2) : null,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: isToday ? AppColors.primary : (allDone ? AppColors.accentGreen : AppColors.surface),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(children: [
-                  if (tasks.first.isRevision) const Icon(Icons.refresh_rounded, size: 16, color: Colors.white),
-                  if (tasks.first.isRevision) const SizedBox(width: 6),
-                  Text(
-                    'Day $day${tasks.first.isRevision ? " (Revision)" : ""}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: (isToday || allDone) ? Colors.white : AppColors.textPrimary,
-                    ),
-                  ),
-                ]),
-                Row(children: [
-                  if (isToday) Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.3), borderRadius: BorderRadius.circular(8)),
-                    child: const Text('TODAY', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _formatDate(date),
-                    style: TextStyle(fontSize: 12, color: (isToday || allDone) ? Colors.white70 : AppColors.textSecondary),
-                  ),
-                ]),
-              ],
-            ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: isToday
+                ? AppColors.primary.withOpacity(0.18)
+                : Colors.black.withOpacity(0.04),
+            blurRadius: isToday ? 20 : 8,
+            offset: const Offset(0, 4),
           ),
-          ...tasks.asMap().entries.map((entry) {
-            final globalIdx = _findGlobalIndex(ref, entry.value, planId);
-            return _TaskTile(
-              task: entry.value,
-              globalIndex: globalIdx,
-              planId: planId,
-            );
-          }),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              decoration: BoxDecoration(
+                gradient: headerGradient,
+                color: headerGradient == null ? AppColors.surface : null,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(children: [
+                    if (tasks.first.isRevision) Container(
+                      padding: const EdgeInsets.all(4),
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: (isToday || allDone) ? Colors.white.withOpacity(0.25) : AppColors.accentTeal.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(Icons.refresh_rounded, size: 13, color: (isToday || allDone) ? Colors.white : AppColors.accentTeal),
+                    ),
+                    Text(
+                      'Day $day${tasks.first.isRevision ? " · Revision" : ""}',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        color: (isToday || allDone) ? Colors.white : AppColors.textPrimary,
+                      ),
+                    ),
+                  ]),
+                  Row(children: [
+                    if (isToday) Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text('TODAY', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white)),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _formatDate(date),
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: (isToday || allDone) ? Colors.white.withOpacity(0.8) : AppColors.textSecondary,
+                      ),
+                    ),
+                  ]),
+                ],
+              ),
+            ),
+            ...tasks.asMap().entries.map((entry) {
+              final globalIdx = _findGlobalIndex(ref, entry.value, planId);
+              return _TaskTile(
+                task: entry.value,
+                globalIndex: globalIdx,
+                planId: planId,
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -254,32 +335,73 @@ class _TaskTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ListTile(
-      leading: Checkbox(
-        value: task.isCompleted,
-        activeColor: AppColors.primary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        onChanged: globalIndex < 0 ? null : (val) {
-          ref.read(examPlanNotifierProvider.notifier).toggleTask(planId, globalIndex, val ?? false);
-        },
-      ),
-      title: Text(
-        task.topic,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-          color: task.isCompleted ? AppColors.textSecondary : AppColors.textPrimary,
-        ),
-      ),
-      subtitle: Text(task.subject, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    return InkWell(
+      onTap: globalIndex < 0 ? null : () {
+        ref.read(examPlanNotifierProvider.notifier).toggleTask(planId, globalIndex, !task.isCompleted);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
+          border: Border(top: BorderSide(color: AppColors.divider, width: 0.8)),
+          color: task.isCompleted ? AppColors.primaryLight.withOpacity(0.3) : Colors.white,
         ),
-        child: Text('${task.durationMinutes}m', style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600)),
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              width: 26, height: 26,
+              decoration: BoxDecoration(
+                gradient: task.isCompleted ? AppColors.heroGradient : null,
+                color: task.isCompleted ? null : Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: task.isCompleted ? AppColors.primary : AppColors.divider,
+                  width: task.isCompleted ? 0 : 1.5,
+                ),
+                boxShadow: task.isCompleted ? [
+                  BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 6, offset: const Offset(0, 2)),
+                ] : [],
+              ),
+              child: task.isCompleted
+                  ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.topic,
+                    style: GoogleFonts.outfit(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                      color: task.isCompleted ? AppColors.textLight : AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    task.subject,
+                    style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                gradient: AppColors.heroGradient,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '${task.durationMinutes}m',
+                style: GoogleFonts.outfit(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
