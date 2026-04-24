@@ -185,9 +185,10 @@ class _StudyPlanTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
     final today = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-    final byDay = <int, List<DailyTaskModel>>{};
-    for (final t in plan.generatedPlan) {
-      byDay.putIfAbsent(t.day, () => []).add(t);
+    final byDay = <int, List<MapEntry<int, DailyTaskModel>>>{};
+    for (int i = 0; i < plan.generatedPlan.length; i++) {
+      final t = plan.generatedPlan[i];
+      byDay.putIfAbsent(t.day, () => []).add(MapEntry(i, t));
     }
     final days = byDay.keys.toList()..sort();
 
@@ -197,7 +198,7 @@ class _StudyPlanTab extends ConsumerWidget {
       itemBuilder: (ctx, i) {
         final day = days[i];
         final tasks = byDay[day]!;
-        final isToday = tasks.first.date == today;
+        final isToday = tasks.first.value.date == today;
         return _DayCard(
           day: day,
           tasks: tasks,
@@ -211,15 +212,15 @@ class _StudyPlanTab extends ConsumerWidget {
 
 class _DayCard extends ConsumerWidget {
   final int day;
-  final List<DailyTaskModel> tasks;
+  final List<MapEntry<int, DailyTaskModel>> tasks;
   final bool isToday;
   final String planId;
   const _DayCard({required this.day, required this.tasks, required this.isToday, required this.planId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allDone = tasks.every((t) => t.isCompleted);
-    final date = tasks.first.date;
+    final allDone = tasks.every((e) => e.value.isCompleted);
+    final date = tasks.first.value.date;
     final headerGradient = isToday
         ? AppColors.heroGradient
         : allDone
@@ -256,7 +257,7 @@ class _DayCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(children: [
-                    if (tasks.first.isRevision) Container(
+                    if (tasks.first.value.isRevision) Container(
                       padding: const EdgeInsets.all(4),
                       margin: const EdgeInsets.only(right: 8),
                       decoration: BoxDecoration(
@@ -266,7 +267,7 @@ class _DayCard extends ConsumerWidget {
                       child: Icon(Icons.refresh_rounded, size: 13, color: (isToday || allDone) ? Colors.white : AppColors.accentTeal),
                     ),
                     Text(
-                      'Day $day${tasks.first.isRevision ? " · Revision" : ""}',
+                      'Day $day${tasks.first.value.isRevision ? " · Revision" : ""}',
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
@@ -296,25 +297,16 @@ class _DayCard extends ConsumerWidget {
                 ],
               ),
             ),
-            ...tasks.asMap().entries.map((entry) {
-              final globalIdx = _findGlobalIndex(ref, entry.value, planId);
+            ...tasks.map((entry) {
               return _TaskTile(
                 task: entry.value,
-                globalIndex: globalIdx,
+                globalIndex: entry.key,
                 planId: planId,
               );
             }),
           ],
         ),
       ),
-    );
-  }
-
-  int _findGlobalIndex(WidgetRef ref, DailyTaskModel task, String planId) {
-    final plan = ref.read(examPlanNotifierProvider).valueOrNull;
-    if (plan == null) return -1;
-    return plan.generatedPlan.indexWhere(
-      (t) => t.day == task.day && t.topic == task.topic && t.subject == task.subject,
     );
   }
 

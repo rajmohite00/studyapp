@@ -1,5 +1,6 @@
 const ExamPlan = require('../models/ExamPlan');
 const { AppError } = require('../middlewares/errorMiddleware');
+const { getTodayDate } = require('../utils/dateHelper');
 
 // ── PYQ Mock Database (topic → frequency score + PYQs) ──────────────────────
 const PYQ_DATABASE = {
@@ -198,10 +199,7 @@ const getTopicsForSubject = (subject) => {
 };
 
 const getLocalDateString = (d) => {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return d.toISOString().slice(0, 10);
 };
 
 const generateDailyPlan = (subjects, startDate, totalDays, dailyStudyHours) => {
@@ -215,7 +213,7 @@ const generateDailyPlan = (subjects, startDate, totalDays, dailyStudyHours) => {
     // Very tight schedule — just revision
     for (let d = 1; d <= totalDays; d++) {
       const date = new Date(startDate);
-      date.setDate(date.getDate() + (d - 1));
+      date.setUTCDate(date.getUTCDate() + (d - 1));
       subjects.forEach(subj => {
         tasks.push({
           day: d,
@@ -261,7 +259,7 @@ const generateDailyPlan = (subjects, startDate, totalDays, dailyStudyHours) => {
 
   for (let d = 1; d <= studyDays && topicIdx < topicQueue.length; d++) {
     const date = new Date(startDate);
-    date.setDate(date.getDate() + (d - 1));
+    date.setUTCDate(date.getUTCDate() + (d - 1));
 
     for (let t = 0; t < tasksPerDay && topicIdx < topicQueue.length; t++, topicIdx++) {
       const item = topicQueue[topicIdx];
@@ -285,7 +283,7 @@ const generateDailyPlan = (subjects, startDate, totalDays, dailyStudyHours) => {
   for (let r = 1; r <= revisionDays; r++) {
     const d = dayOffset + r;
     const date = new Date(startDate);
-    date.setDate(date.getDate() + (d - 1));
+    date.setUTCDate(date.getUTCDate() + (d - 1));
 
     subjects.forEach(subj => {
       tasks.push({
@@ -328,9 +326,8 @@ const createExamPlan = async (userId, { subjects, examDate, dailyStudyHours = 4 
   if (!examDate) throw new AppError('Exam date is required.', 400);
 
   const exam = new Date(examDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  exam.setHours(0, 0, 0, 0);
+  const today = getTodayDate(); // IST-aligned midnight
+  exam.setUTCHours(0, 0, 0, 0);
 
   const totalDays = Math.ceil((exam - today) / (1000 * 60 * 60 * 24));
   if (totalDays < 1) throw new AppError('Exam date must be in the future.', 400);
@@ -377,7 +374,7 @@ const getPlanProgress = async (userId) => {
 
   const total = plan.generatedPlan.length;
   const completed = plan.generatedPlan.filter(t => t.isCompleted).length;
-  const todayStr = getLocalDateString(new Date());
+  const todayStr = getLocalDateString(getTodayDate());
   const todayTasks = plan.generatedPlan.filter(t => t.date === todayStr);
   const todayCompleted = todayTasks.filter(t => t.isCompleted).length;
 
