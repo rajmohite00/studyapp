@@ -78,12 +78,10 @@ const updateSession = async (userId, sessionId, updates) => {
   await session.save();
 
   if (action === 'end') {
-    // Run analytics aggregation — await it so cache is fresh before client refreshes
-    try {
-      await analyticsService.aggregateDailyAnalytics(userId);
-    } catch (err) {
-      console.error('Analytics aggregation error:', err);
-    }
+    // Fire-and-forget — don't block response. Analytics finishes in background.
+    analyticsService.aggregateDailyAnalytics(userId).catch(err =>
+      console.error('Analytics aggregation error:', err)
+    );
   }
 
   return session;

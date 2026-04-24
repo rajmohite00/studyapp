@@ -12,17 +12,23 @@ class SessionActiveScreen extends ConsumerWidget {
 
   Future<void> _finishAndRefresh(WidgetRef ref, BuildContext context, {bool goHome = false}) async {
     final sess = await ref.read(sessionProvider.notifier).endSession();
-    ref.invalidate(dashboardProvider);
-    ref.invalidate(subjectBreakdownProvider);
-    ref.invalidate(streakProvider);
-    ref.invalidate(heatmapProvider);
-    ref.invalidate(weeklyReportProvider);
     if (!context.mounted) return;
+
+    // Navigate immediately — don't wait for analytics
     if (goHome) {
       context.go('/home');
     } else {
       context.pushReplacement('/session/summary', extra: sess?.toJson() ?? {});
     }
+
+    // Refresh providers after 2s — backend analytics finishes in ~1s background
+    Future.delayed(const Duration(seconds: 2), () {
+      ref.invalidate(dashboardProvider);
+      ref.invalidate(subjectBreakdownProvider);
+      ref.invalidate(streakProvider);
+      ref.invalidate(heatmapProvider);
+      ref.invalidate(weeklyReportProvider);
+    });
   }
 
   @override
