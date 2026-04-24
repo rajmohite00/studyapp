@@ -136,22 +136,20 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
                               ],
                             ),
                             pw.SizedBox(height: 4),
-                            pw.LayoutBuilder(
-                              builder: (ctx, constraints) => pw.Stack(children: [
-                                pw.Container(
-                                    width: constraints.maxWidth,
-                                    height: 8,
-                                    decoration: pw.BoxDecoration(
-                                        color: lightBlue,
-                                        borderRadius: pw.BorderRadius.circular(4))),
-                                pw.Container(
-                                    width: constraints.maxWidth * pct,
-                                    height: 8,
-                                    decoration: pw.BoxDecoration(
-                                        color: royalBlue,
-                                        borderRadius: pw.BorderRadius.circular(4))),
-                              ]),
-                            ),
+                            pw.Stack(children: [
+                              pw.Container(
+                                  width: 515,
+                                  height: 8,
+                                  decoration: pw.BoxDecoration(
+                                      color: lightBlue,
+                                      borderRadius: pw.BorderRadius.circular(4))),
+                              pw.Container(
+                                  width: 515 * pct,
+                                  height: 8,
+                                  decoration: pw.BoxDecoration(
+                                      color: royalBlue,
+                                      borderRadius: pw.BorderRadius.circular(4))),
+                            ]),
                           ],
                         ),
                       );
