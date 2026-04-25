@@ -17,6 +17,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   bool _minDurationPassed = false;
+  bool _isTakingLong = false;
+  Timer? _longWaitTimer;
 
   @override
   void initState() {
@@ -41,10 +43,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
         _checkAndNavigate();
       }
     });
+
+    _longWaitTimer = Timer(const Duration(seconds: 4), () {
+      if (mounted) {
+        setState(() {
+          _isTakingLong = true;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
+    _longWaitTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -105,6 +116,26 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                   letterSpacing: 0.5,
                 ),
               ),
+              const SizedBox(height: 40),
+              const SizedBox(
+                width: 32,
+                height: 32,
+                child: CircularProgressIndicator(
+                  color: AppColors.accent,
+                  strokeWidth: 3,
+                ),
+              ),
+              if (_isTakingLong) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'Waking up server...',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white54,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ],
           ),
         ),

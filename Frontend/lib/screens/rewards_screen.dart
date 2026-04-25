@@ -40,141 +40,142 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen>
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error: $err')),
         data: (state) {
-          return NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              return [
-                SliverAppBar(
-                  expandedHeight: 280,
-                  pinned: true,
-                  backgroundColor: AppColors.primary,
-                  elevation: 0,
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                    onPressed: () => context.pop(),
-                  ),
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Container(
-                      decoration: const BoxDecoration(
-                        gradient: AppColors.heroGradient,
+          return SafeArea(
+            child: Column(
+              children: [
+                // ── CUSTOM APP BAR ──
+                Container(
+                  color: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                        onPressed: () => context.pop(),
                       ),
-                      child: SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 48, 24, 20),
-                          child: Column(
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+                // ── HERO HEADER ──
+                Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: AppColors.heroGradient,
+                  ),
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Level ${state.level}',
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 32,
-                                          fontWeight: FontWeight.w900,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      Text(
-                                        state.rank,
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white.withValues(alpha: 0.8),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Text('🪙', style: TextStyle(fontSize: 18)),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          '${state.coins}',
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w800,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                'Level ${state.level}',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                ),
                               ),
-                              const Spacer(),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    '${state.xp} XP',
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${state.xpForNext} XP to next',
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white.withValues(alpha: 0.7),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              AnimatedProgressBar(
-                                value: state.xpNeeded > 0
-                                    ? state.xpProgress / state.xpNeeded
-                                    : 1.0,
-                                color: AppColors.accent,
-                                height: 12,
+                              Text(
+                                state.rank,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  bottom: PreferredSize(
-                    preferredSize: const Size.fromHeight(60),
-                    child: Container(
-                      color: AppColors.background,
-                      child: TabBar(
-                        controller: _tabController,
-                        labelColor: AppColors.primary,
-                        unselectedLabelColor: AppColors.textSecondary,
-                        indicatorColor: AppColors.primary,
-                        indicatorWeight: 3,
-                        labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 15),
-                        tabs: const [
-                          Tab(text: 'Daily Missions'),
-                          Tab(text: 'Reward Store'),
-                          Tab(text: 'Achievements'),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Text('🪙', style: TextStyle(fontSize: 20)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${state.coins}',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${state.xp} XP',
+                            style: GoogleFonts.outfit(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            '${state.xpForNext} XP to next',
+                            style: GoogleFonts.outfit(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      AnimatedProgressBar(
+                        value: state.xpNeeded > 0
+                            ? state.xpProgress / state.xpNeeded
+                            : 1.0,
+                        color: AppColors.accent,
+                        height: 12,
+                      ),
+                    ],
                   ),
                 ),
-              ];
-            },
-            body: TabBarView(
-              controller: _tabController,
-              children: [
-                _MissionsTab(missions: state.dailyMissions),
-                _StoreTab(store: state.rewardStore, coins: state.coins),
-                _AchievementsTab(achievements: state.achievements),
+                // ── TAB BAR ──
+                Container(
+                  color: Colors.white,
+                  child: TabBar(
+                    controller: _tabController,
+                    labelColor: AppColors.primary,
+                    unselectedLabelColor: AppColors.textSecondary,
+                    indicatorColor: AppColors.primary,
+                    indicatorWeight: 3,
+                    labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 14),
+                    tabs: const [
+                      Tab(text: 'Daily Missions'),
+                      Tab(text: 'Reward Store'),
+                      Tab(text: 'Achievements'),
+                    ],
+                  ),
+                ),
+                // ── TAB VIEWS ──
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _MissionsTab(missions: state.dailyMissions),
+                      _StoreTab(store: state.rewardStore, coins: state.coins),
+                      _AchievementsTab(achievements: state.achievements),
+                    ],
+                  ),
+                ),
               ],
             ),
           );

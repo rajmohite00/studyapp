@@ -125,12 +125,6 @@ class _HomePage extends ConsumerWidget {
               )),
               Container(height: 1.5, color: AppColors.divider),
 
-              // ── GAMIFICATION BANNER ────────────────────────
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 100),
-                child: const _GamificationBanner(),
-              ),
-
               // ── HERO SECTION ─────────────────────────────────
               FadeSlideIn(
                 beginOffset: const Offset(0, 0.04),
@@ -291,6 +285,12 @@ class _HomePage extends ConsumerWidget {
                     ],
                   ),
                 ),
+              ),
+
+              // ── GAMIFICATION BANNER ────────────────────────
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 200),
+                child: const _GamificationBanner(),
               ),
 
               // ── PROGRESS SECTION ─────────────────────────────
@@ -767,12 +767,19 @@ class _GamificationBanner extends ConsumerWidget {
           scaleDown: 0.98,
           onTap: () => context.push('/rewards'),
           child: Container(
-            margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            margin: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 1.5),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                )
+              ],
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.1), width: 1.5),
             ),
             child: Row(
               children: [
@@ -832,11 +839,11 @@ class _GamificationBanner extends ConsumerWidget {
                         color: AppColors.primary,
                         height: 6,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 8),
                       Text(
-                        '${state.xp} XP • ${state.xpNeeded - state.xpProgress} to next',
+                        '${state.xp} XP • ${state.xpNeeded - state.xpProgress} XP to next level',
                         style: const TextStyle(
-                          fontSize: 11,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textSecondary,
                         ),
@@ -844,8 +851,15 @@ class _GamificationBanner extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.textLight),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.05),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.primary, size: 14),
+                ),
               ],
             ),
           ),
