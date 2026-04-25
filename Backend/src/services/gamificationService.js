@@ -83,12 +83,14 @@ const updateGamification = async (userId, minutesStudied, goalAchieved, streakDa
     const user = await User.findById(userId);
     if (!user) return;
 
-    let xpEarned = minutesStudied * XP_PER_MINUTE;
-    if (goalAchieved) xpEarned += BONUS_GOAL_ACHIEVED;
-    if (streakDay > 0) xpEarned += BONUS_STREAK_DAY * Math.min(streakDay, 10);
+    const initialXP = user.gamification.xp;
 
-    user.gamification.xp += xpEarned;
-    user.gamification.coins += Math.floor(xpEarned / 10);
+    let baseXpEarned = minutesStudied * XP_PER_MINUTE;
+    if (goalAchieved) baseXpEarned += BONUS_GOAL_ACHIEVED;
+    if (streakDay > 0) baseXpEarned += BONUS_STREAK_DAY * Math.min(streakDay, 10);
+
+    user.gamification.xp += baseXpEarned;
+    user.gamification.coins += Math.floor(baseXpEarned / 10);
     user.gamification.totalStudyMinutes = (user.gamification.totalStudyMinutes || 0) + minutesStudied;
 
     // Level recalculation
@@ -103,10 +105,19 @@ const updateGamification = async (userId, minutesStudied, goalAchieved, streakDa
     // Refresh daily missions + update mission progress
     _refreshAndUpdateMissions(user, minutesStudied);
 
+    // Calculate total XP earned across base session + achievements + missions
+    const totalXpEarned = user.gamification.xp - initialXP;
+
+    // Recalculate level just in case achievements pushed them over a threshold
+    const newLevel = getLevelFromXP(user.gamification.xp);
+    const prevLevel = user.gamification.level;
+    user.gamification.level = newLevel;
+    user.gamification.rank = getRankForLevel(newLevel);
+
     await user.save();
 
     return {
-      xpEarned,
+      xpEarned: totalXpEarned,
       totalXP: user.gamification.xp,
       newLevel: user.gamification.level,
       prevLevel,
@@ -169,13 +180,13 @@ const _refreshAndUpdateMissions = (user, minutesStudied) => {
     const freshMissions = generateDailyMissions(today);
     user.gamification.dailyMissions = { date: today, missions: freshMissions };
     // Apply today's progress to the newly generated missions
-    _applySessionToMissions(user.gamification.dailyMissions.missions, minutesStudied);
+    _applySessionToMissions(user, user.gamification.dailyMissions.missions, minutesStudied);
   } else {
-    _applySessionToMissions(dm.missions, minutesStudied);
+    _applySessionToMissions(user, dm.missions, minutesStudied);
   }
 };
 
-const _applySessionToMissions = (missions, minutesStudied) => {
+const _applySessionToMissions = (user, missions, minutesStudied) => {
   for (const m of missions) {
     if (m.completed) continue;
     if (m.id.startsWith('study_')) {
@@ -183,7 +194,12 @@ const _applySessionToMissions = (missions, minutesStudied) => {
     } else if (m.id.startsWith('sessions_')) {
       m.progress = Math.min((m.progress || 0) + 1, m.target);
     }
-    if (m.progress >= m.target) m.completed = true;
+    
+    if (m.progress >= m.target && !m.completed) {
+      m.completed = true;
+      user.gamification.xp += m.xpReward;
+      user.gamification.coins += Math.floor(m.xpReward / 10);
+    }
   }
 };
 
