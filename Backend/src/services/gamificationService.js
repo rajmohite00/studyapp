@@ -240,12 +240,21 @@ const getGamificationState = async (userId) => {
   }
 
   const g = user.gamification;
-  const currentLevel = g.level;
   const currentXP = g.xp;
+  
+  // Re-calculate level to fix any desyncs due to threshold changes
+  const realLevel = getLevelFromXP(currentXP);
+  if (g.level !== realLevel) {
+    g.level = realLevel;
+    g.rank = getRankForLevel(realLevel);
+    await user.save();
+  }
+
+  const currentLevel = g.level;
   const xpForNext = getXPForNextLevel(currentLevel);
   const xpForCurrent = LEVEL_THRESHOLDS[currentLevel - 1] ?? 0;
-  const xpProgress = currentXP - xpForCurrent;
-  const xpNeeded = xpForNext - xpForCurrent;
+  const xpProgress = Math.max(0, currentXP - xpForCurrent);
+  const xpNeeded = Math.max(1, xpForNext - xpForCurrent);
 
   // Map achievement IDs to full definitions
   const earnedAchievements = ACHIEVEMENTS.filter((a) => (g.achievements || []).includes(a.id));
