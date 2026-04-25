@@ -11,12 +11,16 @@ class SessionActiveScreen extends ConsumerWidget {
   final Map<String, dynamic> session;
   const SessionActiveScreen({super.key, required this.session});
 
-  Future<void> _finishAndRefresh(WidgetRef ref, BuildContext context) async {
+  Future<void> _finishAndRefresh(WidgetRef ref, BuildContext context, {bool goHome = false}) async {
     final sess = await ref.read(sessionProvider.notifier).endSession();
     if (!context.mounted) return;
     
     // Navigate immediately
-    context.pushReplacement('/session/summary', extra: sess?.toJson() ?? {});
+    if (goHome) {
+      context.go('/home');
+    } else {
+      context.pushReplacement('/session/summary', extra: sess?.toJson() ?? {});
+    }
 
     // REFRESH INSTANTLY
     ref.invalidate(dashboardProvider);
@@ -71,7 +75,7 @@ class SessionActiveScreen extends ConsumerWidget {
             ],
           ),
         );
-        if (confirm == true) await _finishAndRefresh(ref, context);
+        if (confirm == true) await _finishAndRefresh(ref, context, goHome: true);
         return false; // we handle navigation manually
       },
       child: Scaffold(
