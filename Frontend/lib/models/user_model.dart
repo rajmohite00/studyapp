@@ -179,6 +179,8 @@ class GamificationState {
   final List<String> rewardsUnlocked;
   final List<DailyMission> dailyMissions;
   final String missionDate;
+  final String? activeBadgeId;
+  final String? activeBadgeEmoji;
 
   const GamificationState({
     this.xp = 0,
@@ -194,6 +196,8 @@ class GamificationState {
     this.rewardsUnlocked = const [],
     this.dailyMissions = const [],
     this.missionDate = '',
+    this.activeBadgeId,
+    this.activeBadgeEmoji,
   });
 
   factory GamificationState.fromJson(Map<String, dynamic> json) => GamificationState(
@@ -212,10 +216,13 @@ class GamificationState {
             .map((r) => RewardItem.fromJson(r))
             .toList(),
         rewardsUnlocked: List<String>.from(json['rewardsUnlocked'] ?? []),
-        dailyMissions: (json['dailyMissions'] as List? ?? [])
-            .map((m) => DailyMission.fromJson(m))
-            .toList(),
+        dailyMissions: (json['dailyMissions'] as List<dynamic>?)
+                ?.map((e) => DailyMission.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [],
         missionDate: json['missionDate'] ?? '',
+        activeBadgeId: json['activeBadgeId'],
+        activeBadgeEmoji: json['activeBadgeEmoji'],
       );
 }
 

@@ -224,7 +224,7 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen>
                       tabs: const [
                         Tab(text: 'Missions'),
                         Tab(text: 'Store'),
-                        Tab(text: 'Badges'),
+                        Tab(text: 'Achievements'),
                       ],
                     ),
                   ),
@@ -235,7 +235,7 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen>
                     controller: _tabController,
                     children: [
                       _MissionsTab(missions: state.dailyMissions),
-                      _StoreTab(store: state.rewardStore, coins: state.coins),
+                      _StoreTab(store: state.rewardStore, coins: state.coins, activeBadgeId: state.activeBadgeId),
                       _AchievementsTab(achievements: state.achievements),
                     ],
                   ),
@@ -355,7 +355,8 @@ class _MissionsTab extends StatelessWidget {
 class _StoreTab extends ConsumerWidget {
   final List<RewardItem> store;
   final int coins;
-  const _StoreTab({required this.store, required this.coins});
+  final String? activeBadgeId;
+  const _StoreTab({required this.store, required this.coins, this.activeBadgeId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -448,7 +449,7 @@ class _StoreTab extends ConsumerWidget {
                         const Icon(Icons.check_circle_rounded, color: Color(0xFF864AF9), size: 16),
                         const SizedBox(width: 4),
                         Text(
-                          'Owned',
+                          item.id == activeBadgeId ? 'Equipped' : 'Owned',
                           style: GoogleFonts.outfit(color: const Color(0xFF864AF9), fontWeight: FontWeight.w800, fontSize: 13),
                         ),
                       ],

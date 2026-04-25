@@ -48,7 +48,9 @@ const updateSession = async (userId, sessionId, updates) => {
   if (action === 'end' || action === 'abandon') {
     const endTime = new Date();
     const durationSeconds = Math.floor((endTime - session.startTime) / 1000);
-    const actualDurationMinutes = Math.round(durationSeconds / 60);
+    const actualDurationMinutes = action === 'end' 
+        ? Math.max(1, Math.round(durationSeconds / 60)) 
+        : Math.round(durationSeconds / 60);
 
     session.endTime = endTime;
     session.durationSeconds = durationSeconds;

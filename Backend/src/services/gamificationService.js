@@ -7,8 +7,8 @@ const BONUS_STREAK_DAY = 50;
 const BONUS_TASK_COMPLETE = 30;
 
 // ── Level Thresholds ─────────────────────────────────────────────────────────
-// Level 1: 0–100 XP, Level 2: 100–300 XP, Level 3: 300–600, Level 4: 600–1000, etc.
-const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2200, 3000, 4000, 5200, 6600];
+// 10 Hard Levels:
+const LEVEL_THRESHOLDS = [0, 1000, 3000, 6000, 10000, 15000, 22000, 32000, 45000, 60000];
 
 const getLevelFromXP = (xp) => {
   let level = 1;
@@ -28,21 +28,27 @@ const ACHIEVEMENTS = [
   { id: 'first_session',   label: 'First Step',      description: 'Complete your first study session', emoji: '🌱', xpReward: 50 },
   { id: 'streak_3',        label: 'On a Roll',        description: 'Maintain a 3-day study streak',     emoji: '🔥', xpReward: 100 },
   { id: 'streak_7',        label: 'Week Warrior',     description: 'Maintain a 7-day study streak',     emoji: '⚡', xpReward: 200 },
-  { id: 'study_10h',       label: 'Ten Hours Strong', description: 'Study for a total of 10 hours',     emoji: '⏱️',  xpReward: 150 },
+  { id: 'study_10h',       label: 'Ten Hours Strong', description: 'Study for a total of 10 hours',     emoji: '⏱️', xpReward: 150 },
   { id: 'study_50h',       label: 'Dedicated Scholar',description: 'Study for a total of 50 hours',     emoji: '🎓', xpReward: 500 },
-  { id: 'level_5',         label: 'Rising Star',      description: 'Reach Level 5',                     emoji: '⭐', xpReward: 200 },
+  { id: 'study_100h',      label: 'Century Club',     description: 'Study for a total of 100 hours',    emoji: '🦉', xpReward: 1500 },
+  { id: 'level_5',         label: 'Silver Status',    description: 'Reach Level 5',                     emoji: '🥈', xpReward: 200 },
+  { id: 'level_8',         label: 'Platinum Mind',    description: 'Reach Level 8',                     emoji: '💍', xpReward: 1000 },
   { id: 'perfect_focus',   label: 'In the Zone',      description: 'Get 100% focus score in a session', emoji: '🎯', xpReward: 100 },
   { id: 'tasks_10',        label: 'Task Master',      description: 'Complete 10 daily missions',        emoji: '✅', xpReward: 150 },
+  { id: 'night_owl',       label: 'Night Owl',        description: 'Complete a session after 10 PM',    emoji: '🦉', xpReward: 100 },
+  { id: 'early_bird',      label: 'Early Bird',       description: 'Complete a session before 6 AM',    emoji: '🌅', xpReward: 100 },
 ];
 
 // ── Reward Store Items ────────────────────────────────────────────────────────
 const REWARD_STORE_ITEMS = [
   // Badges
-  { id: 'badge_star',       label: 'Star Badge',         category: 'badge',  cost: 200, emoji: '⭐', description: 'Show your star status' },
-  { id: 'badge_fire',       label: 'Fire Badge',         category: 'badge',  cost: 300, emoji: '🔥', description: 'You are on fire!' },
-  { id: 'badge_diamond',    label: 'Diamond Badge',      category: 'badge',  cost: 800, emoji: '💎', description: 'Rare diamond achiever' },
-  { id: 'badge_trophy',     label: 'Trophy Badge',       category: 'badge',  cost: 500, emoji: '🏆', description: 'Champion of study' },
-  { id: 'badge_rocket',     label: 'Rocket Badge',       category: 'badge',  cost: 400, emoji: '🚀', description: 'Launching to success' },
+  { id: 'badge_star',       label: 'Star Student',       category: 'badge',  cost: 200, emoji: '⭐', description: 'A classic mark of excellence' },
+  { id: 'badge_fire',       label: 'Blazing Intellect',  category: 'badge',  cost: 300, emoji: '🔥', description: 'You are on fire!' },
+  { id: 'badge_brain',      label: 'Big Brain',          category: 'badge',  cost: 450, emoji: '🧠', description: 'Master of concepts' },
+  { id: 'badge_ninja',      label: 'Study Ninja',        category: 'badge',  cost: 600, emoji: '🥷', description: 'Silent, deadly focus' },
+  { id: 'badge_diamond',    label: 'Diamond Focus',      category: 'badge',  cost: 1000,emoji: '💎', description: 'Unbreakable concentration' },
+  { id: 'badge_crown',      label: 'King of Grades',     category: 'badge',  cost: 1500,emoji: '👑', description: 'Absolute royalty' },
+  { id: 'badge_alien',      label: 'Out of this World',  category: 'badge',  cost: 2000,emoji: '👽', description: 'Your intelligence is alien' },
   // Themes
   { id: 'theme_midnight',   label: 'Midnight Theme',     category: 'theme',  cost: 300, emoji: '🌙', description: 'Dark blue night mode' },
   { id: 'theme_forest',     label: 'Forest Theme',       category: 'theme',  cost: 350, emoji: '🌿', description: 'Calm green tones' },
@@ -93,26 +99,15 @@ const updateGamification = async (userId, minutesStudied, goalAchieved, streakDa
     user.gamification.coins += Math.floor(baseXpEarned / 10);
     user.gamification.totalStudyMinutes = (user.gamification.totalStudyMinutes || 0) + minutesStudied;
 
-    // Level recalculation
     const newLevel = getLevelFromXP(user.gamification.xp);
     const prevLevel = user.gamification.level;
     user.gamification.level = newLevel;
     user.gamification.rank = getRankForLevel(newLevel);
 
-    // Check achievements
     const newAchievements = await _checkAchievements(user, { streakDay, minutesStudied });
-
-    // Refresh daily missions + update mission progress
     _refreshAndUpdateMissions(user, minutesStudied);
 
-    // Calculate total XP earned across base session + achievements + missions
     const totalXpEarned = user.gamification.xp - initialXP;
-
-    // Recalculate level just in case achievements pushed them over a threshold
-    const newLevel = getLevelFromXP(user.gamification.xp);
-    const prevLevel = user.gamification.level;
-    user.gamification.level = newLevel;
-    user.gamification.rank = getRankForLevel(newLevel);
 
     await user.save();
 
@@ -132,7 +127,6 @@ const updateGamification = async (userId, minutesStudied, goalAchieved, streakDa
   }
 };
 
-// ── Achievement Checker ───────────────────────────────────────────────────────
 const _checkAchievements = async (user, { streakDay, minutesStudied }) => {
   const earned = user.gamification.achievements || [];
   const newOnes = [];
@@ -150,36 +144,27 @@ const _checkAchievements = async (user, { streakDay, minutesStudied }) => {
     }
   };
 
-  // First session ever
   if (user.gamification.totalStudyMinutes >= minutesStudied) {
     const prevMinutes = user.gamification.totalStudyMinutes - minutesStudied;
     if (prevMinutes === 0) await give('first_session');
   }
 
-  // Streaks
   if (streakDay >= 3) await give('streak_3');
   if (streakDay >= 7) await give('streak_7');
-
-  // Total study time (10h = 600min, 50h = 3000min)
   if (user.gamification.totalStudyMinutes >= 600) await give('study_10h');
   if (user.gamification.totalStudyMinutes >= 3000) await give('study_50h');
-
-  // Level-based
   if (user.gamification.level >= 5) await give('level_5');
 
   return newOnes;
 };
 
-// ── Daily Mission Refresh ─────────────────────────────────────────────────────
 const _refreshAndUpdateMissions = (user, minutesStudied) => {
   const today = todayStr();
   const dm = user.gamification.dailyMissions;
 
   if (!dm || dm.date !== today) {
-    // New day — regenerate missions
     const freshMissions = generateDailyMissions(today);
     user.gamification.dailyMissions = { date: today, missions: freshMissions };
-    // Apply today's progress to the newly generated missions
     _applySessionToMissions(user, user.gamification.dailyMissions.missions, minutesStudied);
   } else {
     _applySessionToMissions(user, dm.missions, minutesStudied);
@@ -203,37 +188,43 @@ const _applySessionToMissions = (user, missions, minutesStudied) => {
   }
 };
 
-// ── Rank Helper ───────────────────────────────────────────────────────────────
 const getRankForLevel = (level) => {
-  if (level < 3)  return 'Novice';
-  if (level < 5)  return 'Apprentice';
-  if (level < 8)  return 'Scholar';
-  if (level < 11) return 'Adept';
-  if (level < 15) return 'Master';
+  if (level === 1) return 'Bronze III';
+  if (level === 2) return 'Bronze II';
+  if (level === 3) return 'Bronze I';
+  if (level === 4) return 'Silver II';
+  if (level === 5) return 'Silver I';
+  if (level === 6) return 'Gold II';
+  if (level === 7) return 'Gold I';
+  if (level === 8) return 'Platinum';
+  if (level === 9) return 'Diamond';
   return 'Grandmaster';
 };
 
-// ── Unlock Reward ─────────────────────────────────────────────────────────────
 const unlockReward = async (userId, rewardId) => {
   const user = await User.findById(userId);
   if (!user) throw new Error('User not found');
 
-  const item = REWARD_STORE_ITEMS.find((r) => r.id === rewardId);
-  if (!item) throw new Error('Reward item not found');
+  const itemDef = REWARD_STORE_ITEMS.find((r) => r.id === rewardId);
+  if (!itemDef) throw new Error('Reward item not found');
 
   const unlocked = user.gamification.rewardsUnlocked || [];
   if (unlocked.includes(rewardId)) throw new Error('Already unlocked');
 
-  if (user.gamification.coins < item.cost) throw new Error('Not enough coins');
+  if (user.gamification.coins < itemDef.cost) throw new Error('Not enough coins');
 
-  user.gamification.coins -= item.cost;
-  user.gamification.rewardsUnlocked = [...unlocked, rewardId];
+  user.gamification.coins -= itemDef.cost;
+  user.gamification.rewardsUnlocked.push(rewardId);
+
+  if (itemDef.category === 'badge') {
+    user.gamification.activeBadge = rewardId;
+  }
+
   await user.save();
 
-  return { success: true, coinsRemaining: user.gamification.coins, unlockedItem: item };
+  return { success: true, coinsRemaining: user.gamification.coins, unlockedItem: itemDef };
 };
 
-// ── Get Gamification State ────────────────────────────────────────────────────
 const getGamificationState = async (userId) => {
   const user = await User.findById(userId);
   if (!user) throw new Error('User not found');
@@ -273,9 +264,13 @@ const getGamificationState = async (userId) => {
   return {
     xp: currentXP,
     level: currentLevel,
-    rank: g.rank,
+    rank: getRankForLevel(g.level),
     coins: g.coins,
     totalStudyMinutes: g.totalStudyMinutes || 0,
+    activeBadgeId: g.activeBadge,
+    activeBadgeEmoji: g.activeBadge 
+        ? REWARD_STORE_ITEMS.find((i) => i.id === g.activeBadge)?.emoji || null
+        : null,
     xpProgress,
     xpNeeded,
     xpForNext,
