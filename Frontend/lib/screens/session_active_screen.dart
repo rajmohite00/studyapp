@@ -7,40 +7,67 @@ import '../providers/analytics_provider.dart';
 import '../providers/gamification_provider.dart';
 import '../app_theme.dart';
 
-class SessionActiveScreen extends ConsumerWidget {
+class SessionActiveScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> session;
   const SessionActiveScreen({super.key, required this.session});
 
-  Future<void> _finishAndRefresh(WidgetRef ref, BuildContext context, {bool goHome = false}) async {
-    final sess = await ref.read(sessionProvider.notifier).endSession();
-    if (!context.mounted) return;
+  @override
+  ConsumerState<SessionActiveScreen> createState() => _SessionActiveScreenState();
+}
 
-    // Navigate immediately — don't wait for analytics
-    if (goHome) {
-      context.go('/home');
-    } else {
-      context.pushReplacement('/session/summary', extra: sess?.toJson() ?? {});
+class _SessionActiveScreenState extends ConsumerState<SessionActiveScreen> with WidgetsBindingObserver {
+  bool _pausedByDistraction = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final sessionStatus = ref.read(sessionProvider).status;
+
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      if (sessionStatus == SessionStatus.active) {
+        ref.read(sessionProvider.notifier).pauseSession();
+        setState(() => _pausedByDistraction = true);
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      if (_pausedByDistraction) {
+        ref.read(sessionProvider.notifier).resumeSession();
+        setState(() => _pausedByDistraction = false);
+      }
     }
+  }
 
-    // Refresh providers after 2s — backend analytics finishes in ~1s background
+  Future<void> _finishAndRefresh() async {
+    final sess = await ref.read(sessionProvider.notifier).endSession();
+    if (!mounted) return;
+    
+    context.pushReplacement('/session/summary', extra: sess?.toJson() ?? {});
+
     Future.delayed(const Duration(seconds: 2), () {
       ref.invalidate(dashboardProvider);
-      ref.invalidate(subjectBreakdownProvider);
-      ref.invalidate(streakProvider);
-      ref.invalidate(heatmapProvider);
-      ref.invalidate(weeklyReportProvider);
       ref.invalidate(gamificationStateProvider);
     });
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final state = ref.watch(sessionProvider);
     final elapsed = state.elapsed;
     final isPaused = state.status == SessionStatus.paused;
+    final sessionData = widget.session;
 
     // Planned duration from session data
-    final plannedMins = (session['plannedDurationMinutes'] ?? 25) as int;
+    final plannedMins = (sessionData['plannedDurationMinutes'] ?? 25) as int;
     final plannedDuration = Duration(minutes: plannedMins);
 
     // Overtime detection
@@ -80,7 +107,10 @@ class SessionActiveScreen extends ConsumerWidget {
             ],
           ),
         );
-        if (confirm == true) await _finishAndRefresh(ref, context, goHome: true);
+        if (confirm == true) {
+          await ref.read(sessionProvider.notifier).endSession();
+          if (context.mounted) context.go('/home');
+        }
         return false; // we handle navigation manually
       },
       child: Scaffold(

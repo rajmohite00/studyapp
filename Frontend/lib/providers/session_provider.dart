@@ -43,6 +43,7 @@ class SessionState {
 class SessionNotifier extends StateNotifier<SessionState> {
   final SessionService _service;
   Timer? _timer;
+  DateTime? _lastTickTime;
 
   SessionNotifier(this._service) : super(const SessionState());
 
@@ -75,9 +76,13 @@ class SessionNotifier extends StateNotifier<SessionState> {
 
   void _startTimer() {
     _timer?.cancel();
+    _lastTickTime = DateTime.now();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (state.status == SessionStatus.active) {
-        state = state.copyWith(elapsed: state.elapsed + const Duration(seconds: 1));
+        final now = DateTime.now();
+        final diff = now.difference(_lastTickTime!);
+        _lastTickTime = now;
+        state = state.copyWith(elapsed: state.elapsed + diff);
       }
     });
   }

@@ -13,10 +13,12 @@ const studySessionSchema = new mongoose.Schema(
     },
 
     startTime: { type: Date, required: true, default: Date.now },
+    lastStartedAt: { type: Date, default: Date.now },
     endTime: { type: Date, default: null },
     plannedDurationMinutes: { type: Number, default: 25 },
     actualDurationMinutes: { type: Number, default: 0 },
     durationSeconds: { type: Number, default: 0 },
+    accumulatedSeconds: { type: Number, default: 0 },
 
     focusScore: { type: Number, min: 0, max: 100, default: 0 },
     interruptions: { type: Number, default: 0 },

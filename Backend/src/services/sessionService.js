@@ -19,6 +19,7 @@ const startSession = async (userId, { subject, topic, mode, plannedDurationMinut
     plannedDurationMinutes: plannedDurationMinutes || 25,
     goal: goal || null,
     startTime: new Date(),
+    lastStartedAt: new Date(),
     status: 'active',
   });
 
@@ -37,17 +38,25 @@ const updateSession = async (userId, sessionId, updates) => {
 
   if (action === 'pause') {
     if (session.status !== 'active') throw new AppError('Session is not active', 400, 'INVALID_STATUS');
+    const now = new Date();
+    const segmentSeconds = Math.floor((now - session.lastStartedAt) / 1000);
+    session.accumulatedSeconds = (session.accumulatedSeconds || 0) + segmentSeconds;
     session.status = 'paused';
   }
 
   if (action === 'resume') {
     if (session.status !== 'paused') throw new AppError('Session is not paused', 400, 'INVALID_STATUS');
+    session.lastStartedAt = new Date();
     session.status = 'active';
   }
 
   if (action === 'end' || action === 'abandon') {
     const endTime = new Date();
-    const durationSeconds = Math.floor((endTime - session.startTime) / 1000);
+    let durationSeconds = session.accumulatedSeconds || 0;
+    if (session.status === 'active') {
+      durationSeconds += Math.floor((endTime - session.lastStartedAt) / 1000);
+    }
+    
     const actualDurationMinutes = action === 'end' 
         ? Math.max(1, Math.round(durationSeconds / 60)) 
         : Math.round(durationSeconds / 60);
