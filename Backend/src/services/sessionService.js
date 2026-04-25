@@ -68,22 +68,30 @@ const updateSession = async (userId, sessionId, updates) => {
       currentStreak = streakResult?.current || 0;
     }
     
+    let gamificationResult = null;
     if (action === 'end' && actualDurationMinutes > 0) {
       // We don't check for goalAchieved here perfectly, but we can pass false for now 
       // or we can fetch the user to check the daily goal. Let's pass false and let analytics handle it if needed.
-      gamificationService.updateGamification(userId, actualDurationMinutes, false, currentStreak).catch(err => console.error(err));
+      gamificationResult = await gamificationService.updateGamification(userId, actualDurationMinutes, false, currentStreak).catch(err => console.error(err));
     }
+
+    await session.save();
+
+    if (action === 'end') {
+      // Fire-and-forget — don't block response. Analytics finishes in background.
+      analyticsService.aggregateDailyAnalytics(userId).catch(err =>
+        console.error('Analytics aggregation error:', err)
+      );
+    }
+
+    const sessionObj = session.toObject();
+    if (gamificationResult) {
+      sessionObj.gamificationResult = gamificationResult;
+    }
+    return sessionObj;
   }
 
   await session.save();
-
-  if (action === 'end') {
-    // Fire-and-forget — don't block response. Analytics finishes in background.
-    analyticsService.aggregateDailyAnalytics(userId).catch(err =>
-      console.error('Analytics aggregation error:', err)
-    );
-  }
-
   return session;
 };
 

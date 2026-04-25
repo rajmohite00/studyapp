@@ -5,6 +5,7 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../providers/auth_provider.dart';
 import '../providers/analytics_provider.dart';
 import '../providers/intelligence_provider.dart';
+import '../providers/gamification_provider.dart';
 import '../widgets/streak_card.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/animations.dart';
@@ -45,6 +46,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ref.invalidate(dashboardProvider);
           ref.invalidate(subjectBreakdownProvider);
           ref.invalidate(streakProvider);
+          ref.invalidate(gamificationStateProvider);
         }
       }),
     );
@@ -122,6 +124,12 @@ class _HomePage extends ConsumerWidget {
                 ),
               )),
               Container(height: 1.5, color: AppColors.divider),
+
+              // ── GAMIFICATION BANNER ────────────────────────
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 100),
+                child: const _GamificationBanner(),
+              ),
 
               // ── HERO SECTION ─────────────────────────────────
               FadeSlideIn(
@@ -742,3 +750,108 @@ class _HeroStatChip extends StatelessWidget {
         ),
       );
 }
+
+// ── Gamification Banner ──────────────────────────────────────────────────────
+class _GamificationBanner extends ConsumerWidget {
+  const _GamificationBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stateAsync = ref.watch(gamificationStateProvider);
+
+    return stateAsync.when(
+      loading: () => const LinearProgressIndicator(color: AppColors.primary),
+      error: (_, __) => const SizedBox(),
+      data: (state) {
+        return PressButton(
+          scaleDown: 0.98,
+          onTap: () => context.push('/rewards'),
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 1.5),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${state.level}',
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            state.rank,
+                            style: GoogleFonts.outfit(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              const Text('🪙', style: TextStyle(fontSize: 13)),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${state.coins}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.accentOrange,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      AnimatedProgressBar(
+                        value: state.xpNeeded > 0 ? state.xpProgress / state.xpNeeded : 1.0,
+                        color: AppColors.primary,
+                        height: 6,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${state.xp} XP • ${state.xpNeeded - state.xpProgress} to next',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Icon(Icons.chevron_right_rounded, color: AppColors.textLight),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+

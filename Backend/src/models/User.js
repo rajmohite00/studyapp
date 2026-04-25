@@ -42,7 +42,26 @@ const userSchema = new mongoose.Schema(
       xp: { type: Number, default: 0 },
       level: { type: Number, default: 1 },
       rank: { type: String, default: 'Novice' },
-      coins: { type: Number, default: 0 }
+      coins: { type: Number, default: 0 },
+      totalStudyMinutes: { type: Number, default: 0 },
+      // Achievement IDs earned by user  e.g. ['first_session', 'streak_3', 'study_10h']
+      achievements: [{ type: String }],
+      // Reward item IDs unlocked (purchased) from reward store  e.g. ['badge_star', 'theme_midnight']
+      rewardsUnlocked: [{ type: String }],
+      // Daily missions — regenerated each day
+      dailyMissions: {
+        date: { type: String, default: '' }, // YYYY-MM-DD
+        missions: [
+          {
+            id: { type: String },
+            label: { type: String },
+            target: { type: Number },
+            progress: { type: Number, default: 0 },
+            completed: { type: Boolean, default: false },
+            xpReward: { type: Number },
+          },
+        ],
+      },
     },
 
     passwordResetOtp: { type: String, select: false },

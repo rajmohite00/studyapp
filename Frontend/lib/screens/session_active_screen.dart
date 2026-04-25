@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/session_provider.dart';
 import '../providers/analytics_provider.dart';
+import '../providers/gamification_provider.dart';
 import '../app_theme.dart';
 
 class SessionActiveScreen extends ConsumerWidget {
@@ -28,6 +29,7 @@ class SessionActiveScreen extends ConsumerWidget {
       ref.invalidate(streakProvider);
       ref.invalidate(heatmapProvider);
       ref.invalidate(weeklyReportProvider);
+      ref.invalidate(gamificationStateProvider);
     });
   }
 

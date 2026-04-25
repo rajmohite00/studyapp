@@ -35,12 +35,84 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen>
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) _badgeCtrl.forward();
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkLevelUp();
+    });
   }
 
   @override
   void dispose() {
     _badgeCtrl.dispose();
     super.dispose();
+  }
+
+  void _checkLevelUp() {
+    if (!mounted) return;
+    final gResult = widget.session['gamificationResult'];
+    if (gResult != null && gResult['leveledUp'] == true) {
+      final newLevel = gResult['newLevel'];
+      final newRank = gResult['newRank'];
+      showDialog(
+        context: context,
+        builder: (c) => Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(color: AppColors.accentOrange.withValues(alpha: 0.3), blurRadius: 40, spreadRadius: 10),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🎉', style: TextStyle(fontSize: 60)),
+                const SizedBox(height: 16),
+                Text(
+                  'LEVEL UP!',
+                  style: GoogleFonts.outfit(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.accentOrange,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'You are now Level $newLevel',
+                  style: GoogleFonts.outfit(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  'Rank: $newRank',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(c).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  child: const Text('Awesome!', style: TextStyle(fontWeight: FontWeight.w800)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   // XP calculation mirrors backend gamificationService
@@ -68,7 +140,10 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen>
     // Live streak + XP from provider (already invalidated in session_active_screen)
     final dashAsync = ref.watch(dashboardProvider);
     final streak = dashAsync.valueOrNull?.streak?.current ?? 0;
-    final xpEarned = _calcXP(mins, streak);
+
+    final gResult = widget.session['gamificationResult'];
+    final xpEarned = gResult != null ? (gResult['xpEarned'] as int) : _calcXP(mins, streak);
+    final coinsEarned = (xpEarned / 10).floor();
 
     // Format time nicely: show sec if < 1 min
     final timeDisplay = mins > 0 ? '${mins}m' : '${secs}s';
@@ -206,7 +281,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen>
                       Container(width: 1, height: 36, color: AppColors.divider),
                       _RewardChip(
                         icon: '🪙',
-                        label: '+${(xpEarned / 10).floor()} coins',
+                        label: '+$coinsEarned coins',
                         color: const Color(0xFF10B981),
                       ),
                     ],
