@@ -363,6 +363,10 @@ class _HomePage extends ConsumerWidget {
                       delay: const Duration(milliseconds: 240),
                       child: _FlashcardsCard(),
                     ),
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 260),
+                      child: _VirtualLibraryCard(),
+                    ),
 
                     // AI Suggestions (mentor-card style)
                     _AiSuggestionsWidget(),
@@ -542,6 +546,76 @@ class _FlashcardsCard extends StatelessWidget {
                   boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
                 ),
                 child: Text('Review →', style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 13)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Virtual Library Quick Access Card ─────────────────────────────────────────
+class _VirtualLibraryCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: PressButton(
+        scaleDown: 0.97,
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => context.push('/virtual-library'),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF4F35E1), Color(0xFF864AF9)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF864AF9).withOpacity(0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52, height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withOpacity(0.4)),
+                ),
+                child: const Icon(Icons.local_library_rounded, color: Colors.white, size: 26),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Virtual Library 🌐',
+                        style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white)),
+                    const SizedBox(height: 4),
+                    Text('Study live with others',
+                        style: GoogleFonts.outfit(fontSize: 13, color: Colors.white.withOpacity(0.8), fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white.withOpacity(0.4)),
+                ),
+                child: Text('Join →', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13)),
               ),
             ],
           ),
