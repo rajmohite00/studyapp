@@ -266,7 +266,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
           ),
         ),
       ),
-    ));
+    );
   }
 }
 
