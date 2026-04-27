@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/ai_coach_provider.dart';
+import '../providers/voice_agent_provider.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/animations.dart';
 import '../app_theme.dart';
@@ -63,6 +64,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiCoachProvider);
+    final voiceState = ref.watch(voiceAgentProvider);
     ref.listen(aiCoachProvider, (_, __) => _scrollToBottom());
 
     return Scaffold(
@@ -131,6 +133,20 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
           ),
         ),
         actions: [
+          if (voiceState.isSpeaking)
+            PressButton(
+              scaleDown: 0.88,
+              onTap: () => ref.read(voiceAgentProvider.notifier).stopSpeaking(),
+              child: Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.volume_off_rounded, size: 16, color: Colors.white),
+              ),
+            ),
           PressButton(
             scaleDown: 0.88,
             onTap: () => ref.read(aiCoachProvider.notifier).clearChat(),
@@ -231,16 +247,55 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                       textCapitalization: TextCapitalization.sentences,
                       style: GoogleFonts.outfit(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
                       decoration: InputDecoration(
-                        hintText: 'Ask your AI coach...',
-                        hintStyle: GoogleFonts.outfit(color: AppColors.textLight, fontSize: 14),
+                        hintText: voiceState.isListening ? 'Listening...' : 'Ask your AI coach...',
+                        hintStyle: GoogleFonts.outfit(color: voiceState.isListening ? AppColors.primary : AppColors.textLight, fontSize: 14, fontStyle: voiceState.isListening ? FontStyle.italic : null),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                       ),
+                      onChanged: (text) {
+                        if (voiceState.isListening) {
+                           // Disable text entry while listening to avoid conflict
+                        }
+                      },
                       onSubmitted: (_) => _send(),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
+
+                // Microphone button
+                PressButton(
+                  scaleDown: 0.9,
+                  onTap: state.isLoading 
+                      ? null 
+                      : () {
+                          final notifier = ref.read(voiceAgentProvider.notifier);
+                          if (voiceState.isListening) {
+                            notifier.stopListening();
+                          } else {
+                            notifier.startListening();
+                          }
+                        },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    width: 48, height: 48,
+                    decoration: BoxDecoration(
+                      gradient: voiceState.isListening ? AppColors.heroGradient : null,
+                      color: voiceState.isListening ? null : AppColors.background,
+                      shape: BoxShape.circle,
+                      border: voiceState.isListening ? null : Border.all(color: AppColors.divider),
+                      boxShadow: voiceState.isListening
+                          ? [BoxShadow(color: AppColors.primary.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4))]
+                          : [],
+                    ),
+                    child: Icon(
+                      voiceState.isListening ? Icons.stop_rounded : Icons.mic_rounded,
+                      color: voiceState.isListening ? Colors.white : AppColors.textSecondary,
+                      size: 22,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
 
                 // Send button
                 PressButton(
