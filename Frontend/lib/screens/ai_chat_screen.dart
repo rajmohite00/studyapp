@@ -38,11 +38,6 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     _scrollToBottom();
   }
 
-  void _sendQuick(String text) {
-    _ctrl.text = text;
-    _send();
-  }
-
   Future<void> _pickAndUploadPDF() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,

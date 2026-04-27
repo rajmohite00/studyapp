@@ -2,7 +2,7 @@ import 'dio_client.dart';
 import '../models/flashcard_model.dart';
 
 class FlashcardService {
-  final DioClient _dio = DioClient();
+  final _dio = DioClient.instance;
 
   Future<List<Flashcard>> getDueFlashcards() async {
     final response = await _dio.get('/flashcards/due');

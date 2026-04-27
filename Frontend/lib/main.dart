@@ -4,7 +4,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'services/storage_service.dart';
 import 'services/dio_client.dart';
-import 'providers/theme_provider.dart';
 import 'providers/auth_provider.dart';
 import 'core_router.dart';
 import 'app_theme.dart';
@@ -30,7 +29,6 @@ class StudyCoachApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeModeProvider);
     final router = ref.watch(routerProvider);
 
     // Automatically log out if a request hits a 401 and refresh fails

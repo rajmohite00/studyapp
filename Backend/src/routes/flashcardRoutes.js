@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const flashcardController = require('../controllers/flashcardController');
-const { protect } = require('../middlewares/authMiddleware');
+const { authenticate } = require('../middlewares/authMiddleware');
 
-router.use(protect);
+router.use(authenticate);
 
 router.post('/generate', flashcardController.generate);
 router.get('/due', flashcardController.getDue);
