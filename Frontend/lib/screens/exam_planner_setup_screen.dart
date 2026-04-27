@@ -288,9 +288,7 @@ class _DateStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final daysLeft = examDate != null
-        ? examDate!.difference(DateTime.now()).inDays
-        : null;
+    final daysLeft = examDate?.difference(DateTime.now()).inDays;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -355,7 +353,7 @@ class _DateStep extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: const [
+          const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text('1h (Light)', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             Text('5h (Moderate)', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             Text('10h (Intense)', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),

@@ -118,7 +118,7 @@ class SubjectInfoScreen extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // ── TOPICS ─────────────────────────────────────────────────────
-          _SectionHeader(icon: Icons.menu_book_rounded, title: 'Key Topics', color: AppColors.primary),
+          const _SectionHeader(icon: Icons.menu_book_rounded, title: 'Key Topics', color: AppColors.primary),
           const SizedBox(height: 12),
           ...topics.asMap().entries.map((e) => FadeSlideIn(
                 delay: Duration(milliseconds: 60 * e.key),
@@ -128,7 +128,7 @@ class SubjectInfoScreen extends ConsumerWidget {
           const SizedBox(height: 28),
 
           // ── PYQs ───────────────────────────────────────────────────────
-          _SectionHeader(icon: Icons.history_edu_rounded, title: 'Previous Year Questions', color: const Color(0xFF7C3AED)),
+          const _SectionHeader(icon: Icons.history_edu_rounded, title: 'Previous Year Questions', color: Color(0xFF7C3AED)),
           const SizedBox(height: 12),
           ...pyqs.asMap().entries.map((e) => FadeSlideIn(
                 delay: Duration(milliseconds: 60 * e.key),

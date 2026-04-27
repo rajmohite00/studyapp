@@ -49,15 +49,15 @@ class SessionActiveScreen extends ConsumerWidget {
     final overtime = isOvertime ? elapsed - plannedDuration : Duration.zero;
 
     // Format main timer
-    String _fmt(Duration d) {
+    String fmt(Duration d) {
       final h = d.inHours;
       final m = (d.inMinutes % 60).toString().padLeft(2, '0');
       final s = (d.inSeconds % 60).toString().padLeft(2, '0');
       return h > 0 ? '$h:$m:$s' : '$m:$s';
     }
 
-    final timeStr = _fmt(elapsed);
-    final overtimeStr = '+${_fmt(overtime)}';
+    final timeStr = fmt(elapsed);
+    final overtimeStr = '+${fmt(overtime)}';
 
     return WillPopScope(
       onWillPop: () async {

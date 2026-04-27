@@ -334,7 +334,7 @@ class _TaskTile extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: AppColors.divider, width: 0.8)),
+          border: const Border(top: BorderSide(color: AppColors.divider, width: 0.8)),
           color: task.isCompleted ? AppColors.primaryLight.withOpacity(0.3) : Colors.white,
         ),
         child: Row(
@@ -477,7 +477,7 @@ class _ProgressTab extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [AppColors.primary, AppColors.primaryLight],
                 begin: Alignment.topLeft, end: Alignment.bottomRight,
               ),

@@ -111,7 +111,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             const SizedBox(height: 28),
 
             // ── Grade / Year ───────────────────────────────
-            _SectionLabel(label: 'Grade / Year', icon: Icons.school_outlined),
+            const _SectionLabel(label: 'Grade / Year', icon: Icons.school_outlined),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -125,7 +125,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             const SizedBox(height: 28),
 
             // ── Target Exam ────────────────────────────────
-            _SectionLabel(label: 'Target Exam', icon: Icons.flag_outlined),
+            const _SectionLabel(label: 'Target Exam', icon: Icons.flag_outlined),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -139,7 +139,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             const SizedBox(height: 28),
 
             // ── Subjects ───────────────────────────────────
-            _SectionLabel(label: 'Subjects', icon: Icons.book_outlined),
+            const _SectionLabel(label: 'Subjects', icon: Icons.book_outlined),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -200,7 +200,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _SectionLabel(label: 'Daily Study Goal', icon: Icons.timer_outlined),
+                const _SectionLabel(label: 'Daily Study Goal', icon: Icons.timer_outlined),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                   decoration: BoxDecoration(
@@ -230,11 +230,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 onChanged: (v) => setState(() => _dailyGoal = v.round()),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
+                children: [
                   Text('30 min', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
                   Text('10 hrs', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
                 ],

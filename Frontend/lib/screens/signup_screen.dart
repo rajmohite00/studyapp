@@ -325,10 +325,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         fillColor: AppColors.background,
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.divider)),
+            borderSide: const BorderSide(color: AppColors.divider)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.primary, width: 1.8)),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.8)),
         errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFFEF4444))),

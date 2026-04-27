@@ -398,7 +398,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                       margin: EdgeInsets.only(right: i < 2 ? 5 : 0),
                       width: 7,
                       height: 7,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),

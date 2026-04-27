@@ -26,7 +26,7 @@ class ExamPlanNotifier extends StateNotifier<AsyncValue<ExamPlanModel?>> {
 
   Future<void> _load() async {
     try {
-      state = AsyncValue.loading();
+      state = const AsyncValue.loading();
       final plan = await _service.getPlan();
       state = AsyncValue.data(plan);
     } catch (e, s) {

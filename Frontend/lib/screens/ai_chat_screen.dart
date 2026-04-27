@@ -143,7 +143,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                 border: Border.all(color: AppColors.divider),
               ),
               child: Row(children: [
-                Icon(Icons.refresh_rounded, size: 15, color: AppColors.textSecondary),
+                const Icon(Icons.refresh_rounded, size: 15, color: AppColors.textSecondary),
                 const SizedBox(width: 4),
                 Text('Clear', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
               ]),
@@ -322,11 +322,11 @@ class _EmptyChat extends StatelessWidget {
                 const SizedBox(height: 28),
 
                 // Quick action chips
-                Wrap(
+                const Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   alignment: WrapAlignment.center,
-                  children: const [
+                  children: [
                     _QuickChip(emoji: '📚', label: 'Explain a concept'),
                     _QuickChip(emoji: '🧠', label: 'Quiz me'),
                     _QuickChip(emoji: '🎯', label: 'Study tips'),
@@ -411,7 +411,7 @@ class _TypingBubbleState extends State<_TypingBubble> with SingleTickerProviderS
             Container(
               width: 30, height: 30,
               margin: const EdgeInsets.only(right: 8, bottom: 2),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: AppColors.heroGradient,
                 shape: BoxShape.circle,
               ),

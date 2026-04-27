@@ -28,7 +28,7 @@ class HeatmapWidget extends StatelessWidget {
                 _ColorBox(AppColors.primary.withValues(alpha: 0.1)),
                 _ColorBox(AppColors.primary.withValues(alpha: 0.4)),
                 _ColorBox(AppColors.primary.withValues(alpha: 0.7)),
-                _ColorBox(AppColors.primary),
+                const _ColorBox(AppColors.primary),
                 const SizedBox(width: 4),
                 const Text('More', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
               ],

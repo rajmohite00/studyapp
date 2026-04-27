@@ -169,7 +169,7 @@ class AppTheme {
           indicatorColor: AppColors.primary.withOpacity(0.12),
           labelTextStyle: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
-              return TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary);
+              return const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary);
             }
             return const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textSecondary);
           }),

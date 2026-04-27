@@ -158,7 +158,7 @@ class AnalyticsScreen extends ConsumerWidget {
                             const SizedBox(height: 28),
 
                             // Subject Donut
-                            _SectionHeader(title: 'Subject Breakdown', icon: Icons.donut_large_rounded),
+                            const _SectionHeader(title: 'Subject Breakdown', icon: Icons.donut_large_rounded),
                             const SizedBox(height: 14),
                             FadeSlideIn(
                               delay: const Duration(milliseconds: 100),
@@ -173,7 +173,7 @@ class AnalyticsScreen extends ConsumerWidget {
                       const SizedBox(height: 28),
 
                       // ── HEATMAP ───────────────────────────────
-                      _SectionHeader(title: 'Study Heatmap', icon: Icons.grid_on_rounded),
+                      const _SectionHeader(title: 'Study Heatmap', icon: Icons.grid_on_rounded),
                       const SizedBox(height: 14),
                       heatmapAsync.when(
                         loading: () => const SizedBox(
@@ -190,14 +190,14 @@ class AnalyticsScreen extends ConsumerWidget {
                       const SizedBox(height: 28),
 
                       // ── INTELLIGENCE ──────────────────────────
-                      _SectionHeader(title: 'AI Intelligence', icon: Icons.psychology_rounded),
+                      const _SectionHeader(title: 'AI Intelligence', icon: Icons.psychology_rounded),
                       const SizedBox(height: 14),
                       _PerformanceWidget(),
 
                       const SizedBox(height: 28),
 
                       // ── RECENT SESSIONS ───────────────────────
-                      _SectionHeader(title: 'Recent Sessions', icon: Icons.history_rounded),
+                      const _SectionHeader(title: 'Recent Sessions', icon: Icons.history_rounded),
                       const SizedBox(height: 14),
                       _SessionHistoryWidget(),
 
@@ -346,7 +346,7 @@ class _SessionHistoryWidget extends ConsumerWidget {
                 children: [
                   Container(
                     width: 64, height: 64,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       gradient: AppColors.heroGradient,
                       shape: BoxShape.circle,
                     ),

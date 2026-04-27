@@ -143,8 +143,8 @@ class WelcomeScreen extends StatelessWidget {
                         const SizedBox(height: 40),
 
                         // Feature pills
-                        FadeSlideIn(
-                          delay: const Duration(milliseconds: 260),
+                        const FadeSlideIn(
+                          delay: Duration(milliseconds: 260),
                           child: Wrap(
                             spacing: 8,
                             runSpacing: 8,

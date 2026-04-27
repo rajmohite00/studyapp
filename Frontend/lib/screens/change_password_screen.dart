@@ -127,7 +127,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Current password
-                      _FieldLabel(label: 'Current Password'),
+                      const _FieldLabel(label: 'Current Password'),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _currentCtrl,
@@ -146,7 +146,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                       const SizedBox(height: 20),
 
                       // New password
-                      _FieldLabel(label: 'New Password'),
+                      const _FieldLabel(label: 'New Password'),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _newCtrl,
@@ -169,7 +169,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                       const SizedBox(height: 20),
 
                       // Confirm password
-                      _FieldLabel(label: 'Confirm New Password'),
+                      const _FieldLabel(label: 'Confirm New Password'),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _confirmCtrl,
@@ -220,7 +220,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                       border: Border.all(color: AppColors.accentGreen.withOpacity(0.3)),
                     ),
                     child: Row(children: [
-                      Icon(Icons.check_circle_rounded, color: AppColors.accentGreen, size: 18),
+                      const Icon(Icons.check_circle_rounded, color: AppColors.accentGreen, size: 18),
                       const SizedBox(width: 10),
                       Text('Password changed! ✅', style: GoogleFonts.outfit(fontSize: 13, color: AppColors.accentGreen, fontWeight: FontWeight.w700)),
                     ]),
@@ -271,8 +271,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
         suffixIcon: suffix,
         filled: true,
         fillColor: AppColors.background,
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.divider)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.primary, width: 1.8)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.divider)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary, width: 1.8)),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFFEF4444))),
         focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.8)),
       );

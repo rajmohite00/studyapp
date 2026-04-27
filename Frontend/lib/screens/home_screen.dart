@@ -222,12 +222,12 @@ class _HomePage extends ConsumerWidget {
                             const SizedBox(height: 20),
 
                             // Quick-stat chips row
-                            Row(
+                            const Row(
                               children: [
                                 _HeroStatChip(emoji: '⚡', label: 'AI Coach'),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 _HeroStatChip(emoji: '🔥', label: 'Streaks'),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 _HeroStatChip(emoji: '📊', label: 'Analytics'),
                               ],
                             ),
@@ -288,9 +288,9 @@ class _HomePage extends ConsumerWidget {
               ),
 
               // ── GAMIFICATION BANNER ────────────────────────
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 200),
-                child: const _GamificationBanner(),
+              const FadeSlideIn(
+                delay: Duration(milliseconds: 200),
+                child: _GamificationBanner(),
               ),
 
               // ── PROGRESS SECTION ─────────────────────────────
@@ -332,7 +332,7 @@ class _HomePage extends ConsumerWidget {
                 data: (data) => Column(
                   children: [
                     // Progress section header
-                    _BoldSectionHeader(title: 'Your Progress', icon: Icons.trending_up_rounded, bg: AppColors.surface),
+                    const _BoldSectionHeader(title: 'Your Progress', icon: Icons.trending_up_rounded, bg: AppColors.surface),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                       child: FadeSlideIn(
@@ -368,7 +368,7 @@ class _HomePage extends ConsumerWidget {
 
                     // Today's subjects
                     if (data.today.subjectBreakdown.isNotEmpty) ...[
-                      _BoldSectionHeader(title: "Today's Subjects", icon: Icons.auto_stories_rounded, bg: AppColors.surface),
+                      const _BoldSectionHeader(title: "Today's Subjects", icon: Icons.auto_stories_rounded, bg: AppColors.surface),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                         child: _TodaySubjects(breakdown: data.today.subjectBreakdown),
@@ -552,7 +552,7 @@ class _AiSuggestionsWidget extends ConsumerWidget {
         if (suggestions.isEmpty) return const SizedBox();
         return Column(
           children: [
-            _BoldSectionHeader(title: 'AI Suggestions', icon: Icons.tips_and_updates_rounded, bg: AppColors.surface),
+            const _BoldSectionHeader(title: 'AI Suggestions', icon: Icons.tips_and_updates_rounded, bg: AppColors.surface),
             ...suggestions.take(3).map((s) => Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Container(
@@ -600,7 +600,7 @@ class _SmartInsightsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _BoldSectionHeader(title: 'Smart Insights', icon: Icons.psychology_rounded, bg: AppColors.surface),
+        const _BoldSectionHeader(title: 'Smart Insights', icon: Icons.psychology_rounded, bg: AppColors.surface),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
@@ -679,7 +679,7 @@ class _TodaySubjects extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.subjectColors;
+    const colors = AppColors.subjectColors;
     int i = 0;
     return Column(
       children: breakdown.entries.map((e) {

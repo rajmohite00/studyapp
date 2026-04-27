@@ -126,7 +126,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
               const SizedBox(height: 40),
             ] else ...[
               // ── Subject picker ───────────────────────────
-              _FieldLabel(label: 'Subject', icon: Icons.book_outlined),
+              const _FieldLabel(label: 'Subject', icon: Icons.book_outlined),
               const SizedBox(height: 12),
               TextField(
                 controller: _subjectController,
@@ -180,7 +180,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
               const SizedBox(height: 24),
 
               // ── Topic ───────────────────────────────────
-              _FieldLabel(label: 'Topic', icon: Icons.label_outline_rounded),
+              const _FieldLabel(label: 'Topic', icon: Icons.label_outline_rounded),
               const SizedBox(height: 12),
               TextField(
                 decoration: const InputDecoration(
@@ -192,7 +192,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
               const SizedBox(height: 24),
 
               // ── Timer Mode ──────────────────────────────
-              _FieldLabel(label: 'Timer Mode', icon: Icons.timer_outlined),
+              const _FieldLabel(label: 'Timer Mode', icon: Icons.timer_outlined),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -238,11 +238,11 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                     onChanged: (v) => setState(() => _durationMinutes = v.round()),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
                       Text('5 min', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
                       Text('3 hrs', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
                     ],
@@ -252,7 +252,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
               const SizedBox(height: 24),
 
               // ── Goal ────────────────────────────────────
-              _FieldLabel(label: 'Session Goal', icon: Icons.flag_outlined),
+              const _FieldLabel(label: 'Session Goal', icon: Icons.flag_outlined),
               const SizedBox(height: 12),
               TextField(
                 decoration: const InputDecoration(

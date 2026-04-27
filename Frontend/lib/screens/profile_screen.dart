@@ -114,10 +114,10 @@ class ProfileScreen extends ConsumerWidget {
               children: [
                 _AnimatedTile(icon: Icons.person_outline_rounded, title: 'Edit Profile',
                     onTap: () => context.push('/profile-setup')),
-                _AnimatedTile(
+                const _AnimatedTile(
                     icon: Icons.notifications_outlined,
                     title: 'Notifications',
-                    trailing: const _NotifSwitch()),
+                    trailing: _NotifSwitch()),
               ],
             ),
             const SizedBox(height: 16),
@@ -182,12 +182,12 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             Text('Equip a Badge', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
             const SizedBox(height: 8),
-            Text('Show off your achievements on your profile!', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+            const Text('Show off your achievements on your profile!', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
             const SizedBox(height: 24),
             
             if (ownedBadges.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
                 child: Center(
                   child: Text("You don't own any badges yet.\nVisit the store to unlock some!", 
                     textAlign: TextAlign.center, style: TextStyle(color: AppColors.textLight)),
@@ -231,7 +231,7 @@ class ProfileScreen extends ConsumerWidget {
                         child: Center(child: Text(badge.emoji, style: const TextStyle(fontSize: 28))),
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
           ],
@@ -273,7 +273,7 @@ class ProfileScreen extends ConsumerWidget {
                 color: AppColors.accent.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.logout_rounded, color: AppColors.accent, size: 34),
+              child: const Icon(Icons.logout_rounded, color: AppColors.accent, size: 34),
             ),
             const SizedBox(height: 18),
 
@@ -332,7 +332,7 @@ class ProfileScreen extends ConsumerWidget {
                 onPressed: () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textSecondary,
-                  side: BorderSide(color: AppColors.divider, width: 1.5),
+                  side: const BorderSide(color: AppColors.divider, width: 1.5),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
                 child: Text(
@@ -419,7 +419,7 @@ class _AnimatedTileState extends State<_AnimatedTile> {
                     color: widget.color ?? AppColors.textPrimary,
                     fontSize: 14)),
             trailing: widget.trailing ??
-                Icon(Icons.chevron_right_rounded, color: AppColors.textLight, size: 20),
+                const Icon(Icons.chevron_right_rounded, color: AppColors.textLight, size: 20),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
             minLeadingWidth: 0,
           ),
@@ -456,6 +456,6 @@ class _NotifSwitchState extends State<_NotifSwitch> {
             ),
           );
         },
-        activeColor: AppColors.primary,
+        activeThumbColor: AppColors.primary,
       );
 }
