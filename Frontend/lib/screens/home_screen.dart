@@ -359,6 +359,10 @@ class _HomePage extends ConsumerWidget {
                       delay: const Duration(milliseconds: 220),
                       child: _ExamPlannerCard(),
                     ),
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 240),
+                      child: _FlashcardsCard(),
+                    ),
 
                     // AI Suggestions (mentor-card style)
                     _AiSuggestionsWidget(),
@@ -475,6 +479,69 @@ class _ExamPlannerCard extends StatelessWidget {
                   boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
                 ),
                 child: Text('Open →', style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 13)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Flashcards Quick Access Card ───────────────────────────────────────────
+class _FlashcardsCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: PressButton(
+        scaleDown: 0.97,
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => context.push('/flashcards'),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.textPrimary, width: 2),
+            boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52, height: 52,
+                decoration: BoxDecoration(
+                  color: AppColors.accentGreen,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.textPrimary, width: 2),
+                  boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
+                ),
+                child: const Icon(Icons.style_rounded, color: AppColors.textPrimary, size: 26),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Smart Flashcards',
+                        style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                    const SizedBox(height: 4),
+                    const Text('Review AI generated cards',
+                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                decoration: BoxDecoration(
+                  color: AppColors.accentGreen,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.textPrimary, width: 2),
+                  boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
+                ),
+                child: Text('Review →', style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 13)),
               ),
             ],
           ),

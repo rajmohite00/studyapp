@@ -7,6 +7,14 @@ exports.chat = catchAsync(async (req, res) => {
   sendSuccess(res, result);
 });
 
+exports.uploadNotes = catchAsync(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, error: 'No PDF file uploaded' });
+  }
+  const result = await aiService.uploadNotes(req.user.sub, req.file, req.body.subject);
+  sendSuccess(res, result, 201);
+});
+
 exports.getConversations = catchAsync(async (req, res) => {
   const data = await aiService.getConversations(req.user.sub);
   sendSuccess(res, data);

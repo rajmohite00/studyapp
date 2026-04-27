@@ -24,6 +24,7 @@ import 'screens/exam_planner_setup_screen.dart';
 import 'screens/subject_info_screen.dart';
 import 'screens/change_password_screen.dart';
 import 'screens/rewards_screen.dart';
+import 'screens/flashcards_screen.dart';
 
 // ── Smooth fade+slide transition ──────────────────────────────────────────────
 CustomTransitionPage<T> _slideFade<T>({
@@ -141,6 +142,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Profile & Planner
       GoRoute(path: '/profile',
           pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ProfileScreen())),
+      GoRoute(path: '/flashcards',
+          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const FlashcardsScreen())),
       GoRoute(path: '/rewards',
           pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const RewardsScreen())),
       GoRoute(path: '/exam-planner',

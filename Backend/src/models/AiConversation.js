@@ -11,6 +11,7 @@ const aiConversationSchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     sessionId: { type: mongoose.Schema.Types.ObjectId, ref: 'StudySession', default: null },
     subject: { type: String, default: null },
+    documentContext: { type: String, default: null },
     messages: [messageSchema],
     tokensUsed: { type: Number, default: 0 },
     type: { type: String, enum: ['chat', 'quiz', 'explain', 'recommend'], default: 'chat' },

@@ -11,6 +11,7 @@ const aiRoutes = require('./routes/aiRoutes');
 const intelligenceRoutes = require('./routes/intelligenceRoutes');
 const examPlanRoutes = require('./routes/examPlanRoutes');
 const gamificationRoutes = require('./routes/gamificationRoutes');
+const flashcardRoutes = require('./routes/flashcardRoutes');
 const { errorMiddleware } = require('./middlewares/errorMiddleware');
 const { globalRateLimiter } = require('./middlewares/rateLimiter');
 
@@ -52,6 +53,7 @@ app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/intelligence', intelligenceRoutes);
 app.use('/api/v1/exam-plan', examPlanRoutes);
 app.use('/api/v1/gamification', gamificationRoutes);
+app.use('/api/v1/flashcards', flashcardRoutes);
 
 // ── 404 ──────────────────────────────────────────────────────────────────────
 app.use((_req, res) => {

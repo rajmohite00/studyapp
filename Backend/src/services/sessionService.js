@@ -5,6 +5,7 @@ const { buildCursorPage, parsePagination } = require('../utils/pagination');
 const streakService = require('./streakService');
 const analyticsService = require('./analyticsService');
 const gamificationService = require('./gamificationService');
+const flashcardService = require('./flashcardService');
 
 const startSession = async (userId, { subject, topic, mode, plannedDurationMinutes, goal }) => {
   // Check for existing active session
@@ -93,6 +94,14 @@ const updateSession = async (userId, sessionId, updates) => {
       analyticsService.aggregateDailyAnalytics(userId).catch(err =>
         console.error('Analytics aggregation error:', err)
       );
+      
+      // Auto-generate flashcards
+      const studyContext = session.notes || session.topic || session.subject;
+      if (studyContext) {
+        flashcardService.generateFlashcards(userId, session.subject, studyContext).catch(err =>
+          console.error('Flashcard auto-generation error:', err)
+        );
+      }
     }
 
     const sessionObj = session.toObject();

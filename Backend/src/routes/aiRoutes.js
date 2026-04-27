@@ -4,6 +4,7 @@ const aiController = require('../controllers/aiController');
 const { authenticate } = require('../middlewares/authMiddleware');
 const { aiRateLimiter } = require('../middlewares/rateLimiter');
 const { validate } = require('../middlewares/validateRequest');
+const upload = require('../middlewares/uploadMiddleware');
 const { z } = require('zod');
 
 const chatSchema = z.object({
@@ -32,6 +33,7 @@ const submitQuizSchema = z.object({
 router.use(authenticate, aiRateLimiter);
 
 router.post('/chat', validate(chatSchema), aiController.chat);
+router.post('/upload-notes', upload.single('note'), aiController.uploadNotes);
 router.get('/conversations', aiController.getConversations);
 router.get('/conversations/:id', aiController.getConversation);
 router.post('/explain', validate(explainSchema), aiController.explain);

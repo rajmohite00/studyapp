@@ -5,6 +5,7 @@ const PerformanceData = require('../models/PerformanceData');
 const { getRedisClient } = require('../config/redis');
 const { AppError } = require('../middlewares/errorMiddleware');
 const crypto = require('crypto');
+const pdfParse = require('pdf-parse');
 
 const SYSTEM_PROMPT = `You are a super friendly, enthusiastic, and highly capable AI Study Coach! Your goal is to make learning fun, engaging, and stress-free for students. 
 You help them understand concepts, answer doubts, generate practice questions, and provide study guidance across ANY educational or academic subject (e.g., Math, Science, Literature, Programming, History, etc.).
@@ -47,8 +48,13 @@ const chat = async (userId, { message, conversationId, subject }) => {
   const userContext = await buildUserContext(userId);
   const history = conversation.messages.slice(-MAX_HISTORY_MESSAGES);
 
+  let finalSystemPrompt = `${SYSTEM_PROMPT}\n\n${userContext}`;
+  if (conversation.documentContext) {
+    finalSystemPrompt += `\n\n--- DOCUMENT CONTEXT ---\nThe user has uploaded a document. You must answer their questions based PRIMARILY on this document context. If the answer is not in the document, you may use your general knowledge but mention that it's not in the document.\n\n${conversation.documentContext}`;
+  }
+
   const apiMessages = [
-    { role: 'system', content: `${SYSTEM_PROMPT}\n\n${userContext}` },
+    { role: 'system', content: finalSystemPrompt },
     ...history.map((m) => ({ role: m.role, content: m.content })),
     { role: 'user', content: message },
   ];
@@ -82,6 +88,56 @@ const chat = async (userId, { message, conversationId, subject }) => {
   await conversation.save();
 
   return { conversationId: conversation._id, reply: assistantMessage, tokensUsed };
+};
+
+const uploadNotes = async (userId, fileBuffer, subject) => {
+  const openai = getOpenAIClient();
+  let pdfText = '';
+  
+  try {
+    const data = await pdfParse(fileBuffer.buffer);
+    pdfText = data.text;
+  } catch (err) {
+    throw new AppError('Failed to parse PDF document', 400);
+  }
+
+  // Limit text to roughly 20k characters to avoid token explosion
+  const limitedText = pdfText.length > 20000 ? pdfText.substring(0, 20000) + '...[Document Truncated]' : pdfText;
+
+  const conversation = await AiConversation.create({
+    userId,
+    subject: subject || 'Uploaded Notes',
+    documentContext: limitedText,
+    type: 'chat',
+    messages: []
+  });
+
+  const apiMessages = [
+    { role: 'system', content: `${SYSTEM_PROMPT}\n\n--- DOCUMENT CONTEXT ---\n${limitedText}` },
+    { role: 'user', content: 'I have uploaded my notes. Please give me a brief 3-sentence summary of what these notes are about, and ask me if I want to be quizzed on them or if I want you to explain a specific part.' }
+  ];
+
+  let response;
+  try {
+    response = await openai.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: apiMessages,
+      max_tokens: 500,
+    });
+  } catch (err) {
+    response = await openai.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: apiMessages,
+      max_tokens: 500,
+    });
+  }
+
+  const assistantMessage = response.choices[0].message.content;
+  
+  conversation.messages.push({ role: 'assistant', content: assistantMessage });
+  await conversation.save();
+
+  return { conversationId: conversation._id, reply: assistantMessage };
 };
 
 const explain = async (userId, { concept, subject }) => {
@@ -262,4 +318,4 @@ Rules:
   return result;
 };
 
-module.exports = { chat, explain, generateQuiz, submitQuiz, getRecommendations, getWeakTopics, getConversations, getConversation, getSubjectInfo };
+module.exports = { chat, explain, generateQuiz, submitQuiz, getRecommendations, getWeakTopics, getConversations, getConversation, getSubjectInfo, uploadNotes };
