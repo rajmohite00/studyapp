@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'dio_client.dart';
 import '../models/chat_message_model.dart';
 import '../models/quiz_model.dart';
@@ -15,6 +16,23 @@ class AiService {
       if (conversationId != null) 'conversationId': conversationId,
       if (subject != null) 'subject': subject,
     });
+    return res.data['data'];
+  }
+
+  Future<Map<String, dynamic>> uploadNotes({
+    required String filePath,
+    required String fileName,
+    String? subject,
+  }) async {
+    final formData = FormData.fromMap({
+      'note': await MultipartFile.fromFile(filePath, filename: fileName),
+      if (subject != null) 'subject': subject,
+    });
+    final res = await DioClient.instance.post(
+      '/ai/upload-notes',
+      data: formData,
+      options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+    );
     return res.data['data'];
   }
 

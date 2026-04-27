@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:file_picker/file_picker.dart';
 import '../providers/ai_coach_provider.dart';
 import '../providers/voice_agent_provider.dart';
 import '../widgets/chat_bubble.dart';
@@ -40,6 +41,21 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   void _sendQuick(String text) {
     _ctrl.text = text;
     _send();
+  }
+
+  Future<void> _pickAndUploadPDF() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (result == null || result.files.single.path == null) return;
+    final file = result.files.single;
+    await ref.read(aiCoachProvider.notifier).uploadNotes(
+      file.path!,
+      file.name,
+      subject: 'Uploaded Notes',
+    );
+    _scrollToBottom();
   }
 
   void _scrollToBottom() {

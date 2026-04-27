@@ -7,12 +7,14 @@ class AiCoachState {
   final List<ChatMessage> messages;
   final String? conversationId;
   final bool isLoading;
+  final bool isUploading;
   final String? error;
 
   const AiCoachState({
     this.messages = const [],
     this.conversationId,
     this.isLoading = false,
+    this.isUploading = false,
     this.error,
   });
 
@@ -20,12 +22,14 @@ class AiCoachState {
     List<ChatMessage>? messages,
     String? conversationId,
     bool? isLoading,
+    bool? isUploading,
     String? error,
   }) =>
       AiCoachState(
         messages: messages ?? this.messages,
         conversationId: conversationId ?? this.conversationId,
         isLoading: isLoading ?? this.isLoading,
+        isUploading: isUploading ?? this.isUploading,
         error: error,
       );
 }
@@ -79,6 +83,33 @@ class AiCoachNotifier extends StateNotifier<AiCoachState> {
 
   void clearChat() {
     state = const AiCoachState();
+  }
+
+  Future<void> uploadNotes(String filePath, String fileName, {String? subject}) async {
+    state = state.copyWith(isUploading: true, error: null);
+    try {
+      final result = await _service.uploadNotes(
+        filePath: filePath,
+        fileName: fileName,
+        subject: subject,
+      );
+      // Start new conversation with the uploaded notes context
+      final aiMsg = ChatMessage(
+        role: 'assistant',
+        content: result['reply'] ?? 'Notes uploaded! How can I help?',
+        timestamp: DateTime.now(),
+      );
+      state = state.copyWith(
+        messages: [aiMsg],
+        conversationId: result['conversationId'],
+        isUploading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isUploading: false,
+        error: 'Failed to process PDF. Please try again.',
+      );
+    }
   }
 
   void loadConversation(AiConversation conversation) {
