@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
@@ -40,9 +41,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
       try {
         final user = await _service.getMe();
         state = AuthState(user: user, initialized: true);
-      } catch (_) {
-        await StorageService.clearTokens();
-        state = const AuthState(initialized: true);
+      } catch (e) {
+        if (e is DioException && e.response?.statusCode == 401) {
+          await StorageService.clearTokens();
+          state = const AuthState(initialized: true);
+        } else {
+          // Keep tokens but stay unauthenticated for now (offline/retry mode)
+          state = const AuthState(initialized: true);
+        }
       }
     } else {
       state = const AuthState(initialized: true);
