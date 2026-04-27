@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
-import '../providers/theme_provider.dart';
 import '../app_theme.dart';
 import '../widgets/animations.dart';
 
@@ -13,7 +12,6 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider).user;
-    final isDark = false; // Dark mode removed
 
     if (user == null) {
       return const Scaffold(

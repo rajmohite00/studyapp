@@ -383,13 +383,6 @@ class _HomePage extends ConsumerWidget {
       ),
     );
   }
-
-  String _greeting() {
-    final h = DateTime.now().hour;
-    if (h < 12) return 'Morning';
-    if (h < 17) return 'Afternoon';
-    return 'Evening';
-  }
 }
 
 // ── Bold Section Header (Guidelines-style) ─────────────────────────────────────

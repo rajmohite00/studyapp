@@ -457,7 +457,7 @@ class _PerformanceWidget extends ConsumerWidget {
           loading: () => const LinearProgressIndicator(color: AppColors.primary, backgroundColor: AppColors.divider),
           error: (_, __) => const SizedBox(),
           data: (data) {
-            final d = data as Map<String, dynamic>;
+            final d = data;
             return Container(
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(18),
@@ -508,7 +508,7 @@ class _PerformanceWidget extends ConsumerWidget {
           loading: () => const SizedBox(),
           error: (_, __) => const SizedBox(),
           data: (data) {
-            final d = data as Map<String, dynamic>;
+            final d = data;
             return Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(

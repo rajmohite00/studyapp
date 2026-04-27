@@ -139,7 +139,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen>
 
     // Live streak + XP from provider (already invalidated in session_active_screen)
     final dashAsync = ref.watch(dashboardProvider);
-    final streak = dashAsync.valueOrNull?.streak?.current ?? 0;
+    final streak = dashAsync.valueOrNull?.streak.current ?? 0;
 
     final gResult = widget.session['gamificationResult'];
     final xpEarned = gResult != null ? (gResult['xpEarned'] as int) : _calcXP(mins, streak);
