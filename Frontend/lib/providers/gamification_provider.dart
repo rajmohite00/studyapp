@@ -64,3 +64,26 @@ class RewardUnlockNotifier extends StateNotifier<AsyncValue<void>> {
 final rewardUnlockProvider = StateNotifierProvider.autoDispose<RewardUnlockNotifier, AsyncValue<void>>(
   (ref) => RewardUnlockNotifier(ref.read(gamificationServiceProvider), ref),
 );
+
+// ── Equip Badge (Notifier) ────────────────────────────────────────────────────
+class EquipBadgeNotifier extends StateNotifier<AsyncValue<void>> {
+  final GamificationService _service;
+  final Ref _ref;
+
+  EquipBadgeNotifier(this._service, this._ref) : super(const AsyncValue.data(null));
+
+  Future<void> equip(String? badgeId) async {
+    state = const AsyncValue.loading();
+    try {
+      await _service.equipBadge(badgeId);
+      _ref.invalidate(gamificationStateProvider);
+      state = const AsyncValue.data(null);
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
+  }
+}
+
+final equipBadgeProvider = StateNotifierProvider.autoDispose<EquipBadgeNotifier, AsyncValue<void>>(
+  (ref) => EquipBadgeNotifier(ref.read(gamificationServiceProvider), ref),
+);

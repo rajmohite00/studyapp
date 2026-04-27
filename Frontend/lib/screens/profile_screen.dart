@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
+import '../providers/gamification_provider.dart';
+import '../models/user_model.dart';
 import '../app_theme.dart';
 import '../widgets/animations.dart';
 
@@ -12,6 +14,7 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider).user;
+    final gamificationAsync = ref.watch(gamificationStateProvider);
 
     if (user == null) {
       return const Scaffold(
@@ -85,8 +88,17 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(user.name,
-                      style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(user.name,
+                          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+                      if (gamificationAsync.valueOrNull?.activeBadgeEmoji != null) ...[
+                        const SizedBox(width: 8),
+                        Text(gamificationAsync.value!.activeBadgeEmoji!, style: const TextStyle(fontSize: 20)),
+                      ],
+                    ],
+                  ),
                   const SizedBox(height: 4),
                   Text(user.email,
                       style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
@@ -105,7 +117,19 @@ class ProfileScreen extends ConsumerWidget {
                 _AnimatedTile(
                     icon: Icons.notifications_outlined,
                     title: 'Notifications',
-                    trailing: _NotifSwitch()),
+                    trailing: const _NotifSwitch()),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // ── Gamification ─────────────────────────────────────────
+            _SectionCard(
+              title: 'Gamification',
+              children: [
+                _AnimatedTile(
+                    icon: Icons.stars_rounded,
+                    title: 'Equip Badge',
+                    onTap: () => _showBadgeSelector(context, ref, gamificationAsync.valueOrNull)),
               ],
             ),
             const SizedBox(height: 16),
@@ -124,6 +148,92 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBadgeSelector(BuildContext context, WidgetRef ref, GamificationState? state) {
+    if (state == null) return;
+    
+    final ownedBadges = state.rewardStore.where((r) => r.category == 'badge' && r.unlocked).toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text('Equip a Badge', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+            const SizedBox(height: 8),
+            Text('Show off your achievements on your profile!', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+            const SizedBox(height: 24),
+            
+            if (ownedBadges.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: Text("You don't own any badges yet.\nVisit the store to unlock some!", 
+                    textAlign: TextAlign.center, style: TextStyle(color: AppColors.textLight)),
+                ),
+              )
+            else
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  // Unequip option
+                  GestureDetector(
+                    onTap: () async {
+                      Navigator.pop(context);
+                      await ref.read(equipBadgeProvider.notifier).equip(null);
+                    },
+                    child: Container(
+                      width: 60, height: 60,
+                      decoration: BoxDecoration(
+                        color: state.activeBadgeId == null ? AppColors.primary.withOpacity(0.1) : Colors.white,
+                        border: Border.all(color: state.activeBadgeId == null ? AppColors.primary : AppColors.divider, width: 2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(child: Icon(Icons.close_rounded, color: AppColors.textSecondary)),
+                    ),
+                  ),
+                  ...ownedBadges.map((badge) {
+                    final isEquipped = state.activeBadgeId == badge.id;
+                    return GestureDetector(
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await ref.read(equipBadgeProvider.notifier).equip(badge.id);
+                      },
+                      child: Container(
+                        width: 60, height: 60,
+                        decoration: BoxDecoration(
+                          color: isEquipped ? AppColors.primary.withOpacity(0.1) : Colors.white,
+                          border: Border.all(color: isEquipped ? AppColors.primary : AppColors.divider, width: 2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(child: Text(badge.emoji, style: const TextStyle(fontSize: 28))),
+                      ),
+                    );
+                  }).toList(),
+                ],
+              ),
           ],
         ),
       ),

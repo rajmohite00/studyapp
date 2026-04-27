@@ -11,6 +11,7 @@ router.get('/state', gamificationController.getState);
 // Reward store
 router.get('/store', gamificationController.getStore);
 router.post('/unlock-reward', gamificationController.unlockReward);
+router.post('/equip-badge', gamificationController.equipBadge);
 
 // Achievements
 router.get('/achievements', gamificationController.getAchievements);

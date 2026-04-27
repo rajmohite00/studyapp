@@ -14,6 +14,10 @@ class GamificationService {
     return res.data['data'] as Map<String, dynamic>;
   }
 
+  Future<void> equipBadge(String? badgeId) async {
+    await _dio.post('/gamification/equip-badge', data: {'badgeId': badgeId});
+  }
+
   Future<List<AchievementItem>> getAchievements() async {
     final res = await _dio.get('/gamification/achievements');
     final list = res.data['data']['achievements'] as List;

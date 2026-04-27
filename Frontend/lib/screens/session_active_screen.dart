@@ -24,6 +24,7 @@ class SessionActiveScreen extends ConsumerWidget {
     // REFRESH INSTANTLY
     ref.invalidate(dashboardProvider);
     ref.invalidate(gamificationStateProvider);
+    ref.invalidate(sessionHistoryProvider);
   }
 
   @override

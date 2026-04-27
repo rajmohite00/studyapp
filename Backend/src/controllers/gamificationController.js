@@ -18,6 +18,13 @@ exports.unlockReward = catchAsync(async (req, res) => {
   sendSuccess(res, result);
 });
 
+// POST /api/v1/gamification/equip-badge
+exports.equipBadge = catchAsync(async (req, res) => {
+  const { badgeId } = req.body;
+  const result = await gamificationService.equipBadge(req.user.sub, badgeId);
+  sendSuccess(res, result);
+});
+
 // GET /api/v1/gamification/store
 exports.getStore = catchAsync(async (req, res) => {
   const state = await gamificationService.getGamificationState(req.user.sub);

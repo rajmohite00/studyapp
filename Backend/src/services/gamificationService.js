@@ -225,6 +225,23 @@ const unlockReward = async (userId, rewardId) => {
   return { success: true, coinsRemaining: user.gamification.coins, unlockedItem: itemDef };
 };
 
+const equipBadge = async (userId, badgeId) => {
+  const user = await User.findById(userId);
+  if (!user) throw new Error('User not found');
+
+  if (badgeId) {
+    const itemDef = REWARD_STORE_ITEMS.find((r) => r.id === badgeId && r.category === 'badge');
+    if (!itemDef) throw new Error('Badge not found');
+
+    const unlocked = user.gamification.rewardsUnlocked || [];
+    if (!unlocked.includes(badgeId)) throw new Error('Badge not unlocked');
+  }
+
+  user.gamification.activeBadge = badgeId || null;
+  await user.save();
+  return { success: true, activeBadge: user.gamification.activeBadge };
+};
+
 const getGamificationState = async (userId) => {
   const user = await User.findById(userId);
   if (!user) throw new Error('User not found');
@@ -295,6 +312,7 @@ const getGamificationState = async (userId) => {
 module.exports = {
   updateGamification,
   unlockReward,
+  equipBadge,
   getGamificationState,
   ACHIEVEMENTS,
   REWARD_STORE_ITEMS,
