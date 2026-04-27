@@ -341,14 +341,13 @@ class _EmptyChat extends StatelessWidget {
 }
 
 // ── Quick chip ───────────────────────────────────────────────────────────────
-class _QuickChip extends StatelessWidget {
+class _QuickChip extends ConsumerWidget {
   final String emoji;
   final String label;
   const _QuickChip({required this.emoji, required this.label});
 
   @override
-  Widget build(BuildContext context) {
-    final ref = ProviderScope.containerOf(context);
+  Widget build(BuildContext context, WidgetRef ref) {
     return PressButton(
       scaleDown: 0.94,
       onTap: () => ref.read(aiCoachProvider.notifier).sendMessage('$emoji $label'),

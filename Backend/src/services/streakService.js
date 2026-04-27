@@ -17,7 +17,11 @@ const updateStreakAfterSession = async (userId) => {
   // Check milestone
   const milestone = STREAK_MILESTONES.find((m) => m === updatedStreak.current);
   if (milestone) {
-    // TODO: trigger badge notification
+    const notificationService = require('./notificationService');
+    const fcmToken = user.fcmToken;
+    if (fcmToken) {
+      await notificationService.sendStreakMilestoneNotification(fcmToken, milestone);
+    }
     console.log(`User ${userId} hit ${milestone}-day streak milestone!`);
   }
 

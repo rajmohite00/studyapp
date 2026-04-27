@@ -84,7 +84,8 @@ const forgotPassword = async (email) => {
   user.passwordResetOtpExpires = expires;
   await user.save({ validateBeforeSave: false });
 
-  // TODO: Email the OTP — notificationService.sendOtpEmail(email, otp)
+  const notificationService = require('./notificationService');
+  await notificationService.sendOtpEmail(email, otp);
   return otp; // returned for dev/testing; remove in prod
 };
 

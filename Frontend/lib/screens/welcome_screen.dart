@@ -23,8 +23,8 @@ class WelcomeScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(colors: [
-                  AppColors.primary.withOpacity(0.18),
-                  AppColors.primary.withOpacity(0.0),
+                  AppColors.primary.withValues(alpha: 0.18),
+                  AppColors.primary.withValues(alpha: 0.0),
                 ]),
               ),
             ),
@@ -38,8 +38,8 @@ class WelcomeScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(colors: [
-                  AppColors.accentTeal.withOpacity(0.15),
-                  AppColors.accentTeal.withOpacity(0.0),
+                  AppColors.accentTeal.withValues(alpha: 0.15),
+                  AppColors.accentTeal.withValues(alpha: 0.0),
                 ]),
               ),
             ),
@@ -177,7 +177,7 @@ class WelcomeScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primary.withOpacity(0.35),
+                                  color: AppColors.primary.withValues(alpha: 0.35),
                                   blurRadius: 20,
                                   offset: const Offset(0, 8),
                                 ),
@@ -251,9 +251,9 @@ class _FeaturePill extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.25)),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

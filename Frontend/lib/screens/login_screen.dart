@@ -200,7 +200,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     onPressed: () => setState(() => _obscure = !_obscure),
                                   ),
                                 ),
-                                validator: (v) => v == null || v.length < 6 ? 'Password too short' : null,
+                                validator: (v) => (v == null || v.length < 8) ? 'Password must be at least 8 characters' : null,
                               ),
                             ],
                           ),

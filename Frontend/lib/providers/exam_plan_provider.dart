@@ -62,7 +62,7 @@ class ExamPlanNotifier extends StateNotifier<AsyncValue<ExamPlanModel?>> {
 
     // Optimistic update - MUST create a new object instance for Riverpod to trigger UI rebuild
     final newTasks = List<DailyTaskModel>.from(current.generatedPlan);
-    newTasks[taskIndex].isCompleted = completed;
+    newTasks[taskIndex] = newTasks[taskIndex].copyWith(isCompleted: completed);
     
     final optimisticPlan = ExamPlanModel(
       id: current.id,

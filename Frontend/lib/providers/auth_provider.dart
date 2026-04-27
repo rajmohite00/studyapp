@@ -91,18 +91,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   String _parseError(dynamic e) {
-    if (e.runtimeType.toString() == 'DioException' || e.toString().contains('DioException')) {
-      try {
-        final data = e.response?.data;
-        if (data is Map && data['error'] != null) {
-          return data['error']['message'] ?? 'Authentication failed';
-        }
-        return e.response?.statusMessage ?? 'Network connection failed';
-      } catch (_) {
-        return 'Network error. Please try again.';
+    if (e is DioException) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        return 'Connection timed out. Please check your internet.';
       }
+      final data = e.response?.data;
+      if (data is Map && data['error'] != null) {
+        return data['error']['message'] ?? 'Authentication failed';
+      }
+      return e.response?.statusMessage ?? 'Something went wrong. Please try again.';
     }
-    return e.toString();
+    return e.toString().replaceAll('Exception: ', '');
   }
 }
 

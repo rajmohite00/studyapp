@@ -61,10 +61,17 @@ class AiCoachNotifier extends StateNotifier<AiCoachState> {
         conversationId: result['conversationId'],
         isLoading: false,
       );
-    } catch (_) {
+    } catch (e) {
+      String errMsg = 'Failed to get response. Try again.';
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map && data['error'] != null) {
+          errMsg = data['error']['message'] ?? errMsg;
+        }
+      }
       state = state.copyWith(
         isLoading: false,
-        error: 'Failed to get response. Try again.',
+        error: errMsg,
       );
     }
   }

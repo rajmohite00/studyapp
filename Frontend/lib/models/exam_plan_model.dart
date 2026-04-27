@@ -79,7 +79,7 @@ class DailyTaskModel {
   final String topic;
   final int durationMinutes;
   final bool isRevision;
-  bool isCompleted;
+  final bool isCompleted;
   final String? completedAt;
 
   DailyTaskModel({
@@ -92,6 +92,27 @@ class DailyTaskModel {
     required this.isCompleted,
     this.completedAt,
   });
+
+  DailyTaskModel copyWith({
+    int? day,
+    String? date,
+    String? subject,
+    String? topic,
+    int? durationMinutes,
+    bool? isRevision,
+    bool? isCompleted,
+    String? completedAt,
+  }) =>
+      DailyTaskModel(
+        day: day ?? this.day,
+        date: date ?? this.date,
+        subject: subject ?? this.subject,
+        topic: topic ?? this.topic,
+        durationMinutes: durationMinutes ?? this.durationMinutes,
+        isRevision: isRevision ?? this.isRevision,
+        isCompleted: isCompleted ?? this.isCompleted,
+        completedAt: completedAt ?? this.completedAt,
+      );
 
   factory DailyTaskModel.fromJson(Map<String, dynamic> json) => DailyTaskModel(
         day: json['day'] ?? 1,

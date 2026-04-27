@@ -44,4 +44,18 @@ const sendSessionReminder = async (fcmToken, subject) => {
   await sendPushNotification(fcmToken, '📚 Time to Study!', `Don't forget your ${subject} session today.`, { type: 'SESSION_REMINDER' });
 };
 
-module.exports = { sendPushNotification, sendGoalAchievedNotification, sendStreakMilestoneNotification, sendSessionReminder };
+/**
+ * Send OTP via Email (Mock implementation).
+ */
+const sendOtpEmail = async (email, otp) => {
+  // In a real app, use nodemailer or a service like SendGrid
+  console.log(`📧 [MOCK EMAIL] To: ${email} | Subject: Password Reset OTP | Body: Your OTP is ${otp}`);
+};
+
+module.exports = { 
+  sendPushNotification, 
+  sendGoalAchievedNotification, 
+  sendStreakMilestoneNotification, 
+  sendSessionReminder,
+  sendOtpEmail
+};
