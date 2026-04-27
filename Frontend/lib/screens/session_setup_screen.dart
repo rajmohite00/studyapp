@@ -41,7 +41,13 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
         durationMinutes: _durationMinutes,
         goal: _goal.isEmpty ? null : _goal,
       );
-      if (mounted) context.pushReplacement('/session/active', extra: {'subject': _subject});
+      if (mounted) context.pushReplacement('/session/active');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

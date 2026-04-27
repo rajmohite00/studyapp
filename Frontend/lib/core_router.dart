@@ -109,7 +109,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/session/active',
         pageBuilder: (c, s) => _slideFade(
             context: c, state: s,
-            child: SessionActiveScreen(session: Map<String, dynamic>.from(s.extra as Map))),
+            child: const SessionActiveScreen()),
       ),
       GoRoute(
         path: '/session/summary',

@@ -8,8 +8,7 @@ import '../providers/gamification_provider.dart';
 import '../app_theme.dart';
 
 class SessionActiveScreen extends ConsumerWidget {
-  final Map<String, dynamic> session;
-  const SessionActiveScreen({super.key, required this.session});
+  const SessionActiveScreen({super.key});
 
   Future<void> _finishAndRefresh(WidgetRef ref, BuildContext context, {bool goHome = false}) async {
     final sess = await ref.read(sessionProvider.notifier).endSession();
@@ -30,12 +29,18 @@ class SessionActiveScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(sessionProvider);
+    final sessionData = state.currentSession;
+    
+    // Fallback/Safety: If no session is active in provider, show loading or empty
+    if (sessionData == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     final elapsed = state.elapsed;
     final isPaused = state.status == SessionStatus.paused;
-    final sessionData = session;
 
     // Planned duration from session data
-    final plannedMins = (sessionData['plannedDurationMinutes'] ?? 25) as int;
+    final plannedMins = sessionData.plannedDurationMinutes;
     final plannedDuration = Duration(minutes: plannedMins);
 
     // Overtime detection
@@ -114,7 +119,7 @@ class SessionActiveScreen extends ConsumerWidget {
                             border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 1.5),
                           ),
                           child: Text(
-                            session['subject'] ?? '',
+                            sessionData.subject,
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5),
                             overflow: TextOverflow.ellipsis,
                           ),

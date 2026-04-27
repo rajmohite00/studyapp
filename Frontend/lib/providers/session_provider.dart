@@ -71,6 +71,7 @@ class SessionNotifier extends StateNotifier<SessionState> {
       _startTimer();
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'Failed to start session');
+      rethrow;
     }
   }
 
