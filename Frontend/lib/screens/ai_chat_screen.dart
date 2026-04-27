@@ -134,12 +134,16 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: Text(
-                      state.isLoading ? '✦ Thinking...' : '● Online',
-                      key: ValueKey(state.isLoading),
+                      state.isUploading ? '⬆ Uploading PDF...' : state.isLoading ? '✦ Thinking...' : '● Online',
+                      key: ValueKey('${state.isUploading}${state.isLoading}'),
                       style: GoogleFonts.outfit(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: state.isLoading ? AppColors.accentGreen : const Color(0xFF22C55E),
+                        color: state.isUploading
+                            ? AppColors.accentOrange
+                            : state.isLoading
+                                ? AppColors.accentGreen
+                                : const Color(0xFF22C55E),
                       ),
                     ),
                   ),
@@ -163,6 +167,25 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                 child: const Icon(Icons.volume_off_rounded, size: 16, color: Colors.white),
               ),
             ),
+          // PDF Upload button
+          PressButton(
+            scaleDown: 0.88,
+            onTap: (state.isLoading || state.isUploading) ? null : _pickAndUploadPDF,
+            child: Container(
+              margin: const EdgeInsets.only(right: 6),
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: state.isUploading ? AppColors.accentOrange.withOpacity(0.15) : AppColors.background,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: state.isUploading ? AppColors.accentOrange.withOpacity(0.5) : AppColors.divider,
+                ),
+              ),
+              child: state.isUploading
+                  ? const SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentOrange))
+                  : const Icon(Icons.upload_file_rounded, size: 17, color: AppColors.textSecondary),
+            ),
+          ),
           PressButton(
             scaleDown: 0.88,
             onTap: () => ref.read(aiCoachProvider.notifier).clearChat(),
