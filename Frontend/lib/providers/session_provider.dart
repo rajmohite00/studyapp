@@ -40,12 +40,28 @@ class SessionState {
       );
 }
 
-class SessionNotifier extends StateNotifier<SessionState> {
-  final SessionService _service;
-  Timer? _timer;
-  DateTime? _lastTickTime;
+  SessionNotifier(this._service) : super(const SessionState()) {
+    _syncSession();
+  }
 
-  SessionNotifier(this._service) : super(const SessionState());
+  Future<void> _syncSession() async {
+    try {
+      final active = await _service.getActiveSession();
+      if (active != null) {
+        state = state.copyWith(
+          currentSession: active,
+          status: active.status == 'active' ? SessionStatus.active : SessionStatus.paused,
+          // Calculate elapsed if active
+          elapsed: active.status == 'active' 
+              ? DateTime.now().difference(active.startTime) 
+              : Duration(seconds: active.durationSeconds),
+        );
+        if (active.status == 'active') _startTimer();
+      }
+    } catch (_) {
+      // Silent fail for sync
+    }
+  }
 
   Future<void> startSession({
     required String subject,

@@ -57,6 +57,8 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(authStateProvider).user;
     final subjects = user?.profile.subjects ?? [];
+    final sessionState = ref.watch(sessionProvider);
+    final hasActive = sessionState.status == SessionStatus.active || sessionState.status == SessionStatus.paused;
 
     return LoadingOverlay(
       isLoading: _isLoading,
@@ -65,7 +67,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           title: Text(
-            'New Study Session',
+            hasActive ? 'Resume Session' : 'New Study Session',
             style: GoogleFonts.outfit(fontWeight: FontWeight.w800, color: AppColors.textPrimary),
           ),
           centerTitle: false,
@@ -80,143 +82,192 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            // ── Subject picker ───────────────────────────
-            _FieldLabel(label: 'Subject', icon: Icons.book_outlined),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _subjectController,
-              decoration: const InputDecoration(
-                hintText: 'Enter or search subject name...',
-                prefixIcon: Icon(Icons.search_rounded, size: 20),
-              ),
-              onChanged: (v) => setState(() => _subject = v.trim()),
-            ),
-            if (subjects.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: subjects.map((s) {
-                  final selected = _subject.toLowerCase() == s.toLowerCase();
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _subject = s;
-                        _subjectController.text = s;
-                      });
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: selected ? AppColors.primary : Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: selected ? AppColors.primary : AppColors.divider,
-                          width: selected ? 2 : 1,
-                        ),
-                        boxShadow: selected
-                            ? [BoxShadow(color: AppColors.primary.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 3))]
-                            : [],
-                      ),
-                      child: Text(
-                        s,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
+            if (hasActive) ...[
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(Icons.timer_outlined, size: 48, color: AppColors.primary),
+                    const SizedBox(height: 16),
+                    Text(
+                      'You have an active session!',
+                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800),
                     ),
-                  );
-                }).toList(),
-              ),
-            ],
-            const SizedBox(height: 24),
-
-            // ── Topic ───────────────────────────────────
-            _FieldLabel(label: 'Topic', icon: Icons.label_outline_rounded),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: const InputDecoration(
-                hintText: 'Optional — e.g. Chapter 5: Thermodynamics',
-                prefixIcon: Icon(Icons.edit_note_rounded, size: 20),
-              ),
-              onChanged: (v) => setState(() => _topic = v),
-            ),
-            const SizedBox(height: 24),
-
-            // ── Timer Mode ──────────────────────────────
-            _FieldLabel(label: 'Timer Mode', icon: Icons.timer_outlined),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _ModeCard(
-                    label: 'Pomodoro',
-                    subtitle: '25 min focus',
-                    icon: Icons.timer_rounded,
-                    selected: _mode == 'pomodoro',
-                    onTap: () => setState(() { _mode = 'pomodoro'; _durationMinutes = 25; }),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _ModeCard(
-                    label: 'Custom',
-                    subtitle: 'Set your own',
-                    icon: Icons.tune_rounded,
-                    selected: _mode == 'custom',
-                    onTap: () => setState(() => _mode = 'custom'),
-                  ),
-                ),
-              ],
-            ),
-
-            // ── Duration slider (custom mode) ───────────
-            if (_mode == 'custom') ...[
-              const SizedBox(height: 24),
-              _FieldLabel(label: 'Duration: $_durationMinutes min', icon: Icons.hourglass_empty_rounded),
-              const SizedBox(height: 4),
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: AppColors.primary,
-                  inactiveTrackColor: AppColors.primary.withOpacity(0.15),
-                  thumbColor: AppColors.primary,
-                  overlayColor: AppColors.primary.withOpacity(0.1),
-                  trackHeight: 4,
-                ),
-                child: Slider(
-                  value: _durationMinutes.toDouble(),
-                  min: 5, max: 180, divisions: 35,
-                  label: '$_durationMinutes min',
-                  onChanged: (v) => setState(() => _durationMinutes = v.round()),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text('5 min', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
-                    Text('3 hrs', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Subject: ${sessionState.currentSession?.subject}',
+                      style: const TextStyle(color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 24),
+                    PrimaryButton(
+                      text: 'Resume Session ▶',
+                      onPressed: () => context.pushReplacement('/session/active'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () => ref.read(sessionProvider.notifier).endSession(notes: 'Abandoned to start new'),
+                      child: const Text('End current session and start new', style: TextStyle(color: Colors.redAccent)),
+                    ),
                   ],
                 ),
               ),
-            ],
-            const SizedBox(height: 24),
-
-            // ── Goal ────────────────────────────────────
-            _FieldLabel(label: 'Session Goal', icon: Icons.flag_outlined),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: const InputDecoration(
-                hintText: 'Optional — e.g. Complete Chapter 5',
-                prefixIcon: Icon(Icons.flag_rounded, size: 20),
+              const SizedBox(height: 40),
+            ] else ...[
+              // ── Subject picker ───────────────────────────
+              _FieldLabel(label: 'Subject', icon: Icons.book_outlined),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _subjectController,
+                decoration: const InputDecoration(
+                  hintText: 'Enter or search subject name...',
+                  prefixIcon: Icon(Icons.search_rounded, size: 20),
+                ),
+                onChanged: (v) => setState(() => _subject = v.trim()),
               ),
-              onChanged: (v) => setState(() => _goal = v),
-            ),
-            const SizedBox(height: 36),
+              if (subjects.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: subjects.map((s) {
+                    final selected = _subject.toLowerCase() == s.toLowerCase();
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _subject = s;
+                          _subjectController.text = s;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: selected ? AppColors.primary : Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: selected ? AppColors.primary : AppColors.divider,
+                            width: selected ? 2 : 1,
+                          ),
+                          boxShadow: selected
+                              ? [BoxShadow(color: AppColors.primary.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 3))]
+                              : [],
+                        ),
+                        child: Text(
+                          s,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+              const SizedBox(height: 24),
+
+              // ── Topic ───────────────────────────────────
+              _FieldLabel(label: 'Topic', icon: Icons.label_outline_rounded),
+              const SizedBox(height: 12),
+              TextField(
+                decoration: const InputDecoration(
+                  hintText: 'Optional — e.g. Chapter 5: Thermodynamics',
+                  prefixIcon: Icon(Icons.edit_note_rounded, size: 20),
+                ),
+                onChanged: (v) => setState(() => _topic = v),
+              ),
+              const SizedBox(height: 24),
+
+              // ── Timer Mode ──────────────────────────────
+              _FieldLabel(label: 'Timer Mode', icon: Icons.timer_outlined),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _ModeCard(
+                      label: 'Pomodoro',
+                      subtitle: '25 min focus',
+                      icon: Icons.timer_rounded,
+                      selected: _mode == 'pomodoro',
+                      onTap: () => setState(() { _mode = 'pomodoro'; _durationMinutes = 25; }),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _ModeCard(
+                      label: 'Custom',
+                      subtitle: 'Set your own',
+                      icon: Icons.tune_rounded,
+                      selected: _mode == 'custom',
+                      onTap: () => setState(() => _mode = 'custom'),
+                    ),
+                  ),
+                ],
+              ),
+
+              // ── Duration slider (custom mode) ───────────
+              if (_mode == 'custom') ...[
+                const SizedBox(height: 24),
+                _FieldLabel(label: 'Duration: $_durationMinutes min', icon: Icons.hourglass_empty_rounded),
+                const SizedBox(height: 4),
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: AppColors.primary,
+                    inactiveTrackColor: AppColors.primary.withOpacity(0.15),
+                    thumbColor: AppColors.primary,
+                    overlayColor: AppColors.primary.withOpacity(0.1),
+                    trackHeight: 4,
+                  ),
+                  child: Slider(
+                    value: _durationMinutes.toDouble(),
+                    min: 5, max: 180, divisions: 35,
+                    label: '$_durationMinutes min',
+                    onChanged: (v) => setState(() => _durationMinutes = v.round()),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text('5 min', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+                      Text('3 hrs', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 24),
+
+              // ── Goal ────────────────────────────────────
+              _FieldLabel(label: 'Session Goal', icon: Icons.flag_outlined),
+              const SizedBox(height: 12),
+              TextField(
+                decoration: const InputDecoration(
+                  hintText: 'Optional — e.g. Complete Chapter 5',
+                  prefixIcon: Icon(Icons.flag_rounded, size: 20),
+                ),
+                onChanged: (v) => setState(() => _goal = v),
+              ),
+              const SizedBox(height: 36),
+
+              // ── Start button ────────────────────────────
+              PrimaryButton(
+                text: _subject.isEmpty ? 'Select a Subject to Start' : 'Start Session ▶',
+                onPressed: _subject.isEmpty ? null : _start,
+              ),
+            ],
+            ],
+          ),
+        ),
+      ),
+    );
+ight: 36),
 
             // ── Start button ────────────────────────────
             PrimaryButton(
