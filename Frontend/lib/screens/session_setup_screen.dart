@@ -266,17 +266,6 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
           ),
         ),
       ),
-    );
-ight: 36),
-
-            // ── Start button ────────────────────────────
-            PrimaryButton(
-              text: _subject.isEmpty ? 'Select a Subject to Start' : 'Start Session ▶',
-              onPressed: _subject.isEmpty ? null : _start,
-            ),
-          ],
-        ),
-      ),
     ));
   }
 }

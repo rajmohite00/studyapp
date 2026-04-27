@@ -40,6 +40,11 @@ class SessionState {
       );
 }
 
+class SessionNotifier extends StateNotifier<SessionState> {
+  final SessionService _service;
+  Timer? _timer;
+  DateTime? _lastTickTime;
+
   SessionNotifier(this._service) : super(const SessionState()) {
     _syncSession();
   }
