@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/session_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/analytics_provider.dart';
+import '../providers/gamification_provider.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/loading_overlay.dart';
 import '../widgets/animations.dart';
@@ -110,7 +112,12 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                     ),
                     const SizedBox(height: 12),
                     TextButton(
-                      onPressed: () => ref.read(sessionProvider.notifier).endSession(notes: 'Abandoned to start new'),
+                      onPressed: () async {
+                        await ref.read(sessionProvider.notifier).endSession(notes: 'Abandoned to start new');
+                        ref.invalidate(dashboardProvider);
+                        ref.invalidate(gamificationStateProvider);
+                        ref.invalidate(sessionHistoryProvider);
+                      },
                       child: const Text('End current session and start new', style: TextStyle(color: Colors.redAccent)),
                     ),
                   ],
