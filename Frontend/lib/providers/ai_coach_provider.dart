@@ -105,9 +105,20 @@ class AiCoachNotifier extends StateNotifier<AiCoachState> {
         isUploading: false,
       );
     } catch (e) {
+      String errMsg = 'Failed to process file. Please try again.';
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map && data['error'] != null) {
+          if (data['error'] is Map) {
+            errMsg = data['error']['message'] ?? errMsg;
+          } else {
+            errMsg = data['error'].toString();
+          }
+        }
+      }
       state = state.copyWith(
         isUploading: false,
-        error: 'Failed to process file. Please try again.',
+        error: errMsg,
       );
     }
   }
