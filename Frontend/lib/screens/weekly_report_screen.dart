@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +8,8 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 import '../providers/analytics_provider.dart';
 import '../providers/auth_provider.dart';
 import '../app_theme.dart';
@@ -21,6 +24,49 @@ class WeeklyReportScreen extends ConsumerStatefulWidget {
 
 class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
   bool _generating = false;
+  bool _sharing = false;
+  final _screenshotController = ScreenshotController();
+
+  // ── Social Share ──────────────────────────────────────────────────────────
+  Future<void> _shareAsImage(Map<String, dynamic> data, String userName) async {
+    setState(() => _sharing = true);
+    try {
+      final Uint8List? image = await _screenshotController.capture(pixelRatio: 3.0);
+      if (image == null) throw Exception('Screenshot capture returned null');
+
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/StudyCoach_Report_${DateTime.now().millisecondsSinceEpoch}.png');
+      await file.writeAsBytes(image);
+
+      final totalMins = (data['totalStudyMinutes'] ?? 0) as int;
+      final avgFocus = data['avgFocusScore'] ?? 0;
+      final totalSessions = data['totalSessions'] ?? 0;
+
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        subject: '📊 My Weekly Study Report',
+        text: '🎓 Check out my weekly progress!\n\n'
+            '📚 Study Time: ${totalMins ~/ 60}h ${totalMins % 60}m\n'
+            '🎯 Avg Focus: $avgFocus%\n'
+            '⚡ Sessions: $totalSessions\n\n'
+            'Powered by AI Study Coach',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share: $e',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.accent,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
 
   Future<void> _downloadPdf(Map<String, dynamic> data, String userName) async {
     setState(() => _generating = true);
@@ -334,31 +380,16 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Header card ─────────────────────────────────────────
+                // ── Shareable Header Card (captured by screenshot) ──────────
                 FadeSlideIn(
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.textPrimary, width: 3),
-                      boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Hi, $userName! 👋',
-                            style: GoogleFonts.outfit(fontSize: 16, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 4),
-                        Text('Weekly Summary',
-                            style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${DateFormat('MMM d').format(DateTime.now().subtract(const Duration(days: 7)))} – ${DateFormat('MMM d, yyyy').format(DateTime.now())}',
-                          style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textLight),
-                        ),
-                      ],
+                  child: Screenshot(
+                    controller: _screenshotController,
+                    child: _ShareableReportCard(
+                      userName: userName,
+                      totalMins: totalMins,
+                      avgFocus: avgFocus,
+                      totalSessions: totalSessions,
+                      subjectBreakdown: subjectBreakdown,
                     ),
                   ),
                 ),
@@ -467,29 +498,61 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
                   const SizedBox(height: 28),
                 ],
 
-                // ── Download PDF button ────────────────────────────────────
+                // ── Action buttons ────────────────────────────────────────
                 FadeSlideIn(
                   delay: const Duration(milliseconds: 300),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton.icon(
-                      onPressed: _generating ? null : () => _downloadPdf(data, userName),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.textPrimary, width: 2.5)),
-                        shadowColor: AppColors.primary.withOpacity(0.4),
+                  child: Row(
+                    children: [
+                      // Download PDF
+                      Expanded(
+                        child: SizedBox(
+                          height: 56,
+                          child: ElevatedButton.icon(
+                            onPressed: _generating ? null : () => _downloadPdf(data, userName),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: const BorderSide(color: AppColors.textPrimary, width: 2.5)),
+                            ),
+                            icon: _generating
+                                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                                : const Icon(Icons.download_rounded, size: 20),
+                            label: Text(
+                              _generating ? 'Generating...' : 'PDF',
+                              style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
                       ),
-                      icon: _generating
-                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                          : const Icon(Icons.download_rounded, size: 22),
-                      label: Text(
-                        _generating ? 'Generating PDF...' : 'Download PDF Report',
-                        style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700),
+                      const SizedBox(width: 12),
+                      // Share as Image
+                      Expanded(
+                        child: SizedBox(
+                          height: 56,
+                          child: ElevatedButton.icon(
+                            onPressed: _sharing ? null : () => _shareAsImage(data, userName),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF00C896),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: const BorderSide(color: AppColors.textPrimary, width: 2.5)),
+                            ),
+                            icon: _sharing
+                                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                                : const Icon(Icons.share_rounded, size: 20),
+                            label: Text(
+                              _sharing ? 'Sharing...' : 'Share',
+                              style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -543,3 +606,318 @@ class _SectionTitle extends StatelessWidget {
         Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
       ]);
 }
+
+// ── Shareable Report Card ─────────────────────────────────────────────────────
+/// A self-contained, visually rich card optimised to be captured as a
+/// social-media image (screenshot). Uses a fixed width + intrinsic height so
+/// the screenshot captures exactly the card at 3× resolution.
+class _ShareableReportCard extends StatelessWidget {
+  final String userName;
+  final int totalMins;
+  final int avgFocus;
+  final int totalSessions;
+  final Map<String, int> subjectBreakdown;
+
+  const _ShareableReportCard({
+    required this.userName,
+    required this.totalMins,
+    required this.avgFocus,
+    required this.totalSessions,
+    required this.subjectBreakdown,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final weekOf = DateFormat('MMM d').format(DateTime.now().subtract(const Duration(days: 7)));
+    final weekEnd = DateFormat('MMM d, yyyy').format(DateTime.now());
+
+    // Pick up to 3 subjects for the mini-bars
+    final topSubjects = subjectBreakdown.entries
+        .toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final displaySubjects = topSubjects.take(3).toList();
+
+    const subjectColors = [
+      Color(0xFF00FFC6),
+      Color(0xFFFFCA57),
+      Color(0xFFFF6B6B),
+    ];
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E3A8A), Color(0xFF4F35E1)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Stack(
+        children: [
+          // ── Decorative circles ─────────────────────────────────────────
+          Positioned(
+            top: -40, right: -40,
+            child: Container(
+              width: 160, height: 160,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.04),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -30, left: -30,
+            child: Container(
+              width: 120, height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF864AF9).withOpacity(0.12),
+              ),
+            ),
+          ),
+
+          // ── Content ────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '📊 Weekly Report',
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withOpacity(0.6),
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          userName,
+                          style: GoogleFonts.outfit(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      ),
+                      child: Text(
+                        '$weekOf – $weekEnd',
+                        style: GoogleFonts.outfit(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // ── Stat pills ───────────────────────────────────────────
+                Row(
+                  children: [
+                    _ShareStat(
+                      emoji: '📚',
+                      value: '${totalMins ~/ 60}h ${totalMins % 60}m',
+                      label: 'Study Time',
+                      accentColor: const Color(0xFF00FFC6),
+                    ),
+                    const SizedBox(width: 10),
+                    _ShareStat(
+                      emoji: '🎯',
+                      value: '$avgFocus%',
+                      label: 'Avg Focus',
+                      accentColor: const Color(0xFFFFCA57),
+                    ),
+                    const SizedBox(width: 10),
+                    _ShareStat(
+                      emoji: '⚡',
+                      value: '$totalSessions',
+                      label: 'Sessions',
+                      accentColor: const Color(0xFFFF6B6B),
+                    ),
+                  ],
+                ),
+
+                // ── Subject mini-bars ────────────────────────────────────
+                if (displaySubjects.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  Text(
+                    'TOP SUBJECTS',
+                    style: GoogleFonts.outfit(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white.withOpacity(0.5),
+                      letterSpacing: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ...displaySubjects.asMap().entries.map((entry) {
+                    final idx = entry.key;
+                    final e = entry.value;
+                    final pct = totalMins > 0
+                        ? (e.value / totalMins).clamp(0.0, 1.0)
+                        : 0.0;
+                    final color = subjectColors[idx % subjectColors.length];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(e.key,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white.withOpacity(0.85),
+                                  )),
+                              Text('${e.value ~/ 60}h ${e.value % 60}m',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 11,
+                                    color: Colors.white.withOpacity(0.5),
+                                  )),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: pct,
+                              minHeight: 5,
+                              backgroundColor: Colors.white.withOpacity(0.08),
+                              valueColor: AlwaysStoppedAnimation(color),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+
+                const SizedBox(height: 20),
+
+                // ── Branding footer ──────────────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 28, height: 28,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [Color(0xFF00FFC6), Color(0xFF4F35E1)],
+                            ),
+                          ),
+                          child: const Center(
+                            child: Text('🎓', style: TextStyle(fontSize: 14)),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'AI Study Coach',
+                          style: GoogleFonts.outfit(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF00FFC6), Color(0xFF00C896)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Keep grinding! 🔥',
+                        style: GoogleFonts.outfit(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Share Stat Tile ───────────────────────────────────────────────────────────
+class _ShareStat extends StatelessWidget {
+  final String emoji, value, label;
+  final Color accentColor;
+
+  const _ShareStat({
+    required this.emoji,
+    required this.value,
+    required this.label,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.07),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: accentColor.withOpacity(0.35), width: 1.5),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 18)),
+              const SizedBox(height: 6),
+              Text(
+                value,
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: accentColor,
+                ),
+              ),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  fontSize: 10,
+                  color: Colors.white.withOpacity(0.55),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+

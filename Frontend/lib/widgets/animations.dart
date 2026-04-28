@@ -566,7 +566,7 @@ class _GoalBadgeState extends State<GoalBadge>
   }
 
   @override
-  Widget build(BuildContext context) => ScaleTransition(scale: _scale, child: child);
+  Widget build(BuildContext context) => ScaleTransition(scale: _scale, child: widget.child);
 }
 
 // ── 10. Voice Activity Waveform ─────────────────────────────────────────────

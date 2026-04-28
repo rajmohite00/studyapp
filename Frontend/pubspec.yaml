@@ -56,7 +56,7 @@ dependencies:
   socket_io_client: ^3.0.2
 
   # Social Sharing & Screenshot
-  share_plus: ^9.0.0
+  share_plus: ^12.0.2
   screenshot: ^3.0.0
 
 dev_dependencies:

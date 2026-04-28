@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_theme.dart';
+import 'rank_icons.dart';
 
 // ── Rank Tier Definition ──────────────────────────────────────────────────────
 class RankTier {
   final String name;
   final String emoji;
-  final IconData icon;
   final List<Color> gradient;
   final Color glowColor;
   final int minLevel;
@@ -14,7 +14,6 @@ class RankTier {
   const RankTier({
     required this.name,
     required this.emoji,
-    required this.icon,
     required this.gradient,
     required this.glowColor,
     required this.minLevel,
@@ -30,11 +29,20 @@ class RankTier {
     return tiers[0];                  // Bronze
   }
 
+  static int indexFromLevel(int level) {
+    if (level >= 40) return 6;
+    if (level >= 30) return 5;
+    if (level >= 20) return 4;
+    if (level >= 15) return 3;
+    if (level >= 10) return 2;
+    if (level >= 5)  return 1;
+    return 0;
+  }
+
   static const List<RankTier> tiers = [
     RankTier(
       name: 'Bronze',
       emoji: '🥉',
-      icon: Icons.shield_outlined,
       gradient: [Color(0xFFCD7F32), Color(0xFFB8650A)],
       glowColor: Color(0xFFCD7F32),
       minLevel: 1,
@@ -42,15 +50,13 @@ class RankTier {
     RankTier(
       name: 'Silver',
       emoji: '🥈',
-      icon: Icons.shield,
-      gradient: [Color(0xFFC0C0C0), Color(0xFF9E9E9E)],
+      gradient: [Color(0xFFD0D0D0), Color(0xFF9E9E9E)],
       glowColor: Color(0xFFC0C0C0),
       minLevel: 5,
     ),
     RankTier(
       name: 'Gold',
       emoji: '🥇',
-      icon: Icons.workspace_premium_rounded,
       gradient: [Color(0xFFFFD700), Color(0xFFF59E0B)],
       glowColor: Color(0xFFFFD700),
       minLevel: 10,
@@ -58,7 +64,6 @@ class RankTier {
     RankTier(
       name: 'Platinum',
       emoji: '💎',
-      icon: Icons.diamond_rounded,
       gradient: [Color(0xFFE5E4E2), Color(0xFF9CB4CC)],
       glowColor: Color(0xFF9CB4CC),
       minLevel: 15,
@@ -66,7 +71,6 @@ class RankTier {
     RankTier(
       name: 'Diamond',
       emoji: '💠',
-      icon: Icons.diamond_outlined,
       gradient: [Color(0xFF60A5FA), Color(0xFF818CF8)],
       glowColor: Color(0xFF818CF8),
       minLevel: 20,
@@ -74,7 +78,6 @@ class RankTier {
     RankTier(
       name: 'Master',
       emoji: '👑',
-      icon: Icons.military_tech_rounded,
       gradient: [Color(0xFFA855F7), Color(0xFFEC4899)],
       glowColor: Color(0xFFA855F7),
       minLevel: 30,
@@ -82,7 +85,6 @@ class RankTier {
     RankTier(
       name: 'Grandmaster',
       emoji: '🏆',
-      icon: Icons.emoji_events_rounded,
       gradient: [Color(0xFFFF6B6B), Color(0xFFFECA57)],
       glowColor: Color(0xFFFECA57),
       minLevel: 40,
@@ -166,14 +168,13 @@ class _RankBadgeState extends State<RankBadge>
             ),
             child: child,
           ),
-          child: Center(
-            child: Icon(
-              tier.icon,
-              color: Colors.white,
-              size: widget.size * 0.45,
-              shadows: const [
-                Shadow(color: Colors.black38, blurRadius: 6, offset: Offset(0, 2)),
-              ],
+          child: Padding(
+            padding: EdgeInsets.all(widget.size * 0.14),
+            child: CustomPaint(
+              painter: rankIconPainter(
+                RankTier.indexFromLevel(widget.level),
+                tier.gradient,
+              ),
             ),
           ),
         ),
