@@ -44,159 +44,84 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen>
           return SafeArea(
             child: Column(
               children: [
-                // ── HERO HEADER ──
-                Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF4F35E1), Color(0xFF864AF9)], // Matching vibrant neon purple
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
+                // ── HERO HEADER & RANK CARD ──
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      height: 130,
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF4F35E1), Color(0xFF864AF9)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Padding(
                         padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
-                              onPressed: () => context.pop(),
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                                  onPressed: () => context.pop(),
+                                ),
+                                Text(
+                                  'Rewards & Progress',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              'Rewards & Progress',
-                              style: GoogleFonts.outfit(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8, right: 12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Text('🪙', style: TextStyle(fontSize: 16)),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${state.coins}',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    RankBadge(
-                                      level: state.level,
-                                      size: 64,
-                                      showLabel: false,
-                                      showGlow: true,
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'LEVEL ${state.level}',
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w800,
-                                            letterSpacing: 1.5,
-                                            color: Colors.white.withValues(alpha: 0.7),
-                                          ),
-                                        ),
-                                        Text(
-                                          state.rank,
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 26,
-                                            fontWeight: FontWeight.w900,
-                                            color: Colors.white,
-                                            height: 1.1,
-                                          ),
-                                        ),
-                                        Text(
-                                          RankTier.fromLevel(state.level).name,
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 12,
-                                            color: Colors.white70,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      const Text('🪙', style: TextStyle(fontSize: 24)),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '${state.coins}',
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w900,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '${state.xp} XP',
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                Text(
-                                  '${state.xpForNext} XP to next',
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            AnimatedProgressBar(
-                              value: state.xpNeeded > 0
-                                  ? state.xpProgress / state.xpNeeded
-                                  : 1.0,
-                              color: const Color(0xFF00FFC6), // Neon green
-                              backgroundColor: Colors.white.withValues(alpha: 0.2),
-                              height: 12,
-                            ),
-                          ],
-                        ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 70, left: 16, right: 16),
+                      child: RankProgressCard(
+                        level: state.level,
+                        xp: state.xp,
+                        xpNeeded: state.xpNeeded,
+                        xpProgress: state.xpProgress,
+                        rankName: state.rank,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                // ── RANK PROGRESS CARD ──
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                  child: RankProgressCard(
-                    level: state.level,
-                    xp: state.xp,
-                    xpNeeded: state.xpNeeded,
-                    xpProgress: state.xpProgress,
-                    rankName: state.rank,
-                  ),
-                ),
+                const SizedBox(height: 16),
                 // ── PILL TAB BAR ──
                 Container(
                   color: Theme.of(context).cardTheme.color,

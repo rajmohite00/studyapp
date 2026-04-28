@@ -222,16 +222,19 @@ class RankProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color ?? Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: Theme.of(context).brightness == Brightness.dark 
+            ? const Color(0xFF1E1E2A) 
+            : Colors.white,
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
-          width: 3,
+          color: AppColors.primary.withValues(alpha: 0.1),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
-            offset: const Offset(4, 4),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -259,11 +262,11 @@ class RankProgressCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Level $level · ${tier.name} Tier',
+                      'Level $level',
                       style: GoogleFonts.outfit(
-                        fontSize: 12,
+                        fontSize: 13,
                         color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
