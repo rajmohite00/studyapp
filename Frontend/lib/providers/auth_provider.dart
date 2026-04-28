@@ -36,29 +36,41 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _init() async {
-    final token = await StorageService.getAccessToken();
-    if (token != null) {
-      final cachedMap = StorageService.getUserCache();
-      if (cachedMap != null) {
-        state = AuthState(user: UserModel.fromJson(cachedMap), initialized: true);
-      }
-
-      try {
-        final user = await _service.getMe();
-        await StorageService.saveUserCache(user.toJson());
-        state = AuthState(user: user, initialized: true);
-      } catch (e) {
-        if (e is DioException && e.response?.statusCode == 401) {
-          await StorageService.clearTokens();
-          await StorageService.clearUserCache();
-          state = const AuthState(initialized: true);
-        } else {
-          if (cachedMap == null) {
-            state = const AuthState(initialized: true);
+    try {
+      final token = await StorageService.getAccessToken();
+      if (token != null) {
+        final cachedMap = StorageService.getUserCache();
+        if (cachedMap != null) {
+          try {
+            state = AuthState(user: UserModel.fromJson(cachedMap), initialized: true);
+          } catch (e) {
+            // Ignore cache parse error, we'll fetch fresh data
+            await StorageService.clearUserCache();
           }
         }
+
+        try {
+          final user = await _service.getMe();
+          await StorageService.saveUserCache(user.toJson());
+          state = AuthState(user: user, initialized: true);
+        } catch (e) {
+          if (e is DioException && e.response?.statusCode == 401) {
+            await StorageService.clearTokens();
+            await StorageService.clearUserCache();
+            state = const AuthState(initialized: true);
+          } else {
+            // Network error or timeout. If we successfully loaded cache, 
+            // state is already initialized. If not, initialize it now as unauthenticated.
+            if (state.user == null) {
+              state = const AuthState(initialized: true);
+            }
+          }
+        }
+      } else {
+        state = const AuthState(initialized: true);
       }
-    } else {
+    } catch (e) {
+      // Ultimate fallback to prevent infinite splash screen
       state = const AuthState(initialized: true);
     }
   }
