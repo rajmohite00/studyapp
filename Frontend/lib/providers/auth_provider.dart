@@ -38,16 +38,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _init() async {
     final token = await StorageService.getAccessToken();
     if (token != null) {
+      final cachedMap = StorageService.getUserCache();
+      if (cachedMap != null) {
+        state = AuthState(user: UserModel.fromJson(cachedMap), initialized: true);
+      }
+
       try {
         final user = await _service.getMe();
+        await StorageService.saveUserCache(user.toJson());
         state = AuthState(user: user, initialized: true);
       } catch (e) {
         if (e is DioException && e.response?.statusCode == 401) {
           await StorageService.clearTokens();
+          await StorageService.clearUserCache();
           state = const AuthState(initialized: true);
         } else {
-          // Keep tokens but stay unauthenticated for now (offline/retry mode)
-          state = const AuthState(initialized: true);
+          if (cachedMap == null) {
+            state = const AuthState(initialized: true);
+          }
         }
       }
     } else {
@@ -60,6 +68,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final data = await _service.register(name: name, email: email, password: password);
       final user = UserModel.fromJson(data['user']);
+      await StorageService.saveUserCache(user.toJson());
       state = state.copyWith(user: user, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: _parseError(e));
@@ -70,6 +79,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final user = await _service.login(email: email, password: password);
+      await StorageService.saveUserCache(user.toJson());
       state = state.copyWith(user: user, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: _parseError(e));
@@ -80,6 +90,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final user = await _service.updateProfile(data);
+      await StorageService.saveUserCache(user.toJson());
       state = state.copyWith(user: user, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: _parseError(e));
@@ -89,10 +100,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     await _service.logout();
+    await StorageService.clearUserCache();
     state = const AuthState(initialized: true);
   }
 
   void forceLogout() {
+    StorageService.clearTokens();
+    StorageService.clearUserCache();
     state = const AuthState(initialized: true);
   }
 

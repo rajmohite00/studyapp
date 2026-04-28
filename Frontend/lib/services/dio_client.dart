@@ -81,9 +81,15 @@ class _AuthInterceptor extends Interceptor {
             await StorageService.clearTokens();
             DioClient.onUnauthorized?.call();
           }
+        } on DioException catch (e) {
+          // If the refresh request itself got a 401/403, we clear tokens.
+          if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+            await StorageService.clearTokens();
+            DioClient.onUnauthorized?.call();
+          }
+          // Otherwise, it was a network error (like Render waking up timeout). Let the error bubble up without logging out.
         } catch (_) {
-          await StorageService.clearTokens();
-          DioClient.onUnauthorized?.call();
+          // Non-dio error, just let it fail without clearing tokens.
         } finally {
           _refreshFuture = null;
         }
@@ -97,14 +103,17 @@ class _AuthInterceptor extends Interceptor {
     if (refreshToken == null) return false;
 
     try {
-      final response = await Dio(BaseOptions(baseUrl: _kBaseUrl))
+      final response = await Dio(BaseOptions(baseUrl: _kBaseUrl, connectTimeout: const Duration(seconds: 30), receiveTimeout: const Duration(seconds: 30)))
           .post('/auth/refresh', data: {'refreshToken': refreshToken});
 
       final data = response.data['data'];
       await StorageService.saveTokens(data['accessToken'], data['refreshToken']);
       return true;
-    } catch (_) {
-      return false;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        return false;
+      }
+      rethrow;
     }
   }
 }

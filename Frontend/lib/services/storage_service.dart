@@ -26,6 +26,15 @@ class StorageService {
     await _storage.delete(key: _refreshTokenKey);
   }
 
+  // ── User Cache ─────────────────────────────────────────────────────────────
+  static Future<void> saveUserCache(Map<String, dynamic> userJson) => _box.put('cached_user', userJson);
+  static Map<String, dynamic>? getUserCache() {
+    final data = _box.get('cached_user');
+    if (data == null) return null;
+    return Map<String, dynamic>.from(data);
+  }
+  static Future<void> clearUserCache() => _box.delete('cached_user');
+
   // ── Generic Prefs ──────────────────────────────────────────────────────────
   static Future<void> put(String key, dynamic value) => _box.put(key, value);
   static T? get<T>(String key, {T? defaultValue}) => _box.get(key, defaultValue: defaultValue) as T?;
