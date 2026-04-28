@@ -9,7 +9,7 @@ exports.chat = catchAsync(async (req, res) => {
 
 exports.uploadNotes = catchAsync(async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ success: false, error: 'No PDF file uploaded' });
+    return res.status(400).json({ success: false, error: 'No file uploaded' });
   }
   const result = await aiService.uploadNotes(req.user.sub, req.file, req.body.subject);
   sendSuccess(res, result, 201);

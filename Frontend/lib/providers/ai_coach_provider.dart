@@ -107,7 +107,7 @@ class AiCoachNotifier extends StateNotifier<AiCoachState> {
     } catch (e) {
       state = state.copyWith(
         isUploading: false,
-        error: 'Failed to process PDF. Please try again.',
+        error: 'Failed to process file. Please try again.',
       );
     }
   }

@@ -90,19 +90,44 @@ const chat = async (userId, { message, conversationId, subject }) => {
   return { conversationId: conversation._id, reply: assistantMessage, tokensUsed };
 };
 
-const uploadNotes = async (userId, fileBuffer, subject) => {
+const uploadNotes = async (userId, fileObj, subject) => {
   const openai = getOpenAIClient();
-  let pdfText = '';
+  let extractedText = '';
   
-  try {
-    const data = await pdfParse(fileBuffer.buffer);
-    pdfText = data.text;
-  } catch (err) {
-    throw new AppError('Failed to parse PDF document', 400);
+  if (fileObj.mimetype === 'application/pdf') {
+    try {
+      const data = await pdfParse(fileObj.buffer);
+      extractedText = data.text;
+    } catch (err) {
+      throw new AppError('Failed to parse PDF document', 400);
+    }
+  } else if (fileObj.mimetype.startsWith('image/')) {
+    try {
+      const base64Image = fileObj.buffer.toString('base64');
+      const response = await openai.chat.completions.create({
+        model: 'llama-3.2-11b-vision-preview',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: 'Extract and return all the text visible in this image. Do not add any extra commentary.' },
+              { type: 'image_url', image_url: { url: `data:${fileObj.mimetype};base64,${base64Image}` } }
+            ]
+          }
+        ],
+        max_tokens: 2000,
+      });
+      extractedText = response.choices[0].message.content;
+    } catch (err) {
+      console.error('Vision Model Error:', err.message);
+      throw new AppError('Failed to process image document', 400);
+    }
+  } else {
+    throw new AppError('Unsupported file type', 400);
   }
 
   // Limit text to roughly 20k characters to avoid token explosion
-  const limitedText = pdfText.length > 20000 ? pdfText.substring(0, 20000) + '...[Document Truncated]' : pdfText;
+  const limitedText = extractedText.length > 20000 ? extractedText.substring(0, 20000) + '...[Document Truncated]' : extractedText;
 
   const conversation = await AiConversation.create({
     userId,

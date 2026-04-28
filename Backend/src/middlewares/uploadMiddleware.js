@@ -4,10 +4,11 @@ const { AppError } = require('./errorMiddleware');
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'application/pdf') {
+  const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+  if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new AppError('Only PDF files are allowed!', 400), false);
+    cb(new AppError('Only PDF and image files are allowed!', 400), false);
   }
 };
 

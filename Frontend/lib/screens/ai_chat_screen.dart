@@ -38,10 +38,10 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     _scrollToBottom();
   }
 
-  Future<void> _pickAndUploadPDF() async {
+  Future<void> _pickAndUploadFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf'],
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'webp'],
     );
     if (result == null || result.files.single.path == null) return;
     final file = result.files.single;
@@ -131,7 +131,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                     child: voiceState.isListening || voiceState.isSpeaking
                         ? const VoiceWaveform(count: 3, color: AppColors.accentGreen)
                         : Text(
-                            state.isUploading ? '⬆ Uploading PDF...' : state.isLoading ? '✦ Thinking...' : '● Online',
+                            state.isUploading ? '⬆ Uploading file...' : state.isLoading ? '✦ Thinking...' : '● Online',
                             key: ValueKey('${state.isUploading}${state.isLoading}'),
                             style: GoogleFonts.outfit(
                               fontSize: 11,
@@ -164,10 +164,10 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                 child: const Icon(Icons.volume_off_rounded, size: 16, color: Colors.white),
               ),
             ),
-          // PDF Upload button
+          // Document/Image Upload button
           PressButton(
             scaleDown: 0.88,
-            onTap: (state.isLoading || state.isUploading) ? null : _pickAndUploadPDF,
+            onTap: (state.isLoading || state.isUploading) ? null : _pickAndUploadFile,
             child: Container(
               margin: const EdgeInsets.only(right: 6),
               padding: const EdgeInsets.all(9),
