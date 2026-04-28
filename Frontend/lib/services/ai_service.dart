@@ -31,7 +31,6 @@ class AiService {
     final res = await DioClient.instance.post(
       '/ai/upload-notes',
       data: formData,
-      options: Options(headers: {'Content-Type': 'multipart/form-data'}),
     );
     return res.data['data'];
   }

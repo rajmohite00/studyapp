@@ -20,12 +20,11 @@ class RankTier {
   });
 
   static RankTier fromLevel(int level) {
-    if (level >= 40) return tiers[6]; // Grandmaster
-    if (level >= 30) return tiers[5]; // Master
-    if (level >= 20) return tiers[4]; // Diamond
-    if (level >= 15) return tiers[3]; // Platinum
-    if (level >= 10) return tiers[2]; // Gold
-    if (level >= 5)  return tiers[1]; // Silver
+    if (level >= 10) return tiers[6]; // Grandmaster
+    if (level >= 9) return tiers[5]; // Diamond
+    if (level >= 8) return tiers[4]; // Platinum
+    if (level >= 6) return tiers[2]; // Gold
+    if (level >= 4) return tiers[1]; // Silver
     return tiers[0];                  // Bronze
   }
 
