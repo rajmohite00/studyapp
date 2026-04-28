@@ -79,7 +79,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     ref.listen(aiCoachProvider, (_, __) => _scrollToBottom());
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       // ── App Bar ────────────────────────────────────────────────────────────
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -128,19 +128,21 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                   ),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
-                    child: Text(
-                      state.isUploading ? '⬆ Uploading PDF...' : state.isLoading ? '✦ Thinking...' : '● Online',
-                      key: ValueKey('${state.isUploading}${state.isLoading}'),
-                      style: GoogleFonts.outfit(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: state.isUploading
-                            ? AppColors.accentOrange
-                            : state.isLoading
-                                ? AppColors.accentGreen
-                                : const Color(0xFF22C55E),
-                      ),
-                    ),
+                    child: voiceState.isListening || voiceState.isSpeaking
+                        ? const VoiceWaveform(count: 3, color: AppColors.accentGreen)
+                        : Text(
+                            state.isUploading ? '⬆ Uploading PDF...' : state.isLoading ? '✦ Thinking...' : '● Online',
+                            key: ValueKey('${state.isUploading}${state.isLoading}'),
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: state.isUploading
+                                  ? AppColors.accentOrange
+                                  : state.isLoading
+                                      ? AppColors.accentGreen
+                                      : const Color(0xFF22C55E),
+                            ),
+                          ),
                   ),
                 ],
               ),
@@ -170,7 +172,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
               margin: const EdgeInsets.only(right: 6),
               padding: const EdgeInsets.all(9),
               decoration: BoxDecoration(
-                color: state.isUploading ? AppColors.accentOrange.withOpacity(0.15) : AppColors.background,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: state.isUploading ? AppColors.accentOrange.withOpacity(0.5) : AppColors.divider,
@@ -188,7 +190,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
               margin: const EdgeInsets.only(right: 14),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: AppColors.divider),
               ),
@@ -250,10 +252,10 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
               bottom: MediaQuery.of(context).padding.bottom + 12,
             ),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardTheme.color,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 16,
                   offset: const Offset(0, -4),
                 ),
@@ -267,10 +269,10 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                   child: Container(
                     constraints: const BoxConstraints(maxHeight: 120),
                     decoration: BoxDecoration(
-                      color: AppColors.background,
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       borderRadius: BorderRadius.circular(22),
                       border: Border.all(
-                        color: _hasText ? AppColors.primary.withOpacity(0.4) : AppColors.divider,
+                        color: _hasText ? AppColors.primary.withOpacity(0.4) : AppColors.divider.withOpacity(0.5),
                         width: _hasText ? 1.5 : 1,
                       ),
                     ),
@@ -315,9 +317,9 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                     width: 48, height: 48,
                     decoration: BoxDecoration(
                       gradient: voiceState.isListening ? AppColors.heroGradient : null,
-                      color: voiceState.isListening ? null : AppColors.background,
+                      color: voiceState.isListening ? null : Theme.of(context).scaffoldBackgroundColor,
                       shape: BoxShape.circle,
-                      border: voiceState.isListening ? null : Border.all(color: AppColors.divider),
+                      border: voiceState.isListening ? null : Border.all(color: AppColors.divider.withOpacity(0.5)),
                       boxShadow: voiceState.isListening
                           ? [BoxShadow(color: AppColors.primary.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4))]
                           : [],
@@ -510,7 +512,7 @@ class _TypingBubbleState extends State<_TypingBubble> with SingleTickerProviderS
               margin: const EdgeInsets.symmetric(vertical: 4),
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),

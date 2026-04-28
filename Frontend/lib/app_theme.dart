@@ -183,4 +183,91 @@ class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
       );
+
+  static ThemeData get darkTheme => ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          brightness: Brightness.dark,
+          surface: AppColors.darkSurface,
+        ),
+        scaffoldBackgroundColor: AppColors.darkBg,
+        textTheme: GoogleFonts.outfitTextTheme().apply(
+          bodyColor: Colors.white,
+          displayColor: Colors.white,
+        ).copyWith(
+          displayLarge: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w800),
+          displayMedium: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w800),
+          displaySmall: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w800),
+          headlineLarge: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w800),
+          headlineMedium: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w800),
+          headlineSmall: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w800),
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: true,
+          iconTheme: const IconThemeData(color: Colors.white),
+          titleTextStyle: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        cardTheme: CardThemeData(
+          color: AppColors.darkCard,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          margin: EdgeInsets.zero,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 56),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 0,
+            textStyle: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 56),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            side: const BorderSide(color: Colors.white24, width: 2),
+            textStyle: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: AppColors.darkSurface,
+          labelStyle: const TextStyle(color: AppColors.textLight, fontSize: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Colors.white10),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Colors.white10),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 14),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: AppColors.darkBg,
+          indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary);
+            }
+            return const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Colors.white54);
+          }),
+        ),
+      );
 }

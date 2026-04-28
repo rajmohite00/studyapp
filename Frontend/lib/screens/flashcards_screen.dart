@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import '../providers/flashcard_provider.dart';
 import '../app_theme.dart';
 import '../widgets/animations.dart';
@@ -14,14 +16,34 @@ class FlashcardsScreen extends ConsumerStatefulWidget {
 
 class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
   bool _isFlipped = false;
+  final FlutterTts _flutterTts = FlutterTts();
+
+  @override
+  void initState() {
+    super.initState();
+    _initTts();
+  }
+
+  void _initTts() async {
+    await _flutterTts.setLanguage("en-US");
+    await _flutterTts.setSpeechRate(0.5);
+  }
+
+  @override
+  void dispose() {
+    _flutterTts.stop();
+    super.dispose();
+  }
 
   void _flipCard() {
+    HapticFeedback.lightImpact();
     setState(() {
       _isFlipped = !_isFlipped;
     });
   }
 
   void _rateCard(String cardId, int quality) {
+    HapticFeedback.mediumImpact();
     ref.read(flashcardProvider.notifier).reviewCard(cardId, quality);
     setState(() {
       _isFlipped = false; // Reset for next card
@@ -87,18 +109,29 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                       color: _isFlipped ? const Color(0xFFF0FDF4) : Colors.white,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: _isFlipped ? AppColors.accentGreen.withOpacity(0.5) : AppColors.divider,
-                        width: 2,
+                        color: AppColors.textPrimary,
+                        width: 3,
                       ),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          color: AppColors.textPrimary,
+                          offset: Offset(4, 6),
                         ),
                       ],
                     ),
-                    child: Center(
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          top: 16,
+                          right: 16,
+                          child: IconButton(
+                            icon: const Icon(Icons.volume_up_rounded, color: AppColors.primary),
+                            onPressed: () {
+                              _flutterTts.speak(_isFlipped ? state.dueCards.first.definition : state.dueCards.first.term);
+                            },
+                          ),
+                        ),
+                        Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
                         child: Column(
@@ -130,6 +163,8 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                           ],
                         ),
                       ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -147,16 +182,19 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                         children: [
                           _RateButton(
                             label: 'Hard',
+                            interval: '10m',
                             color: Colors.redAccent,
                             onTap: () => _rateCard(state.dueCards.first.id, 1), // 1 = wrong/hard
                           ),
                           _RateButton(
                             label: 'Good',
+                            interval: '1d',
                             color: Colors.orangeAccent,
                             onTap: () => _rateCard(state.dueCards.first.id, 3), // 3 = good
                           ),
                           _RateButton(
                             label: 'Easy',
+                            interval: '4d',
                             color: AppColors.accentGreen,
                             onTap: () => _rateCard(state.dueCards.first.id, 5), // 5 = perfect
                           ),
@@ -175,10 +213,11 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
 
 class _RateButton extends StatelessWidget {
   final String label;
+  final String interval;
   final Color color;
   final VoidCallback onTap;
 
-  const _RateButton({required this.label, required this.color, required this.onTap});
+  const _RateButton({required this.label, required this.interval, required this.color, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -186,19 +225,33 @@ class _RateButton extends StatelessWidget {
       scaleDown: 0.9,
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
-          border: Border.all(color: color.withOpacity(0.5)),
+          border: Border.all(color: color, width: 2),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(
-          label,
-          style: GoogleFonts.outfit(
-            color: color,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              interval,
+              style: GoogleFonts.outfit(
+                color: color.withOpacity(0.8),
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
       ),
     );

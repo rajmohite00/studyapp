@@ -1,12 +1,24 @@
+import 'dart:convert';
 import 'dio_client.dart';
 import '../models/user_model.dart';
+import 'storage_service.dart';
 
 class GamificationService {
   final _dio = DioClient.instance;
 
   Future<GamificationState> getState() async {
-    final res = await _dio.get('/gamification/state');
-    return GamificationState.fromJson(res.data['data']);
+    try {
+      final res = await _dio.get('/gamification/state');
+      final data = res.data['data'];
+      await StorageService.put('cached_gamification', jsonEncode(data));
+      return GamificationState.fromJson(data);
+    } catch (e) {
+      final cachedStr = StorageService.get<String>('cached_gamification');
+      if (cachedStr != null) {
+        return GamificationState.fromJson(jsonDecode(cachedStr));
+      }
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> unlockReward(String rewardId) async {

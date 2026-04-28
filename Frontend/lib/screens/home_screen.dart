@@ -64,17 +64,17 @@ class _HomePage extends ConsumerWidget {
     return SafeArea(
       child: RefreshIndicator(
         color: AppColors.primary,
+        backgroundColor: Theme.of(context).cardTheme.color,
         onRefresh: () => ref.refresh(dashboardProvider.future),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── TOP APP BAR ─────────────────────────────────
               FadeSlideIn(
                 duration: const Duration(milliseconds: 400),
                 child: Container(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -124,8 +124,6 @@ class _HomePage extends ConsumerWidget {
                 ),
               )),
               Container(height: 1.5, color: AppColors.divider),
-
-              // ── HERO SECTION ─────────────────────────────────
               FadeSlideIn(
                 beginOffset: const Offset(0, 0.04),
                 child: Container(
@@ -136,7 +134,6 @@ class _HomePage extends ConsumerWidget {
                   child: Stack(
                     clipBehavior: Clip.hardEdge,
                     children: [
-                      // Decorative blobs
                       Positioned(
                         top: -30, right: -30,
                         child: Container(
@@ -165,13 +162,11 @@ class _HomePage extends ConsumerWidget {
                         top: 80, right: 100,
                         child: Text('✦', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.3))),
                       ),
-
                       Padding(
                         padding: const EdgeInsets.fromLTRB(22, 28, 22, 28),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Emoji + greeting
                             Row(
                               children: [
                                 Container(
@@ -198,8 +193,6 @@ class _HomePage extends ConsumerWidget {
                               ],
                             ),
                             const SizedBox(height: 18),
-
-                            // Headline
                             Text(
                               'Let\'s Crush\nYour Exams 🎯',
                               style: GoogleFonts.outfit(
@@ -220,8 +213,6 @@ class _HomePage extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(height: 20),
-
-                            // Quick-stat chips row
                             const Row(
                               children: [
                                 _HeroStatChip(emoji: '⚡', label: 'AI Coach'),
@@ -232,8 +223,6 @@ class _HomePage extends ConsumerWidget {
                               ],
                             ),
                             const SizedBox(height: 24),
-
-                            // Primary CTA
                             PressButton(
                               scaleDown: 0.97,
                               onTap: () => context.push('/session/setup'),
@@ -256,8 +245,6 @@ class _HomePage extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(height: 10),
-
-                            // Secondary CTA
                             PressButton(
                               scaleDown: 0.97,
                               onTap: () => context.push('/exam-planner'),
@@ -286,14 +273,10 @@ class _HomePage extends ConsumerWidget {
                   ),
                 ),
               ),
-
-              // ── GAMIFICATION BANNER ────────────────────────
               const FadeSlideIn(
                 delay: Duration(milliseconds: 200),
                 child: _GamificationBanner(),
               ),
-
-              // ── PROGRESS SECTION ─────────────────────────────
               dashAsync.when(
                 loading: () => const Padding(
                   padding: EdgeInsets.all(40),
@@ -304,7 +287,7 @@ class _HomePage extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardTheme.color,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.divider, width: 2),
                     ),
@@ -331,7 +314,6 @@ class _HomePage extends ConsumerWidget {
                 ),
                 data: (data) => Column(
                   children: [
-                    // Progress section header
                     const _BoldSectionHeader(title: 'Your Progress', icon: Icons.trending_up_rounded, bg: AppColors.surface),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -353,8 +335,6 @@ class _HomePage extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-
-                    // Exam Planner Quick Access
                     FadeSlideIn(
                       delay: const Duration(milliseconds: 220),
                       child: _ExamPlannerCard(),
@@ -363,14 +343,8 @@ class _HomePage extends ConsumerWidget {
                       delay: const Duration(milliseconds: 240),
                       child: _FlashcardsCard(),
                     ),
-
-                    // AI Suggestions (mentor-card style)
                     _AiSuggestionsWidget(),
-
-                    // Smart Insights
                     _SmartInsightsWidget(burnoutAsync: ref.watch(burnoutProvider), predictionAsync: ref.watch(predictionProvider)),
-
-                    // Today's subjects
                     if (data.today.subjectBreakdown.isNotEmpty) ...[
                       const _BoldSectionHeader(title: "Today's Subjects", icon: Icons.auto_stories_rounded, bg: AppColors.surface),
                       Padding(
@@ -389,7 +363,6 @@ class _HomePage extends ConsumerWidget {
   }
 }
 
-// ── Bold Section Header (Guidelines-style) ─────────────────────────────────────
 class _BoldSectionHeader extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -425,7 +398,6 @@ class _BoldSectionHeader extends StatelessWidget {
       );
 }
 
-// ── Exam Planner Quick Access Card ───────────────────────────────────────────
 class _ExamPlannerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -439,9 +411,9 @@ class _ExamPlannerCard extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardTheme.color,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.textPrimary, width: 2),
+            border: Border.all(color: AppColors.textPrimary, width: 3),
             boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
           ),
           child: Row(
@@ -488,7 +460,6 @@ class _ExamPlannerCard extends StatelessWidget {
   }
 }
 
-// ── Flashcards Quick Access Card ───────────────────────────────────────────
 class _FlashcardsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -502,9 +473,9 @@ class _FlashcardsCard extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardTheme.color,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.textPrimary, width: 2),
+            border: Border.all(color: AppColors.textPrimary, width: 3),
             boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
           ),
           child: Row(
@@ -551,9 +522,6 @@ class _FlashcardsCard extends StatelessWidget {
   }
 }
 
-
-
-// ── Goal Card ──────────────────────────────────────────────────────────────────
 class _GoalCard extends StatelessWidget {
   final int studied, goal, sessions;
   const _GoalCard({required this.studied, required this.goal, required this.sessions});
@@ -564,10 +532,10 @@ class _GoalCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.textPrimary, width: 2),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 0, offset: const Offset(4, 4))],
+        border: Border.all(color: AppColors.textPrimary, width: 3),
+        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
       ),
       child: Row(
         children: [
@@ -609,7 +577,6 @@ class _GoalCard extends StatelessWidget {
   }
 }
 
-// ── AI Suggestions (Mentor-card style) ────────────────────────────────────────
 class _AiSuggestionsWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -627,7 +594,7 @@ class _AiSuggestionsWidget extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardTheme.color,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.textPrimary, width: 3),
                   boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
@@ -659,7 +626,6 @@ class _AiSuggestionsWidget extends ConsumerWidget {
   }
 }
 
-// ── Smart Insights ─────────────────────────────────────────────────────────────
 class _SmartInsightsWidget extends StatelessWidget {
   final AsyncValue burnoutAsync;
   final AsyncValue predictionAsync;
@@ -716,8 +682,8 @@ class _InsightCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.4), width: 1.5),
-          boxShadow: [BoxShadow(color: color.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 3))],
+          border: Border.all(color: color, width: 3),
+          boxShadow: [BoxShadow(color: color, offset: const Offset(4, 4))],
         ),
         child: Row(
           children: [
@@ -761,7 +727,8 @@ class _TodaySubjects extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.divider, width: 1.5),
+            border: Border.all(color: AppColors.textPrimary, width: 2),
+            boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(2, 2))],
           ),
           child: Row(
             children: [

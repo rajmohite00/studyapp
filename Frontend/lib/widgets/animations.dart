@@ -566,5 +566,62 @@ class _GoalBadgeState extends State<GoalBadge>
   }
 
   @override
-  Widget build(BuildContext context) => ScaleTransition(scale: _scale, child: widget.child);
+  Widget build(BuildContext context) => ScaleTransition(scale: _scale, child: child);
+}
+
+// ── 10. Voice Activity Waveform ─────────────────────────────────────────────
+class VoiceWaveform extends StatefulWidget {
+  final int count;
+  final Color? color;
+  const VoiceWaveform({super.key, this.count = 5, this.color});
+
+  @override
+  State<VoiceWaveform> createState() => _VoiceWaveformState();
+}
+
+class _VoiceWaveformState extends State<VoiceWaveform> with TickerProviderStateMixin {
+  late final List<AnimationController> _ctrls;
+  late final List<Animation<double>> _anims;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrls = List.generate(
+      widget.count,
+      (i) => AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: 400 + (i * 100) % 300),
+      )..repeat(reverse: true),
+    );
+    _anims = _ctrls.map((c) => Tween<double>(begin: 0.2, end: 1.0).animate(
+      CurvedAnimation(parent: c, curve: Curves.easeInOut),
+    )).toList();
+  }
+
+  @override
+  void dispose() {
+    for (final c in _ctrls) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(widget.count, (i) {
+          return AnimatedBuilder(
+            animation: _anims[i],
+            builder: (_, __) => Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              width: 4,
+              height: 24 * _anims[i].value,
+              decoration: BoxDecoration(
+                color: widget.color ?? AppColors.primary,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          );
+        }),
+      );
 }

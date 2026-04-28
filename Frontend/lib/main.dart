@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'services/storage_service.dart';
 import 'services/dio_client.dart';
 import 'providers/auth_provider.dart';
+import 'providers/theme_provider.dart';
 import 'core_router.dart';
 import 'app_theme.dart';
 
@@ -30,6 +31,7 @@ class StudyCoachApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     // Automatically log out if a request hits a 401 and refresh fails
     DioClient.onUnauthorized = () {
@@ -39,8 +41,9 @@ class StudyCoachApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'AI Study Coach',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.light,
+      themeMode: themeMode,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       routerConfig: router,
     );
   }

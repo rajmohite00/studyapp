@@ -340,22 +340,23 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      gradient: AppColors.heroGradient,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 6))],
+                      border: Border.all(color: AppColors.textPrimary, width: 3),
+                      boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Hi, $userName! 👋',
-                            style: GoogleFonts.outfit(fontSize: 16, color: Colors.white70, fontWeight: FontWeight.w500)),
+                            style: GoogleFonts.outfit(fontSize: 16, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
                         const SizedBox(height: 4),
-                        Text('Here\'s your weekly summary',
-                            style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white)),
+                        Text('Weekly Summary',
+                            style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
                         const SizedBox(height: 4),
                         Text(
                           '${DateFormat('MMM d').format(DateTime.now().subtract(const Duration(days: 7)))} – ${DateFormat('MMM d, yyyy').format(DateTime.now())}',
-                          style: GoogleFonts.outfit(fontSize: 12, color: Colors.white60),
+                          style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textLight),
                         ),
                       ],
                     ),
@@ -392,7 +393,8 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 3))],
+                        border: Border.all(color: AppColors.textPrimary, width: 3),
+                        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
                       ),
                       child: Column(
                         children: subjectBreakdown.entries.map((e) {
@@ -445,8 +447,8 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.primaryLight, width: 1.5),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8)],
+                        border: Border.all(color: AppColors.textPrimary, width: 2.5),
+                        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,7 +479,7 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.textPrimary, width: 2.5)),
                         shadowColor: AppColors.primary.withOpacity(0.4),
                       ),
                       icon: _generating
@@ -513,7 +515,8 @@ class _StatCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+            border: Border.all(color: AppColors.textPrimary, width: 2.5),
+            boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

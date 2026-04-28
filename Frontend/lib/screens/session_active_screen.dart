@@ -59,6 +59,13 @@ class SessionActiveScreen extends ConsumerWidget {
     final timeStr = fmt(elapsed);
     final overtimeStr = '+${fmt(overtime)}';
 
+    // Pomodoro calculation
+    final totalMins = elapsed.inMinutes;
+    final cycleMins = totalMins % 30;
+    final isPomodoroBreak = cycleMins >= 25;
+    final currentPomodoro = (totalMins ~/ 30) + 1;
+    final pomodoroMinsLeft = isPomodoroBreak ? 30 - cycleMins : 25 - cycleMins;
+
     return WillPopScope(
       onWillPop: () async {
         final confirm = await showDialog<bool>(
@@ -162,6 +169,23 @@ class SessionActiveScreen extends ConsumerWidget {
                         isPaused ? '⏸  PAUSED' : '▶  STUDYING',
                         key: ValueKey(isPaused),
                         style: const TextStyle(color: Colors.white60, fontSize: 11, letterSpacing: 4, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: Container(
+                        key: ValueKey(isPomodoroBreak),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isPomodoroBreak ? Colors.orange.withOpacity(0.2) : Colors.redAccent.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: isPomodoroBreak ? Colors.orange.withOpacity(0.5) : Colors.redAccent.withOpacity(0.5)),
+                        ),
+                        child: Text(
+                          isPomodoroBreak ? '☕ Break Time ($pomodoroMinsLeft m left)' : '🍅 Pomodoro $currentPomodoro ($pomodoroMinsLeft m left)',
+                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),

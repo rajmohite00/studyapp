@@ -6,6 +6,7 @@ import '../app_theme.dart';
 import '../models/user_model.dart';
 import '../providers/gamification_provider.dart';
 import '../widgets/animations.dart';
+import '../widgets/rank_badge.dart';
 
 class RewardsScreen extends ConsumerStatefulWidget {
   const RewardsScreen({super.key});
@@ -35,7 +36,7 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen>
     final stateAsync = ref.watch(gamificationStateProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: stateAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error: $err')),
@@ -84,27 +85,11 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen>
                               children: [
                                 Row(
                                   children: [
-                                    Container(
-                                      width: 64,
-                                      height: 64,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.2),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2),
-                                        boxShadow: [
-                                          BoxShadow(color: Colors.white.withValues(alpha: 0.1), blurRadius: 12, spreadRadius: 4)
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${state.level}',
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 28,
-                                            fontWeight: FontWeight.w900,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
+                                    RankBadge(
+                                      level: state.level,
+                                      size: 64,
+                                      showLabel: false,
+                                      showGlow: true,
                                     ),
                                     const SizedBox(width: 16),
                                     Column(
@@ -126,6 +111,14 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen>
                                             fontWeight: FontWeight.w900,
                                             color: Colors.white,
                                             height: 1.1,
+                                          ),
+                                        ),
+                                        Text(
+                                          RankTier.fromLevel(state.level).name,
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 12,
+                                            color: Colors.white70,
+                                            fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                       ],
@@ -193,13 +186,24 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen>
                     ],
                   ),
                 ),
+                // ── RANK PROGRESS CARD ──
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                  child: RankProgressCard(
+                    level: state.level,
+                    xp: state.xp,
+                    xpNeeded: state.xpNeeded,
+                    xpProgress: state.xpProgress,
+                    rankName: state.rank,
+                  ),
+                ),
                 // ── PILL TAB BAR ──
                 Container(
-                  color: Colors.white,
+                  color: Theme.of(context).cardTheme.color,
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: TabBar(
@@ -271,11 +275,11 @@ class _MissionsTab extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: m.completed ? const Color(0xFFF0FFF4) : Colors.white,
+              color: m.completed ? (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF062016) : const Color(0xFFF0FFF4)) : Theme.of(context).cardTheme.color,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: m.completed ? const Color(0xFF00E676) : AppColors.divider, 
-                width: m.completed ? 2.5 : 1.5
+                color: m.completed ? const Color(0xFF00E676) : AppColors.divider.withOpacity(0.5), 
+                width: m.completed ? 2.5 : 2.0
               ),
               boxShadow: [
                 BoxShadow(
@@ -326,8 +330,8 @@ class _MissionsTab extends StatelessWidget {
                     Expanded(
                       child: AnimatedProgressBar(
                         value: m.progressPct,
-                        color: m.completed ? const Color(0xFF00E676) : const Color(0xFF864AF9),
-                        backgroundColor: AppColors.surface,
+                        color: m.completed ? const Color(0xFF00E676) : AppColors.primary,
+                        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                         height: 10,
                       ),
                     ),
@@ -373,11 +377,11 @@ class _StoreTab extends ConsumerWidget {
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: item.unlocked ? const Color(0xFFF9F5FF) : Colors.white,
+              color: item.unlocked ? (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF160628) : const Color(0xFFF9F5FF)) : Theme.of(context).cardTheme.color,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: item.unlocked ? const Color(0xFF864AF9) : AppColors.divider,
-                width: item.unlocked ? 2 : 1.5,
+                color: item.unlocked ? AppColors.primary : AppColors.divider.withOpacity(0.5),
+                width: item.unlocked ? 2.5 : 2.0,
               ),
               boxShadow: [
                 BoxShadow(
@@ -529,11 +533,11 @@ class _AchievementsTab extends StatelessWidget {
                       end: Alignment.bottomRight,
                     )
                   : null,
-              color: a.earned ? null : Colors.white,
+              color: a.earned ? null : Theme.of(context).cardTheme.color,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: a.earned ? const Color(0xFFFFC107) : AppColors.divider,
-                width: a.earned ? 2.5 : 1.5,
+                color: a.earned ? const Color(0xFFFFC107) : AppColors.divider.withOpacity(0.5),
+                width: a.earned ? 2.5 : 2.0,
               ),
               boxShadow: [
                 BoxShadow(
@@ -556,7 +560,7 @@ class _AchievementsTab extends StatelessWidget {
                     gradient: a.earned 
                         ? const LinearGradient(colors: [Color(0xFFFFCA28), Color(0xFFFF8F00)])
                         : null,
-                    color: a.earned ? null : AppColors.surface,
+                    color: a.earned ? null : Theme.of(context).scaffoldBackgroundColor,
                     boxShadow: a.earned ? [
                       BoxShadow(color: const Color(0xFFFF8F00).withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 4))
                     ] : null,

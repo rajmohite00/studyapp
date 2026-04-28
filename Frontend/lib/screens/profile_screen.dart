@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 import '../providers/gamification_provider.dart';
+import '../providers/theme_provider.dart';
 import '../models/user_model.dart';
 import '../app_theme.dart';
 import '../widgets/animations.dart';
@@ -30,15 +31,15 @@ class ProfileScreen extends ConsumerWidget {
         .join();
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Profile', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.5),
-          child: Container(height: 1.5, color: AppColors.divider.withOpacity(0.3)),
+          child: Container(height: 1.5, color: Theme.of(context).dividerTheme.color?.withOpacity(0.3) ?? AppColors.divider.withOpacity(0.3)),
         ),
       ),
       body: SingleChildScrollView(
@@ -51,10 +52,10 @@ class ProfileScreen extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.textPrimary, width: 3),
-                boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4))],
+                border: Border.all(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary, width: 3),
+                boxShadow: [BoxShadow(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary, offset: const Offset(4, 4))],
               ),
               child: Column(
                 children: [
@@ -118,6 +119,15 @@ class ProfileScreen extends ConsumerWidget {
                     icon: Icons.notifications_outlined,
                     title: 'Notifications',
                     trailing: _NotifSwitch()),
+                _AnimatedTile(
+                  icon: Icons.dark_mode_outlined,
+                  title: 'Dark Mode',
+                  trailing: Switch(
+                    value: ref.watch(themeModeProvider) == ThemeMode.dark,
+                    onChanged: (v) => ref.read(themeModeProvider.notifier).toggle(),
+                    activeColor: AppColors.primary,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -356,10 +366,10 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardTheme.color,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.textPrimary, width: 2.5),
-          boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
+          border: Border.all(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary, width: 2.5),
+          boxShadow: [BoxShadow(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary, offset: const Offset(3, 3))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

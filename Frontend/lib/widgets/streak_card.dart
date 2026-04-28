@@ -26,9 +26,9 @@ class StreakCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primaryDark, width: 2),
-        boxShadow: [
-          BoxShadow(color: AppColors.primary.withValues(alpha: 0.25), blurRadius: 0, offset: const Offset(4, 4)),
+        border: Border.all(color: AppColors.textPrimary, width: 3),
+        boxShadow: const [
+          BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4)),
         ],
       ),
       child: Column(
