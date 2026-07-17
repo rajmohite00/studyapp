@@ -19,7 +19,19 @@ const app = express();
 
 // ── Security & Parsing ──────────────────────────────────────────────────────
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
+
+// In development, allow any localhost origin (Flutter web uses a random port)
+const corsOrigin = process.env.NODE_ENV === 'development'
+  ? (origin, callback) => {
+      if (!origin || /^http:\/\/localhost(:\d+)?$/.test(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  : process.env.CLIENT_ORIGIN;
+
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'combined'));

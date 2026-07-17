@@ -39,8 +39,13 @@ class _StudyCoachAppState extends ConsumerState<StudyCoachApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Start sync after first frame so providers are ready.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _syncOnAuth());
+    // Handle already-authenticated state on cold boot after first frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = ref.read(authStateProvider);
+      if (authState.isAuthenticated) {
+        ref.read(cacheSyncServiceProvider).start();
+      }
+    });
   }
 
   @override
@@ -57,8 +62,13 @@ class _StudyCoachAppState extends ConsumerState<StudyCoachApp>
     }
   }
 
-  void _syncOnAuth() {
+  @override
+  Widget build(BuildContext context) {
+    final router = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeModeProvider);
+
     // Watch auth state; start/stop sync service accordingly.
+    // ref.listen must be called inside build().
     ref.listen<AuthState>(authStateProvider, (prev, next) {
       final syncSvc = ref.read(cacheSyncServiceProvider);
       if (next.isAuthenticated && !syncSvc.isRunning) {
@@ -67,17 +77,6 @@ class _StudyCoachAppState extends ConsumerState<StudyCoachApp>
         syncSvc.stop();
       }
     });
-    // Handle already-authenticated state on cold boot.
-    final authState = ref.read(authStateProvider);
-    if (authState.isAuthenticated) {
-      ref.read(cacheSyncServiceProvider).start();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final router = ref.watch(routerProvider);
-    final themeMode = ref.watch(themeModeProvider);
 
     // Automatically log out if a request hits a 401 and refresh fails
     DioClient.onUnauthorized = () {
