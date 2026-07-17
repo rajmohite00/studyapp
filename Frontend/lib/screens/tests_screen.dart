@@ -19,6 +19,13 @@ class TestsScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                    size: 18, color: AppColors.textPrimary),
+                onPressed: () => context.pop(),
+              )
+            : null,
         title: const Text('Tests',
             style: TextStyle(
                 fontSize: 20,
