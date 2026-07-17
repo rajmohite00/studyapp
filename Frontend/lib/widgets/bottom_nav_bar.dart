@@ -12,8 +12,7 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       (Icons.home_outlined, Icons.home_rounded, 'Home'),
-      (Icons.timer_outlined, Icons.timer_rounded, 'Study'),
-      (Icons.bar_chart_outlined, Icons.bar_chart_rounded, 'Analytics'),
+      (Icons.calendar_today_outlined, Icons.calendar_today_rounded, 'Planner'),
       (Icons.smart_toy_outlined, Icons.smart_toy_rounded, 'AI Coach'),
       (Icons.person_outline_rounded, Icons.person_rounded, 'Profile'),
     ];
@@ -21,14 +20,7 @@ class BottomNavBar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.divider.withValues(alpha: 0.25), width: 1.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        border: Border(top: BorderSide(color: AppColors.divider.withValues(alpha: 0.3), width: 1)),
       ),
       child: SafeArea(
         top: false,

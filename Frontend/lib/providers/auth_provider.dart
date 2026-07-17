@@ -19,7 +19,12 @@ class AuthState {
 
   bool get isAuthenticated => user != null;
 
-  AuthState copyWith({UserModel? user, bool? isLoading, String? error, bool? initialized}) =>
+  AuthState copyWith({
+    UserModel? user,
+    bool? isLoading,
+    String? error,
+    bool? initialized,
+  }) =>
       AuthState(
         user: user ?? this.user,
         isLoading: isLoading ?? this.isLoading,
@@ -43,12 +48,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         if (cachedMap != null) {
           try {
             state = AuthState(user: UserModel.fromJson(cachedMap), initialized: true);
-          } catch (e) {
-            // Ignore cache parse error, we'll fetch fresh data
+          } catch (_) {
             await StorageService.clearUserCache();
           }
         }
-
         try {
           final user = await _service.getMe();
           await StorageService.saveUserCache(user.toJson());
@@ -59,8 +62,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
             await StorageService.clearUserCache();
             state = const AuthState(initialized: true);
           } else {
-            // Network error or timeout. If we successfully loaded cache, 
-            // state is already initialized. If not, initialize it now as unauthenticated.
             if (state.user == null) {
               state = const AuthState(initialized: true);
             }
@@ -69,13 +70,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
       } else {
         state = const AuthState(initialized: true);
       }
-    } catch (e) {
-      // Ultimate fallback to prevent infinite splash screen
+    } catch (_) {
       state = const AuthState(initialized: true);
     }
   }
 
-  Future<void> register({required String name, required String email, required String password}) async {
+  Future<void> register({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final data = await _service.register(name: name, email: email, password: password);

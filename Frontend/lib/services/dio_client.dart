@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 // To use a local backend during development:
 //   Change _kBaseUrl to 'http://10.0.2.2:3000/api/v1' (Android emulator)
 //   or     'http://localhost:3000/api/v1'              (Windows/iOS simulator)
-const String _kBaseUrl = 'http://localhost:3000/api/v1';
+const String _kBaseUrl = 'https://studyapp-e1sp.onrender.com/api/v1';
 
 class DioClient {
   static Dio? _instance;

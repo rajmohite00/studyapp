@@ -3,11 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
-import '../providers/gamification_provider.dart';
-import '../providers/theme_provider.dart';
-import '../models/user_model.dart';
 import '../app_theme.dart';
-import '../widgets/animations.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -15,12 +11,11 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider).user;
-    final gamificationAsync = ref.watch(gamificationStateProvider);
 
     if (user == null) {
       return const Scaffold(
-        backgroundColor: AppColors.surface,
-        body: Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2.5)),
+        backgroundColor: AppColors.background,
+        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
       );
     }
 
@@ -31,126 +26,84 @@ class ProfileScreen extends ConsumerWidget {
         .join();
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Profile', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        backgroundColor: Colors.white,
         elevation: 0,
-        surfaceTintColor: Colors.transparent,
+        title: Text('Profile',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.5),
-          child: Container(height: 1.5, color: Theme.of(context).dividerTheme.color?.withOpacity(0.3) ?? AppColors.divider.withOpacity(0.3)),
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.divider),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 28, 20, 32),
-        child: StaggeredList(
-          itemDelay: const Duration(milliseconds: 70),
+        padding: const EdgeInsets.all(20),
+        child: Column(
           children: [
             // ── Avatar card ────────────────────────────────────────────
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(28),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Theme.of(context).cardTheme.color,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary, width: 3),
-                boxShadow: [BoxShadow(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary, offset: const Offset(4, 4))],
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.divider),
               ),
               child: Column(
                 children: [
-                  // Animated avatar
-                  TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0.0, end: 1.0),
-                    duration: const Duration(milliseconds: 600),
-                    curve: Curves.easeOutBack,
-                    builder: (_, v, child) => Transform.scale(scale: v, child: child),
-                    child: Container(
-                      width: 84,
-                      height: 84,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.textPrimary, width: 3),
-                        boxShadow: const [BoxShadow(color: AppColors.textPrimary, offset: Offset(3, 3))],
-                      ),
-                      child: Center(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              initials,
-                              style: GoogleFonts.outfit(fontSize: 30, color: AppColors.textPrimary, fontWeight: FontWeight.w900),
-                            ),
-                          ),
-                        ),
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: AppColors.primary,
+                    child: Text(
+                      initials,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(user.name,
-                          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
-                      if (gamificationAsync.valueOrNull?.activeBadgeEmoji != null) ...[
-                        const SizedBox(width: 8),
-                        Text(gamificationAsync.value!.activeBadgeEmoji!, style: const TextStyle(fontSize: 20)),
-                      ],
-                    ],
-                  ),
+                  const SizedBox(height: 14),
+                  Text(user.name,
+                      style: GoogleFonts.outfit(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary)),
                   const SizedBox(height: 4),
                   Text(user.email,
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 14),
+                      style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500)),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // ── Study Settings ─────────────────────────────────────────
+            // ── Account Settings ───────────────────────────────────────
             _SectionCard(
-              title: 'Study Settings',
+              title: 'Account',
               children: [
-                _AnimatedTile(icon: Icons.person_outline_rounded, title: 'Edit Profile',
-                    onTap: () => context.push('/profile-setup')),
-                const _AnimatedTile(
-                    icon: Icons.notifications_outlined,
-                    title: 'Notifications',
-                    trailing: _NotifSwitch()),
-                _AnimatedTile(
-                  icon: Icons.dark_mode_outlined,
-                  title: 'Dark Mode',
-                  trailing: Switch(
-                    value: ref.watch(themeModeProvider) == ThemeMode.dark,
-                    onChanged: (v) => ref.read(themeModeProvider.notifier).toggle(),
-                    activeColor: AppColors.primary,
-                  ),
+                _Tile(
+                  icon: Icons.person_outline_rounded,
+                  title: 'Edit Profile',
+                  onTap: () => context.push('/profile-setup'),
+                ),
+                _Tile(
+                  icon: Icons.lock_outline_rounded,
+                  title: 'Change Password',
+                  onTap: () => context.push('/change-password'),
                 ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // ── Gamification ─────────────────────────────────────────
+            // ── Sign out ───────────────────────────────────────────────
             _SectionCard(
-              title: 'Gamification',
+              title: 'Session',
               children: [
-                _AnimatedTile(
-                    icon: Icons.stars_rounded,
-                    title: 'Equip Badge',
-                    onTap: () => _showBadgeSelector(context, ref, gamificationAsync.valueOrNull)),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // ── Account ────────────────────────────────────────────────
-            _SectionCard(
-              title: 'Account',
-              children: [
-                _AnimatedTile(icon: Icons.lock_outline_rounded, title: 'Change Password',
-                    onTap: () => context.push('/change-password')),
-                _AnimatedTile(
+                _Tile(
                   icon: Icons.logout_rounded,
                   title: 'Log Out',
                   color: AppColors.accent,
@@ -158,92 +111,21 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  void _showBadgeSelector(BuildContext context, WidgetRef ref, GamificationState? state) {
-    if (state == null) return;
-    
-    final ownedBadges = state.rewardStore.where((r) => r.category == 'badge' && r.unlocked).toList();
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text('Equip a Badge', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
-            const SizedBox(height: 8),
-            const Text('Show off your achievements on your profile!', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
-            const SizedBox(height: 24),
-            
-            if (ownedBadges.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 20),
-                child: Center(
-                  child: Text("You don't own any badges yet.\nVisit the store to unlock some!", 
-                    textAlign: TextAlign.center, style: TextStyle(color: AppColors.textLight)),
-                ),
-              )
-            else
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
+            if (user.profile.targetExam.isNotEmpty || user.profile.subjects.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _SectionCard(
+                title: 'Study Info',
                 children: [
-                  // Unequip option
-                  GestureDetector(
-                    onTap: () async {
-                      Navigator.pop(context);
-                      await ref.read(equipBadgeProvider.notifier).equip(null);
-                    },
-                    child: Container(
-                      width: 60, height: 60,
-                      decoration: BoxDecoration(
-                        color: state.activeBadgeId == null ? AppColors.primary.withOpacity(0.1) : Colors.white,
-                        border: Border.all(color: state.activeBadgeId == null ? AppColors.primary : AppColors.divider, width: 2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Center(child: Icon(Icons.close_rounded, color: AppColors.textSecondary)),
-                    ),
-                  ),
-                  ...ownedBadges.map((badge) {
-                    final isEquipped = state.activeBadgeId == badge.id;
-                    return GestureDetector(
-                      onTap: () async {
-                        Navigator.pop(context);
-                        await ref.read(equipBadgeProvider.notifier).equip(badge.id);
-                      },
-                      child: Container(
-                        width: 60, height: 60,
-                        decoration: BoxDecoration(
-                          color: isEquipped ? AppColors.primary.withOpacity(0.1) : Colors.white,
-                          border: Border.all(color: isEquipped ? AppColors.primary : AppColors.divider, width: 2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(child: Text(badge.emoji, style: const TextStyle(fontSize: 28))),
-                      ),
-                    );
-                  }),
+                  if (user.profile.targetExam.isNotEmpty)
+                    _InfoTile(label: 'Target Exam', value: user.profile.targetExam),
+                  if (user.profile.subjects.isNotEmpty)
+                    _InfoTile(label: 'Subjects', value: user.profile.subjects.join(', ')),
+                  if (user.profile.grade.isNotEmpty)
+                    _InfoTile(label: 'Grade', value: user.profile.grade),
                 ],
               ),
+            ],
           ],
         ),
       ),
@@ -251,108 +133,32 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _confirmLogout(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.4),
-      isScrollControlled: true,
-      builder: (_) => Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle bar
-            Container(
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.divider,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Log Out?',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await ref.read(authStateProvider.notifier).logout();
+              if (context.mounted) context.go('/welcome');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              minimumSize: Size.zero,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
-            const SizedBox(height: 24),
-
-            // Icon
-            Container(
-              width: 72, height: 72,
-              decoration: BoxDecoration(
-                color: AppColors.accent.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.logout_rounded, color: AppColors.accent, size: 34),
-            ),
-            const SizedBox(height: 18),
-
-            // Title
-            Text(
-              'Log Out? 👋',
-              style: GoogleFonts.outfit(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // Subtitle
-            Text(
-              'Are you sure you want to log out?\nYour progress is saved — don\'t worry!',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 28),
-
-            // Confirm button
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await ref.read(authStateProvider.notifier).logout();
-                  if (context.mounted) context.go('/welcome');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                child: Text(
-                  'Yes, Log Me Out',
-                  style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w700),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // Cancel button
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(context),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.textSecondary,
-                  side: const BorderSide(color: AppColors.divider, width: 1.5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                child: Text(
-                  'Stay Logged In',
-                  style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-          ],
-        ),
+            child: const Text('Log Out'),
+          ),
+        ],
       ),
     );
   }
@@ -366,106 +172,70 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).cardTheme.color,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary, width: 2.5),
-          boxShadow: [BoxShadow(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary, offset: const Offset(3, 3))],
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.divider),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Text(title,
-                  style: GoogleFonts.outfit(
+                  style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textSecondary,
-                      letterSpacing: 1.0)),
+                      letterSpacing: 0.8)),
             ),
-            Container(height: 1.5, color: AppColors.textPrimary.withOpacity(0.08)),
+            Container(height: 1, color: AppColors.divider),
             ...children,
           ],
         ),
       );
 }
 
-class _AnimatedTile extends StatefulWidget {
+class _Tile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final Widget? trailing;
   final Color? color;
   final VoidCallback? onTap;
-  const _AnimatedTile({required this.icon, required this.title, this.trailing, this.color, this.onTap});
+  const _Tile({required this.icon, required this.title, this.color, this.onTap});
 
   @override
-  State<_AnimatedTile> createState() => _AnimatedTileState();
-}
-
-class _AnimatedTileState extends State<_AnimatedTile> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          color: _pressed ? AppColors.primary.withOpacity(0.06) : Colors.transparent,
-          child: ListTile(
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: (widget.color ?? AppColors.primary).withOpacity(0.10),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(widget.icon, color: widget.color ?? AppColors.primary, size: 18),
-            ),
-            title: Text(widget.title,
-                style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: widget.color ?? AppColors.textPrimary,
-                    fontSize: 14)),
-            trailing: widget.trailing ??
-                const Icon(Icons.chevron_right_rounded, color: AppColors.textLight, size: 20),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-            minLeadingWidth: 0,
-          ),
-        ),
+  Widget build(BuildContext context) => ListTile(
+        leading: Icon(icon, color: color ?? AppColors.primary, size: 20),
+        title: Text(title,
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: color ?? AppColors.textPrimary)),
+        trailing: color == null
+            ? const Icon(Icons.chevron_right_rounded,
+                color: AppColors.textLight, size: 18)
+            : null,
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       );
 }
 
-// ── Notification toggle (stateful local) ──────────────────────────────────────
-class _NotifSwitch extends StatefulWidget {
-  const _NotifSwitch();
+class _InfoTile extends StatelessWidget {
+  final String label;
+  final String value;
+  const _InfoTile({required this.label, required this.value});
 
   @override
-  State<_NotifSwitch> createState() => _NotifSwitchState();
-}
-
-class _NotifSwitchState extends State<_NotifSwitch> {
-  bool _enabled = true;
-
-  @override
-  Widget build(BuildContext context) => Switch(
-        value: _enabled,
-        onChanged: (v) {
-          setState(() => _enabled = v);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                v ? '🔔 Notifications enabled' : '🔕 Notifications disabled',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
-              ),
-              behavior: SnackBarBehavior.floating,
-              backgroundColor: v ? AppColors.accentGreen : AppColors.textSecondary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
-        activeThumbColor: AppColors.primary,
+  Widget build(BuildContext context) => ListTile(
+        title: Text(label,
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary)),
+        subtitle: Text(value,
+            style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       );
 }

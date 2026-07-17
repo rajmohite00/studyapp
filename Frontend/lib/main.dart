@@ -5,19 +5,14 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'services/storage_service.dart';
 import 'services/dio_client.dart';
 import 'providers/auth_provider.dart';
-import 'providers/cache_sync_provider.dart';
 import 'providers/theme_provider.dart';
 import 'core_router.dart';
 import 'app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Hive.initFlutter();
   await StorageService.init();
-  
-  // Firebase initialization is temporarily disabled for web scaffolding.
-  // Requires configuring flutterfire on the actual deployment target.
 
   runApp(
     const ProviderScope(
@@ -26,57 +21,12 @@ void main() async {
   );
 }
 
-class StudyCoachApp extends ConsumerStatefulWidget {
+class StudyCoachApp extends ConsumerWidget {
   const StudyCoachApp({super.key});
 
   @override
-  ConsumerState<StudyCoachApp> createState() => _StudyCoachAppState();
-}
-
-class _StudyCoachAppState extends ConsumerState<StudyCoachApp>
-    with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    // Handle already-authenticated state on cold boot after first frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authState = ref.read(authStateProvider);
-      if (authState.isAuthenticated) {
-        ref.read(cacheSyncServiceProvider).start();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      final syncSvc = ref.read(cacheSyncServiceProvider);
-      if (syncSvc.isRunning) syncSvc.syncNow();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
-    final themeMode = ref.watch(themeModeProvider);
-
-    // Watch auth state; start/stop sync service accordingly.
-    // ref.listen must be called inside build().
-    ref.listen<AuthState>(authStateProvider, (prev, next) {
-      final syncSvc = ref.read(cacheSyncServiceProvider);
-      if (next.isAuthenticated && !syncSvc.isRunning) {
-        syncSvc.start();
-      } else if (!next.isAuthenticated && syncSvc.isRunning) {
-        syncSvc.stop();
-      }
-    });
 
     // Automatically log out if a request hits a 401 and refresh fails
     DioClient.onUnauthorized = () {
@@ -86,9 +36,8 @@ class _StudyCoachAppState extends ConsumerState<StudyCoachApp>
     return MaterialApp.router(
       title: 'AI Study Coach',
       debugShowCheckedModeBanner: false,
-      themeMode: themeMode,
+      themeMode: ref.watch(themeModeProvider),
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
       routerConfig: router,
     );
   }
