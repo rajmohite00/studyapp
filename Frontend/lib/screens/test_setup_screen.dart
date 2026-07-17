@@ -75,21 +75,32 @@ class _TestSetupState extends ConsumerState<TestSetupScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isGenerating = false);
-      String msg;
-      final raw = e.toString();
-      if (raw.contains('422')) {
-        msg = 'Invalid request. Check subject and options.';
-      } else if (raw.contains('404')) {
-        msg = 'Server not ready. Wait a moment and try again.';
-      } else if (raw.contains('ReceiveTimeout') || raw.contains('timeout')) {
-        msg = 'AI is taking too long. Try fewer questions.';
-      } else if (raw.contains('429') || raw.contains('rate')) {
-        msg = 'AI rate limit. Please wait 1 min and retry.';
-      } else if (raw.contains('500')) {
-        msg = 'Server error. Please try again.';
-      } else {
-        msg = 'Failed to generate. Please try again.';
-      }
+      String msg = 'Failed to generate. Please try again.';
+      try {
+        if (e.runtimeType.toString().contains('DioException')) {
+          // ignore: avoid_dynamic_calls
+          final data = (e as dynamic).response?.data;
+          if (data is Map && data['error'] != null) {
+            final err = data['error'];
+            if (err is Map) {
+              final details = err['details'];
+              if (details is List && details.isNotEmpty) {
+                msg = details.map((d) => '${d['field']}: ${d['message']}').join(', ');
+              } else {
+                msg = err['message']?.toString() ?? msg;
+              }
+            }
+          }
+          final status = (e as dynamic).response?.statusCode;
+          if (msg == 'Failed to generate. Please try again.') {
+            if (status == 422) msg = 'Validation error. Try again.';
+            else if (status == 404) msg = 'Server not ready. Wait and retry.';
+            else if (status == 429) msg = 'AI rate limit. Wait 1 min.';
+            else if (status == 500) msg = 'Server error. Please retry.';
+            else if (e.toString().contains('ReceiveTimeout')) msg = 'AI timeout. Try fewer questions.';
+          }
+        }
+      } catch (_) {}
       _showSnack(msg);
     }
   }
