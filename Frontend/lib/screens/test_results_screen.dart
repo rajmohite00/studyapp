@@ -75,8 +75,9 @@ class _ResultsBody extends ConsumerWidget {
           pinned: true,
           backgroundColor: gradeColor,
           leading: IconButton(
-            icon: const Icon(Icons.home_rounded, color: Colors.white),
-            onPressed: () => context.go('/tests'),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                size: 18, color: Colors.white),
+            onPressed: () => context.canPop() ? context.pop() : context.go('/tests'),
           ),
           actions: [
             TextButton.icon(
