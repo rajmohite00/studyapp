@@ -166,3 +166,84 @@ class _HeroHeader extends StatelessWidget {
     );
   }
 }
+
+// ── Quick Actions ─────────────────────────────────────────────────────────────
+class _QuickActions extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    const actions = [
+      (Icons.calendar_today_rounded, 'Planner', "Today's tasks", Color(0xFF6C4CF1), '/exam-planner'),
+      (Icons.auto_awesome_rounded, 'AI Tutor', 'Ask anything', Color(0xFF0284C7), '/ai/chat'),
+      (Icons.quiz_rounded, 'Take Test', 'Practice & assess', Color(0xFF059669), '/tests/setup'),
+      (Icons.style_rounded, 'Flashcards', 'Quick revision', Color(0xFFD97706), '/flashcards'),
+    ];
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('Quick Actions',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+      const SizedBox(height: 12),
+      GridView.count(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.7,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: actions
+            .map((a) => _ActionTile(icon: a.$1, label: a.$2, sub: a.$3, color: a.$4, route: a.$5))
+            .toList(),
+      ),
+    ]);
+  }
+}
+
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final String label, sub, route;
+  final Color color;
+  const _ActionTile(
+      {required this.icon,
+      required this.label,
+      required this.sub,
+      required this.color,
+      required this.route});
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(route),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.15)),
+          boxShadow: [
+            BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 8, offset: const Offset(0, 3))
+          ],
+        ),
+        child: Row(children: [
+          Container(
+            width: 38, height: 38,
+            decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(label,
+                    style: TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                Text(sub,
+                    style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                    overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+}
