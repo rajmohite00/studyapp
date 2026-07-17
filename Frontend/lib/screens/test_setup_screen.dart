@@ -75,21 +75,20 @@ class _TestSetupState extends ConsumerState<TestSetupScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isGenerating = false);
-      // Show the actual error from server or network
-      String msg = 'Failed to generate test.';
-      if (e is Exception) {
-        final raw = e.toString();
-        if (raw.contains('404') || raw.contains('not found')) {
-          msg = 'Server not ready. Please wait a minute and try again.';
-        } else if (raw.contains('timeout') || raw.contains('ReceiveTimeout')) {
-          msg = 'AI is taking too long. Please try fewer questions or try again.';
-        } else if (raw.contains('429') || raw.contains('rate')) {
-          msg = 'AI rate limit reached. Please wait 1 minute and try again.';
-        } else if (raw.contains('500') || raw.contains('Internal')) {
-          msg = 'Server error. Please try again.';
-        } else if (raw.contains('GROQ') || raw.contains('json')) {
-          msg = 'AI response error. Try a different subject or fewer questions.';
-        }
+      String msg;
+      final raw = e.toString();
+      if (raw.contains('422')) {
+        msg = 'Invalid request. Check subject and options.';
+      } else if (raw.contains('404')) {
+        msg = 'Server not ready. Wait a moment and try again.';
+      } else if (raw.contains('ReceiveTimeout') || raw.contains('timeout')) {
+        msg = 'AI is taking too long. Try fewer questions.';
+      } else if (raw.contains('429') || raw.contains('rate')) {
+        msg = 'AI rate limit. Please wait 1 min and retry.';
+      } else if (raw.contains('500')) {
+        msg = 'Server error. Please try again.';
+      } else {
+        msg = 'Failed to generate. Please try again.';
       }
       _showSnack(msg);
     }
