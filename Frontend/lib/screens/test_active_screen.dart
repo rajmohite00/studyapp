@@ -157,10 +157,11 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
     final q = test.questions[state.currentIndex];
     final answered = state.answers[state.currentIndex];
 
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) return;
         _timer?.cancel();
-        // auto-save progress before leaving
         final answers = state.answers.entries
             .map((e) => {'questionIndex': e.key, 'userAnswer': e.value})
             .toList();
@@ -168,7 +169,6 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
             .read(testServiceProvider)
             .saveBulkAnswers(test.id, answers)
             .catchError((_) {});
-        return true;
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
