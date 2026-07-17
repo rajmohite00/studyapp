@@ -19,7 +19,7 @@ import 'screens/subject_info_screen.dart';
 import 'screens/change_password_screen.dart';
 import 'screens/flashcards_screen.dart';
 
-CustomTransitionPage<T> _slideFade<T>({
+CustomTransitionPage<T> _fade<T>({
   required BuildContext context,
   required GoRouterState state,
   required Widget child,
@@ -27,75 +27,72 @@ CustomTransitionPage<T> _slideFade<T>({
     CustomTransitionPage<T>(
       key: state.pageKey,
       child: child,
-      transitionDuration: const Duration(milliseconds: 220),
-      reverseTransitionDuration: const Duration(milliseconds: 180),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final fade = CurvedAnimation(parent: animation, curve: Curves.easeOut);
-        return FadeTransition(opacity: fade, child: child);
-      },
+      transitionDuration: const Duration(milliseconds: 200),
+      reverseTransitionDuration: const Duration(milliseconds: 160),
+      transitionsBuilder: (_, animation, __, child) => FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+        child: child,
+      ),
     );
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
-      final authState = ref.read(authStateProvider);
-      final isAuth = authState.isAuthenticated;
-      final isAuthRoute = ['/login', '/signup', '/welcome', '/otp']
-          .any((r) => state.matchedLocation.startsWith(r));
-
+      final auth = ref.read(authStateProvider);
+      final isAuth = auth.isAuthenticated;
+      final isAuthRoute =
+          ['/login', '/signup', '/welcome', '/otp'].any((r) => state.matchedLocation.startsWith(r));
       if (state.matchedLocation == '/splash') return null;
       if (!isAuth && !isAuthRoute) return '/welcome';
       if (isAuth && isAuthRoute) return '/home';
       return null;
     },
     routes: [
+      // ── Auth ──────────────────────────────────────────
       GoRoute(path: '/splash',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const SplashScreen())),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const SplashScreen())),
       GoRoute(path: '/welcome',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const WelcomeScreen())),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const WelcomeScreen())),
       GoRoute(path: '/login',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const LoginScreen())),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const LoginScreen())),
       GoRoute(path: '/signup',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const SignupScreen())),
-      GoRoute(
-        path: '/otp',
-        pageBuilder: (c, s) => _slideFade(context: c, state: s, child: OtpScreen(email: s.extra as String)),
-      ),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const SignupScreen())),
+      GoRoute(path: '/otp',
+          pageBuilder: (c, s) => _fade(context: c, state: s,
+              child: OtpScreen(email: s.extra as String))),
       GoRoute(path: '/profile-setup',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ProfileSetupScreen())),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const ProfileSetupScreen())),
+
+      // ── Main shell ────────────────────────────────────
       GoRoute(path: '/home',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const HomeScreen())),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const HomeScreen())),
 
-      // AI
+      // ── AI ────────────────────────────────────────────
       GoRoute(path: '/ai/chat',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const AiChatScreen())),
-      GoRoute(
-        path: '/ai/quiz',
-        pageBuilder: (c, s) => _slideFade(context: c, state: s,
-            child: QuizScreen(quizData: s.extra as Map<String, dynamic>)),
-      ),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const AiChatScreen())),
+      GoRoute(path: '/ai/quiz',
+          pageBuilder: (c, s) => _fade(context: c, state: s,
+              child: QuizScreen(quizData: s.extra as Map<String, dynamic>))),
 
-      // Exam Planner
+      // ── Exam Planner ──────────────────────────────────
       GoRoute(path: '/exam-planner',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ExamPlannerScreen())),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const ExamPlannerScreen())),
       GoRoute(path: '/exam-planner/setup',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ExamPlannerSetupScreen())),
-      GoRoute(
-        path: '/exam-planner/subject-info',
-        pageBuilder: (c, s) => _slideFade(context: c, state: s,
-            child: SubjectInfoScreen(subject: s.extra as String)),
-      ),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const ExamPlannerSetupScreen())),
+      GoRoute(path: '/exam-planner/subject-info',
+          pageBuilder: (c, s) => _fade(context: c, state: s,
+              child: SubjectInfoScreen(subject: s.extra as String))),
 
-      // Flashcards
+      // ── Flashcards ────────────────────────────────────
       GoRoute(path: '/flashcards',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const FlashcardsScreen())),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const FlashcardsScreen())),
 
-      // Profile
+      // ── Profile ───────────────────────────────────────
       GoRoute(path: '/profile',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ProfileScreen())),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const ProfileScreen())),
       GoRoute(path: '/change-password',
-          pageBuilder: (c, s) => _slideFade(context: c, state: s, child: const ChangePasswordScreen())),
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const ChangePasswordScreen())),
     ],
     errorBuilder: (c, s) => Scaffold(
       body: Center(child: Text('Page not found: ${s.error}')),

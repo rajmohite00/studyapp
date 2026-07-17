@@ -8,10 +8,7 @@ import '../models/exam_plan_model.dart';
 import '../widgets/animations.dart';
 
 class ExamPlannerScreen extends ConsumerStatefulWidget {
-  /// When [embedded] is true the screen is shown inside an IndexedStack
-  /// (HomeScreen bottom nav tab) and the leading back button is hidden.
-  final bool embedded;
-  const ExamPlannerScreen({super.key, this.embedded = false});
+  const ExamPlannerScreen({super.key});
   @override
   ConsumerState<ExamPlannerScreen> createState() => _ExamPlannerScreenState();
 }
@@ -40,19 +37,9 @@ class _ExamPlannerScreenState extends ConsumerState<ExamPlannerScreen>
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        leading: widget.embedded ? null : PressButton(
-          scaleDown: 0.88,
-          onTap: () => context.go('/home'),
-          child: Container(
-            margin: const EdgeInsets.only(left: 12),
-            width: 38, height: 38,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.1), blurRadius: 8)],
-            ),
-            child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: AppColors.textPrimary),
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.textPrimary),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
         ),
         automaticallyImplyLeading: false,
         title: Text(
