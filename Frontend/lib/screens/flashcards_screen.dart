@@ -64,6 +64,10 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
         ),
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: state.isLoading 
         ? const Center(child: CircularProgressIndicator(color: AppColors.primary))

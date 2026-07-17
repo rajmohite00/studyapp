@@ -98,18 +98,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Intro ─────────────────────────────────────
-            const Text(
-              'Set up your profile 🎓',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: -0.5),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Help us personalize your study experience',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-            ),
-            const SizedBox(height: 28),
-
             // ── Grade / Year ───────────────────────────────
             const _SectionLabel(label: 'Grade / Year', icon: Icons.school_outlined),
             const SizedBox(height: 12),
@@ -194,52 +182,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 )).toList(),
               ),
             ],
-            const SizedBox(height: 28),
-
-            // ── Daily Goal ─────────────────────────────────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const _SectionLabel(label: 'Daily Study Goal', icon: Icons.timer_outlined),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${_dailyGoal ~/ 60}h ${_dailyGoal % 60}m',
-                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                activeTrackColor: AppColors.primary,
-                inactiveTrackColor: AppColors.primary.withOpacity(0.12),
-                thumbColor: AppColors.primary,
-                overlayColor: AppColors.primary.withOpacity(0.1),
-                trackHeight: 4,
-              ),
-              child: Slider(
-                value: _dailyGoal.toDouble(),
-                min: 30, max: 600, divisions: 19,
-                label: '${_dailyGoal ~/ 60}h ${_dailyGoal % 60}m',
-                onChanged: (v) => setState(() => _dailyGoal = v.round()),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('30 min', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
-                  Text('10 hrs', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
-                ],
-              ),
-            ),
             const SizedBox(height: 36),
 
             // ── Save ───────────────────────────────────────
