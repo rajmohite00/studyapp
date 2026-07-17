@@ -12,13 +12,14 @@ import 'tests_screen.dart';
 import 'profile_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+  final int initialTab;
+  const HomeScreen({super.key, this.initialTab = 0});
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  int _idx = 0;
+  late int _idx = widget.initialTab;
 
   late final List<Widget> _pages = [
     const _HomeTab(),

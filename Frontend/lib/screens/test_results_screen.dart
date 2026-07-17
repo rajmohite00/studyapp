@@ -46,7 +46,7 @@ class _TestResultsScreenState extends ConsumerState<TestResultsScreen> {
                 const Text('Failed to load results'),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                    onPressed: () => context.go('/tests'),
+                    onPressed: () => context.go('/home/tests'),
                     child: const Text('Go Back')),
               ]),
             );
@@ -77,7 +77,7 @@ class _ResultsBody extends ConsumerWidget {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded,
                 size: 18, color: Colors.white),
-            onPressed: () => context.canPop() ? context.pop() : context.go('/tests'),
+            onPressed: () => context.canPop() ? context.pop() : context.go('/home/tests'),
           ),
           actions: [
             TextButton.icon(

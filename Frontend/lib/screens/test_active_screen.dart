@@ -146,7 +146,7 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
                 style: TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 12),
             ElevatedButton(
-                onPressed: () => context.go('/tests'),
+                onPressed: () => context.go('/home/tests'),
                 child: const Text('Go Back')),
           ]),
         ),
@@ -313,7 +313,7 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
             color: AppColors.textPrimary),
         onPressed: () {
           _timer?.cancel();
-          context.go('/tests');
+          context.go('/home/tests');
         },
       ),
       title: Text(test.subject,

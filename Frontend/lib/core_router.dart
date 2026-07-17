@@ -75,6 +75,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       // ── Main shell ────────────────────────────────────
       GoRoute(path: '/home',
           pageBuilder: (c, s) => _fade(context: c, state: s, child: const HomeScreen())),
+      // /home/tests — opens HomeScreen with Tests tab pre-selected
+      GoRoute(path: '/home/tests',
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const HomeScreen(initialTab: 3))),
 
       // ── AI ────────────────────────────────────────────
       GoRoute(path: '/ai/chat',
@@ -103,8 +106,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           pageBuilder: (c, s) => _fade(context: c, state: s, child: const ChangePasswordScreen())),
 
       // ── Tests module ──────────────────────────────────
-      GoRoute(path: '/tests',
-          pageBuilder: (c, s) => _fade(context: c, state: s, child: const TestsScreen())),
+      // NOTE: /tests is NOT a standalone route — Tests tab lives inside HomeScreen shell.
+      // Use /home/tests to land on the Tests tab with bottom nav visible.
       GoRoute(path: '/tests/setup',
           pageBuilder: (c, s) => _fade(context: c, state: s, child: const TestSetupScreen())),
       GoRoute(path: '/tests/active/:id',
