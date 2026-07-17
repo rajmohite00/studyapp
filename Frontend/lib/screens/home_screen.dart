@@ -101,3 +101,68 @@ class _HomeTab extends ConsumerWidget {
     );
   }
 }
+
+// ── Hero Header ───────────────────────────────────────────────────────────────
+class _HeroHeader extends StatelessWidget {
+  final String greeting, firstName;
+  final dynamic user;
+  const _HeroHeader({required this.greeting, required this.firstName, required this.user});
+  @override
+  Widget build(BuildContext context) {
+    final name = user?.name as String? ?? 'S';
+    final initials = name.split(' ').map((w) => w.isEmpty ? '' : w[0].toUpperCase()).take(2).join();
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF4C35C8), Color(0xFF7B5CFA)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Row(children: [
+            Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8)),
+              child: const Icon(Icons.school_rounded, color: Colors.white, size: 18),
+            ),
+            const SizedBox(width: 8),
+            const Text('StudyCoach',
+                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+          ]),
+          GestureDetector(
+            onTap: () => context.push('/profile'),
+            child: Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 1.5),
+              ),
+              child: Center(
+                  child: Text(initials,
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14))),
+            ),
+          ),
+        ]),
+        const SizedBox(height: 20),
+        Text('$greeting,',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
+        const SizedBox(height: 2),
+        Text('$firstName 👋',
+            style: const TextStyle(
+                color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800, height: 1.2)),
+        const SizedBox(height: 6),
+        Text("Ready to crush today's goals?",
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 13)),
+      ]),
+    );
+  }
+}
