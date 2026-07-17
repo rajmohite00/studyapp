@@ -429,3 +429,174 @@ class _TodayTasksSection extends ConsumerWidget {
     return '${n.year}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')}';
   }
 }
+
+// ── Stats Row ─────────────────────────────────────────────────────────────────
+class _StatsRow extends StatelessWidget {
+  final TestStats stats;
+  const _StatsRow({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Your Progress',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            GestureDetector(
+              onTap: () => context.push('/tests/analytics'),
+              child: const Text('Details',
+                  style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(children: [
+          Expanded(child: _StatChip(
+            icon: Icons.quiz_rounded,
+            label: 'Tests',
+            value: '${stats.totalTests}',
+            color: const Color(0xFF6C4CF1),
+          )),
+          const SizedBox(width: 10),
+          Expanded(child: _StatChip(
+            icon: Icons.bar_chart_rounded,
+            label: 'Avg Score',
+            value: '${stats.avgScore}%',
+            color: const Color(0xFF059669),
+          )),
+          const SizedBox(width: 10),
+          Expanded(child: _StatChip(
+            icon: Icons.gps_fixed_rounded,
+            label: 'Accuracy',
+            value: '${stats.overallAccuracy}%',
+            color: const Color(0xFF0284C7),
+          )),
+        ]),
+        const SizedBox(height: 28),
+      ],
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final IconData icon;
+  final String label, value;
+  final Color color;
+  const _StatChip({required this.icon, required this.label, required this.value, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.07), blurRadius: 6, offset: const Offset(0, 2))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(height: 8),
+          Text(value,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: color)),
+          Text(label,
+              style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Upcoming Exam Banner ──────────────────────────────────────────────────────
+class _UpcomingExamBanner extends StatelessWidget {
+  final ExamPlanModel plan;
+  const _UpcomingExamBanner({required this.plan});
+
+  @override
+  Widget build(BuildContext context) {
+    final daysLeft = plan.examDate.difference(DateTime.now()).inDays;
+    final isUrgent = daysLeft <= 3;
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    final monthStr = months[plan.examDate.month - 1];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          const Text('Upcoming Exam',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+          GestureDetector(
+            onTap: () => context.push('/exam-planner'),
+            child: const Text('View Plan',
+                style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600)),
+          ),
+        ]),
+        const SizedBox(height: 12),
+        GestureDetector(
+          onTap: () => context.push('/exam-planner'),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: isUrgent
+                      ? const Color(0xFFE53E3E).withValues(alpha: 0.3)
+                      : AppColors.primary.withValues(alpha: 0.15)),
+              boxShadow: [BoxShadow(
+                  color: (isUrgent ? const Color(0xFFE53E3E) : AppColors.primary).withValues(alpha: 0.06),
+                  blurRadius: 8, offset: const Offset(0, 3))],
+            ),
+            child: Row(children: [
+              // Date badge
+              Container(
+                width: 48, height: 52,
+                decoration: BoxDecoration(
+                  color: isUrgent ? const Color(0xFFE53E3E) : AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Text(monthStr.toUpperCase(),
+                      style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+                  Text('${plan.examDate.day}',
+                      style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800, height: 1.1)),
+                ]),
+              ),
+              const SizedBox(width: 14),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(plan.subjects.join(', '),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 3),
+                Text('${plan.subjects.length} subject${plan.subjects.length > 1 ? 's' : ''}',
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              ])),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isUrgent
+                      ? const Color(0xFFE53E3E).withValues(alpha: 0.1)
+                      : AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  daysLeft <= 0 ? 'Today!' : '$daysLeft days',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: isUrgent ? const Color(0xFFE53E3E) : AppColors.primary),
+                ),
+              ),
+            ]),
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+}
