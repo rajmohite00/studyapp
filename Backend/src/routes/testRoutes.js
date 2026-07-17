@@ -18,7 +18,7 @@ const createSchema = z.object({
 });
 
 const answerSchema = z.object({
-  questionIndex: z.number().int().min(0),
+  questionIndex: z.coerce.number().int().min(0),
   userAnswer:    z.string().nullable().optional(),
 });
 
@@ -28,7 +28,7 @@ const bulkAnswersSchema = z.object({
 
 const submitSchema = z.object({
   answers:       z.array(answerSchema).optional().default([]),
-  timeSpentSecs: z.number().int().min(0).optional().default(0),
+  timeSpentSecs: z.coerce.number().int().min(0).optional().default(0),
 });
 
 const historyQuerySchema = z.object({
