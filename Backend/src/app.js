@@ -19,7 +19,17 @@ const app = express();
 
 // ── Security & Parsing ──────────────────────────────────────────────────────
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
+
+// Allow any origin if CLIENT_ORIGIN is '*' or not set — useful for web/mobile clients.
+// Set CLIENT_ORIGIN to a specific URL in production for tighter security.
+const corsOrigin = process.env.CLIENT_ORIGIN === '*' || !process.env.CLIENT_ORIGIN
+  ? '*'
+  : process.env.CLIENT_ORIGIN;
+
+app.use(cors({
+  origin: corsOrigin,
+  credentials: corsOrigin !== '*',
+}));
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'combined'));
