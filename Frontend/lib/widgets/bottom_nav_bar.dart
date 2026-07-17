@@ -9,10 +9,11 @@ class BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (Icons.home_outlined,        Icons.home_rounded,        'Home'),
-      (Icons.calendar_today_outlined, Icons.calendar_today_rounded, 'Planner'),
-      (Icons.auto_awesome_outlined, Icons.auto_awesome_rounded, 'AI'),
-      (Icons.person_outline_rounded, Icons.person_rounded,    'Profile'),
+      (Icons.home_outlined,           Icons.home_rounded,            'Home'),
+      (Icons.calendar_today_outlined, Icons.calendar_today_rounded,  'Planner'),
+      (Icons.auto_awesome_outlined,   Icons.auto_awesome_rounded,    'AI'),
+      (Icons.quiz_outlined,           Icons.quiz_rounded,            'Tests'),
+      (Icons.person_outline_rounded,  Icons.person_rounded,          'Profile'),
     ];
     return Container(
       decoration: const BoxDecoration(

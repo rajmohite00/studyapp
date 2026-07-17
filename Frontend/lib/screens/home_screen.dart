@@ -24,6 +24,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     const _HomeTab(),
     const PlannerScreen(),
     const AiScreen(),
+    const TestsScreen(),
     const ProfileScreen(),
   ];
 
