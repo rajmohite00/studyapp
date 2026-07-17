@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>StudyFlow AI - Tests Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#e1e2e4",
+                        "on-tertiary-container": "#ebecf0",
+                        "surface": "#f9f9ff",
+                        "on-error-container": "#93000a",
+                        "primary": "#532cd8",
+                        "on-primary-container": "#f0eaff",
+                        "outline-variant": "#c9c4d8",
+                        "secondary": "#5c5f60",
+                        "tertiary": "#505356",
+                        "on-secondary-fixed-variant": "#444749",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#44474a",
+                        "on-background": "#141b2b",
+                        "inverse-surface": "#293040",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#dce2f7",
+                        "inverse-primary": "#c9beff",
+                        "tertiary-container": "#686b6f",
+                        "on-tertiary-fixed": "#191c1f",
+                        "on-primary-fixed-variant": "#4616cc",
+                        "surface-tint": "#5f3ce4",
+                        "outline": "#797587",
+                        "surface-container-low": "#f1f3ff",
+                        "primary-fixed-dim": "#c9beff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#c4c7ca",
+                        "primary-container": "#6c4cf1",
+                        "tertiary-fixed": "#e0e2e6",
+                        "on-surface": "#141b2b",
+                        "on-secondary-fixed": "#191c1e",
+                        "secondary-container": "#dee0e2",
+                        "surface-variant": "#dce2f7",
+                        "on-primary-fixed": "#1b0062",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#606365",
+                        "background": "#f9f9ff",
+                        "surface-container-high": "#e1e8fd",
+                        "surface-container": "#e9edff",
+                        "primary-fixed": "#e6deff",
+                        "inverse-on-surface": "#edf0ff",
+                        "secondary-fixed-dim": "#c5c7c8",
+                        "on-surface-variant": "#484555",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d3daef",
+                        "surface-bright": "#f9f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "sm": "12px",
+                        "margin-mobile": "20px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "xl": "32px",
+                        "xs": "8px",
+                        "gutter": "12px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-lg min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-on-background docked full-width top-0 flat no shadows flex justify-between items-center px-margin-mobile py-sm w-full sticky z-40">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden">
+<img alt="User Profile Picture" class="w-full h-full object-cover" data-alt="A professional headshot of a confident student in a modern library setting. Natural daylight softly illuminates their face. They are wearing a simple, clean, dark-colored sweater. The background features slightly blurred bookshelves to emphasize focus and academic readiness." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHiv7lNG-ivmaEhLQkGWaBeEn0gwf415i0L0jfPAcfF3MpTj1w39ne5ATHbmxy-WkZH-ERBZPowB_rhwt0zBa7xM6NqyYxfcmo8Vm36TeEd1IayT4EsG7m-znbx9y7c6m2A87IaYDrT1dRlStFkyOU3nHpzHoR2cgeY9WpI_L-sTAUtc8JiYb8FWz4DaNtp4DwZD4t_xpTqcJqO0fIgoI0uR4OKUUoKfJZdqw9oSTKSymL9kwdJVEfFw"/>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-primary-fixed">StudyFlow AI</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity active:scale-95 duration-100 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<main class="max-w-4xl mx-auto px-margin-mobile md:px-lg py-lg space-y-lg">
+<!-- Header Section -->
+<section class="flex flex-col gap-xs">
+<h2 class="font-display text-display text-on-surface">Tests Dashboard</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your assessments and track your academic progress.</p>
+</section>
+<!-- Main Action & Quick Actions (Bento Grid) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Main Action: Start New Test -->
+<div class="md:col-span-2 bg-surface-container-lowest rounded-xl border border-secondary-container p-md flex flex-col justify-between hover:border-primary-container transition-colors cursor-pointer group shadow-sm hover:shadow-md h-full relative overflow-hidden">
+<!-- Decorative background blob -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary-container/10 rounded-full blur-2xl group-hover:bg-primary-container/20 transition-colors"></div>
+<div class="z-10 flex flex-col gap-sm">
+<div class="w-12 h-12 rounded-xl bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined filled text-[24px]">quiz</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-base">Start New Test</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Select a subject or let AI generate a custom assessment based on your syllabus.</p>
+</div>
+</div>
+<div class="z-10 mt-lg flex items-center text-primary-container font-label-md text-label-md group-hover:translate-x-1 transition-transform">
+                    Begin Assessment <span class="material-symbols-outlined ml-base text-[16px]">arrow_forward</span>
+</div>
+</div>
+<!-- Quick Actions Stack -->
+<div class="flex flex-col gap-md">
+<button class="flex-1 bg-surface-container-lowest rounded-xl border border-secondary-container p-md flex items-center gap-sm hover:bg-surface-container-low transition-colors text-left">
+<div class="w-10 h-10 rounded-full bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">troubleshoot</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Review Weak Topics</div>
+<div class="font-label-md text-label-md text-on-surface-variant text-[10px]">Based on last 3 tests</div>
+</div>
+</button>
+<button class="flex-1 bg-surface-container-lowest rounded-xl border border-secondary-container p-md flex items-center gap-sm hover:bg-surface-container-low transition-colors text-left">
+<div class="w-10 h-10 rounded-full bg-surface-variant text-primary-fixed-dim flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Generate AI Test</div>
+<div class="font-label-md text-label-md text-on-surface-variant text-[10px]">Custom parameters</div>
+</div>
+</button>
+</div>
+</section>
+<!-- Two Column Layout for Desktop -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Left Column: Drafts & Performance -->
+<div class="lg:col-span-7 space-y-lg">
+<!-- Continue Draft -->
+<section>
+<div class="flex justify-between items-end mb-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface">Continue Draft</h3>
+</div>
+<div class="bg-surface-container-lowest rounded-xl border border-secondary-container p-md hover:border-outline-variant transition-colors cursor-pointer flex items-center justify-between">
+<div class="flex items-center gap-md">
+<div class="w-2 h-12 bg-secondary-fixed rounded-full"></div>
+<div>
+<h4 class="font-body-lg text-body-lg font-semibold text-on-surface">Organic Chemistry - Midterm Prep</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mt-base">12/30 Questions Completed • Saved 2 hours ago</p>
+<div class="w-full bg-surface-container mt-sm rounded-full h-[6px] overflow-hidden max-w-[200px]">
+<div class="bg-primary-container h-full rounded-full" style="width: 40%"></div>
+</div>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">play_arrow</span>
+</button>
+</div>
+</section>
+<!-- Performance Summary -->
+<section>
+<div class="flex justify-between items-end mb-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface">Performance Summary</h3>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-surface-container-lowest rounded-xl border border-secondary-container p-md">
+<div class="font-label-md text-label-md text-on-surface-variant mb-xs">Average Score</div>
+<div class="font-display text-display text-primary-container">84%</div>
+<div class="font-label-md text-label-md text-on-surface-variant mt-base flex items-center gap-xs text-[10px]">
+<span class="material-symbols-outlined text-[14px] text-primary-container">trending_up</span> +3% this month
+                            </div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl border border-secondary-container p-md">
+<div class="font-label-md text-label-md text-on-surface-variant mb-xs">Tests Completed</div>
+<div class="font-display text-display text-on-surface">12</div>
+<div class="font-label-md text-label-md text-on-surface-variant mt-base text-[10px]">In the last 30 days</div>
+</div>
+<div class="col-span-2 bg-surface-container-lowest rounded-xl border border-secondary-container p-md">
+<div class="font-label-md text-label-md text-on-surface-variant mb-sm">Top Subjects</div>
+<div class="flex flex-wrap gap-xs">
+<span class="px-3 py-1 bg-surface-container rounded-full border border-secondary-container font-label-md text-label-md text-on-surface">Biology (92%)</span>
+<span class="px-3 py-1 bg-surface-container rounded-full border border-secondary-container font-label-md text-label-md text-on-surface">Physics (88%)</span>
+<span class="px-3 py-1 bg-surface-container rounded-full border border-secondary-container font-label-md text-label-md text-on-surface">Literature (85%)</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Recent Tests -->
+<div class="lg:col-span-5">
+<section>
+<div class="flex justify-between items-end mb-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface">Recent Tests</h3>
+<button class="font-label-md text-label-md text-primary-container hover:underline">View All</button>
+</div>
+<div class="bg-surface-container-lowest rounded-xl border border-secondary-container overflow-hidden">
+<!-- List Item 1 -->
+<div class="p-md flex items-center justify-between border-b border-secondary-container hover:bg-surface-container-low transition-colors cursor-pointer">
+<div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface">Calculus III Practice</h4>
+<p class="font-label-md text-label-md text-on-surface-variant mt-base">Oct 24, 2023</p>
+</div>
+<div class="text-right">
+<div class="font-headline-md text-headline-md text-primary-container">78%</div>
+<div class="font-label-md text-label-md text-on-surface-variant mt-base text-[10px]">Needs Review</div>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="p-md flex items-center justify-between border-b border-secondary-container hover:bg-surface-container-low transition-colors cursor-pointer">
+<div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface">World History Quiz 4</h4>
+<p class="font-label-md text-label-md text-on-surface-variant mt-base">Oct 21, 2023</p>
+</div>
+<div class="text-right">
+<div class="font-headline-md text-headline-md text-on-surface">95%</div>
+<div class="font-label-md text-label-md text-on-surface-variant mt-base text-[10px]">Excellent</div>
+</div>
+</div>
+<!-- List Item 3 -->
+<div class="p-md flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface">Macroeconomics Final</h4>
+<p class="font-label-md text-label-md text-on-surface-variant mt-base">Oct 18, 2023</p>
+</div>
+<div class="text-right">
+<div class="font-headline-md text-headline-md text-on-surface">88%</div>
+<div class="font-label-md text-label-md text-on-surface-variant mt-base text-[10px]">Good</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden bg-surface dark:bg-on-background docked full-width bottom-0 rounded-t-xl border-t border-secondary-container dark:border-outline-variant shadow-sm fixed w-full z-50 flex justify-around items-center px-sm pb-safe h-16">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container/50 dark:hover:bg-on-secondary-fixed-variant p-2 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="font-label-md text-label-md mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container/50 dark:hover:bg-on-secondary-fixed-variant p-2 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">calendar_today</span>
+<span class="font-label-md text-label-md mt-1">Planner</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container/50 dark:hover:bg-on-secondary-fixed-variant p-2 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">smart_toy</span>
+<span class="font-label-md text-label-md mt-1">AI</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed bg-primary-container/10 rounded-xl px-3 py-1 scale-98 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined filled text-[24px]">quiz</span>
+<span class="font-label-md text-label-md mt-1 font-bold">Tests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container/50 dark:hover:bg-on-secondary-fixed-variant p-2 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="font-label-md text-label-md mt-1">Profile</span>
+</a>
+</nav>
+<!-- SideNav placeholder for desktop if needed, though instructions suggest Web hides BottomNav and uses TopAppBar for full nav cluster. Implementing top nav links for md:flex -->
+<script>
+        // Inject desktop navigation links into top bar for larger screens
+        document.addEventListener('DOMContentLoaded', () => {
+            const topHeader = document.querySelector('header > div:first-child');
+            const desktopNav = document.createElement('nav');
+            desktopNav.className = 'hidden md:flex items-center ml-lg gap-lg';
+            desktopNav.innerHTML = `
+                <a href="#" class="font-label-md text-label-md text-on-surface-variant hover:opacity-80 transition-opacity">Home</a>
+                <a href="#" class="font-label-md text-label-md text-on-surface-variant hover:opacity-80 transition-opacity">Planner</a>
+                <a href="#" class="font-label-md text-label-md text-on-surface-variant hover:opacity-80 transition-opacity">AI</a>
+                <a href="#" class="font-label-md text-label-md text-primary dark:text-primary-fixed font-bold hover:opacity-80 transition-opacity">Tests</a>
+                <a href="#" class="font-label-md text-label-md text-on-surface-variant hover:opacity-80 transition-opacity">Profile</a>
+            `;
+            topHeader.appendChild(desktopNav);
+        });
+    </script>
+</body></html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>StudyFlow AI - Result &amp; AI Analysis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#e1e2e4",
+                        "on-tertiary-container": "#ebecf0",
+                        "surface": "#f9f9ff",
+                        "on-error-container": "#93000a",
+                        "primary": "#532cd8",
+                        "on-primary-container": "#f0eaff",
+                        "outline-variant": "#c9c4d8",
+                        "secondary": "#5c5f60",
+                        "tertiary": "#505356",
+                        "on-secondary-fixed-variant": "#444749",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#44474a",
+                        "on-background": "#141b2b",
+                        "inverse-surface": "#293040",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#dce2f7",
+                        "inverse-primary": "#c9beff",
+                        "tertiary-container": "#686b6f",
+                        "on-tertiary-fixed": "#191c1f",
+                        "on-primary-fixed-variant": "#4616cc",
+                        "surface-tint": "#5f3ce4",
+                        "outline": "#797587",
+                        "surface-container-low": "#f1f3ff",
+                        "primary-fixed-dim": "#c9beff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#c4c7ca",
+                        "primary-container": "#6c4cf1",
+                        "tertiary-fixed": "#e0e2e6",
+                        "on-surface": "#141b2b",
+                        "on-secondary-fixed": "#191c1e",
+                        "secondary-container": "#dee0e2",
+                        "surface-variant": "#dce2f7",
+                        "on-primary-fixed": "#1b0062",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#606365",
+                        "background": "#f9f9ff",
+                        "surface-container-high": "#e1e8fd",
+                        "surface-container": "#e9edff",
+                        "primary-fixed": "#e6deff",
+                        "inverse-on-surface": "#edf0ff",
+                        "secondary-fixed-dim": "#c5c7c8",
+                        "on-surface-variant": "#484555",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d3daef",
+                        "surface-bright": "#f9f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "20px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "sm": "12px",
+                        "margin-mobile": "20px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "xl": "32px",
+                        "xs": "8px",
+                        "gutter": "12px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Subtle ambient shadow for cards */
+        .ambient-shadow {
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Interaction press effect */
+        .press-effect:active {
+            transform: scale(0.98);
+            transition: transform 0.1s ease;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface antialiased flex flex-col min-h-screen">
+<!-- Custom Header for Task-Focused Page (Shell suppressed) -->
+<header class="flex justify-between items-center px-margin-mobile py-sm w-full bg-surface sticky top-0 z-10 border-b border-outline-variant/30">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-on-surface press-effect">
+<span class="material-symbols-outlined">close</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-bold">StudyFlow AI</h1>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-on-surface press-effect">
+<span class="material-symbols-outlined">ios_share</span>
+</button>
+</header>
+<main class="flex-1 w-full max-w-4xl mx-auto px-margin-mobile py-lg flex flex-col gap-lg pb-32">
+<!-- Top Section: Score & Breakdown -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Score Header -->
+<div class="bg-primary-container text-on-primary-container rounded-2xl p-lg flex flex-col items-center justify-center relative overflow-hidden ambient-shadow h-48">
+<!-- Decorative background elements -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary rounded-full blur-2xl opacity-50 pointer-events-none"></div>
+<div class="absolute -bottom-10 -left-10 w-40 h-40 bg-surface-tint rounded-full blur-3xl opacity-30 pointer-events-none"></div>
+<h2 class="font-body-md text-body-md uppercase tracking-widest opacity-80 mb-xs z-10">Overall Grade</h2>
+<div class="font-display text-display text-5xl mb-xs z-10">85%</div>
+<div class="flex items-center gap-sm font-label-md text-label-md opacity-90 z-10">
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">check_circle</span> 85/100 Marks</span>
+<span class="w-1 h-1 bg-current rounded-full"></span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">timer</span> 42m 15s</span>
+</div>
+</div>
+<!-- Breakdown Pills -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-lg flex flex-col justify-center gap-sm ambient-shadow h-48">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Performance Breakdown</h3>
+<div class="flex flex-col gap-xs w-full">
+<div class="flex items-center justify-between text-on-surface">
+<div class="flex items-center gap-xs">
+<span class="w-3 h-3 rounded-full bg-primary-container"></span>
+<span class="font-body-md text-body-md">Correct</span>
+</div>
+<span class="font-headline-md text-headline-md text-primary-container">34</span>
+</div>
+<div class="w-full bg-surface h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 85%"></div>
+</div>
+</div>
+<div class="flex gap-sm mt-xs">
+<div class="flex-1 bg-error-container/30 border border-error-container rounded-xl p-xs flex items-center justify-between">
+<span class="font-label-md text-label-md text-error">Wrong</span>
+<span class="font-headline-md text-headline-md text-error">4</span>
+</div>
+<div class="flex-1 bg-surface-variant border border-outline-variant/30 rounded-xl p-xs flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">Skipped</span>
+<span class="font-headline-md text-headline-md text-on-surface-variant">2</span>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Analysis Section (Bento Grid) -->
+<div class="flex flex-col gap-md mt-sm">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container icon-fill">auto_awesome</span>
+                AI Analysis
+            </h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Strong Topics -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-md ambient-shadow flex flex-col h-full">
+<div class="flex items-center gap-xs mb-sm">
+<span class="material-symbols-outlined text-primary-container">trending_up</span>
+<h4 class="font-headline-md text-headline-md text-on-surface">Strong Topics</h4>
+</div>
+<div class="flex flex-wrap gap-xs">
+<span class="bg-surface border border-outline-variant/50 text-on-surface font-label-md text-label-md px-3 py-1.5 rounded-full">Cellular Respiration</span>
+<span class="bg-surface border border-outline-variant/50 text-on-surface font-label-md text-label-md px-3 py-1.5 rounded-full">Genetics</span>
+<span class="bg-surface border border-outline-variant/50 text-on-surface font-label-md text-label-md px-3 py-1.5 rounded-full">Ecosystems</span>
+</div>
+</div>
+<!-- Weak Topics -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-md ambient-shadow flex flex-col h-full">
+<div class="flex items-center gap-xs mb-sm">
+<span class="material-symbols-outlined text-error">trending_down</span>
+<h4 class="font-headline-md text-headline-md text-on-surface">Needs Review</h4>
+</div>
+<div class="flex flex-wrap gap-xs">
+<span class="bg-error-container/20 border border-error-container text-error font-label-md text-label-md px-3 py-1.5 rounded-full">Protein Synthesis</span>
+<span class="bg-error-container/20 border border-error-container text-error font-label-md text-label-md px-3 py-1.5 rounded-full">Endocrine System</span>
+</div>
+</div>
+<!-- Study Strategy -->
+<div class="bg-primary-container/5 border border-primary-container/20 rounded-2xl p-md ambient-shadow flex flex-col h-full md:col-span-3 lg:col-span-1">
+<div class="flex items-center gap-xs mb-sm">
+<span class="material-symbols-outlined text-primary-container">psychology</span>
+<h4 class="font-headline-md text-headline-md text-on-surface">Study Strategy</h4>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Your retention on general biology is excellent. To improve your score to 95%+, dedicate your next 2 study sessions entirely to <strong>Protein Synthesis</strong> mechanisms and hormone interactions in the <strong>Endocrine System</strong>.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Recommendations Section -->
+<div class="flex flex-col gap-md mt-sm">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Action Plan</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Next Recommended Test -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-md ambient-shadow flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors press-effect">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">quiz</span>
+</div>
+<div>
+<h4 class="font-headline-md text-headline-md text-on-surface text-base">Next Recommended Test</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Targeted Quiz: Molecular Biology</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</div>
+<!-- Recommended Topics to Review -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-md ambient-shadow flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors press-effect">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<div>
+<h4 class="font-headline-md text-headline-md text-on-surface text-base">Recommended Material</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Chapter 4: DNA &amp; RNA Structure</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Fixed Action Bar at Bottom -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/80 backdrop-blur-md border-t border-outline-variant/30 p-sm z-50">
+<div class="max-w-4xl mx-auto flex gap-sm justify-end">
+<button class="px-lg py-sm rounded-xl font-body-md text-body-md font-medium text-on-surface bg-surface border border-outline-variant/50 hover:bg-surface-container-high transition-colors press-effect flex-1 md:flex-none text-center">
+                Retry Test
+            </button>
+<button class="px-lg py-sm rounded-xl font-body-md text-body-md font-medium text-on-primary bg-primary-container hover:opacity-90 transition-opacity press-effect flex-1 md:flex-none text-center">
+                View Full Analysis
+            </button>
+</div>
+</div>
+</body></html>
