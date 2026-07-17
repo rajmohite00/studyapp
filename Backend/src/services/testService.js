@@ -14,6 +14,28 @@ const gradeFromPct = (pct) => {
 };
 
 /**
+ * Normalise any question type string the AI might return into the
+ * Mongoose enum values: mcq | true_false | fill_blank | short_answer | conceptual | scenario | code_output
+ */
+const normaliseType = (raw) => {
+  if (!raw) return 'mcq';
+  const t = raw.toString().toLowerCase().trim()
+    .replace(/[^a-z_]/g, '_')   // replace spaces, slashes, dashes with _
+    .replace(/_+/g, '_')         // collapse multiple underscores
+    .replace(/^_|_$/g, '');      // trim leading/trailing _
+
+  if (t === 'mcq' || t === 'multiple_choice' || t === 'multiple_choice_question') return 'mcq';
+  if (t === 'true_false' || t === 'true_or_false' || t === 'truefalse' || t === 'boolean') return 'true_false';
+  if (t === 'fill_blank' || t === 'fill_in_the_blank' || t === 'fill_in_blank' || t === 'fill_the_blank' || t === 'fillblank') return 'fill_blank';
+  if (t === 'short_answer' || t === 'short_ans' || t === 'shortanswer' || t === 'short') return 'short_answer';
+  if (t === 'code_output' || t === 'code' || t === 'output' || t === 'code_based') return 'code_output';
+  if (t === 'scenario' || t === 'scenario_based' || t === 'case_based') return 'scenario';
+  if (t === 'conceptual' || t === 'concept') return 'conceptual';
+  // Default unknown types to mcq — it's always safe
+  return 'mcq';
+};
+
+/**
  * Safely parse JSON from Groq response.
  * Groq sometimes wraps JSON in a markdown code block.
  */
@@ -62,12 +84,12 @@ const generateQuestions = async (userId, config) => {
     ? 'Mix easy, medium, and hard questions roughly equally.'
     : `All questions must be ${difficulty} difficulty.`;
 
-  const typeInstr = `Use a variety of question types:
-- MCQ (multiple choice with 4 options A/B/C/D)
-- True/False (options: ["True","False"])
-- Fill in the Blank (correct answer is the missing word/phrase)
-- Short Answer (correct answer is a concise phrase)
-Aim for ~60% MCQ, ~15% True/False, ~15% Fill in the Blank, ~10% Short Answer.`;
+  const typeInstr = `Use a variety of question types. Use EXACTLY these type values:
+- "mcq" — multiple choice with exactly 4 options (A/B/C/D)
+- "true_false" — options must be exactly ["True","False"]
+- "fill_blank" — use ___ in the question; correctAnswer is the missing word
+- "short_answer" — brief answer, correctAnswer ≤10 words
+Aim for ~60% mcq, ~15% true_false, ~15% fill_blank, ~10% short_answer.`;
 
   const prompt = `You are an expert academic question paper setter.
 Generate exactly ${questionCount} unique, high-quality exam questions.
@@ -99,7 +121,17 @@ Return ONLY a JSON object:
       "correctAnswer": "A. ...",
       "explanation": "...",
       "topic": "topic name",
-      "difficulty": "easy|medium|hard"
+      "difficulty": "easy"
+    },
+    {
+      "index": 1,
+      "type": "true_false",
+      "question": "...",
+      "options": ["True","False"],
+      "correctAnswer": "True",
+      "explanation": "...",
+      "topic": "topic name",
+      "difficulty": "medium"
     }
   ]
 }`;
@@ -112,7 +144,7 @@ Return ONLY a JSON object:
   const parsed = safeParseJson(raw);
   const questions = (parsed.questions || []).slice(0, questionCount).map((q, i) => ({
     index: i,
-    type: q.type || 'mcq',
+    type: normaliseType(q.type),
     question: q.question || '',
     options: Array.isArray(q.options) ? q.options : [],
     correctAnswer: q.correctAnswer || '',
