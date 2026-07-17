@@ -18,6 +18,14 @@ import 'screens/exam_planner_setup_screen.dart';
 import 'screens/subject_info_screen.dart';
 import 'screens/change_password_screen.dart';
 import 'screens/flashcards_screen.dart';
+// Tests module
+import 'screens/tests_screen.dart';
+import 'screens/test_setup_screen.dart';
+import 'screens/test_active_screen.dart';
+import 'screens/test_results_screen.dart';
+import 'screens/test_report_screen.dart';
+import 'screens/test_history_screen.dart';
+import 'screens/test_analytics_screen.dart';
 
 CustomTransitionPage<T> _fade<T>({
   required BuildContext context,
@@ -41,8 +49,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final auth = ref.read(authStateProvider);
       final isAuth = auth.isAuthenticated;
-      final isAuthRoute =
-          ['/login', '/signup', '/welcome', '/otp'].any((r) => state.matchedLocation.startsWith(r));
+      final isAuthRoute = ['/login', '/signup', '/welcome', '/otp']
+          .any((r) => state.matchedLocation.startsWith(r));
       if (state.matchedLocation == '/splash') return null;
       if (!isAuth && !isAuthRoute) return '/welcome';
       if (isAuth && isAuthRoute) return '/home';
@@ -93,6 +101,25 @@ final routerProvider = Provider<GoRouter>((ref) {
           pageBuilder: (c, s) => _fade(context: c, state: s, child: const ProfileScreen())),
       GoRoute(path: '/change-password',
           pageBuilder: (c, s) => _fade(context: c, state: s, child: const ChangePasswordScreen())),
+
+      // ── Tests module ──────────────────────────────────
+      GoRoute(path: '/tests',
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const TestsScreen())),
+      GoRoute(path: '/tests/setup',
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const TestSetupScreen())),
+      GoRoute(path: '/tests/active/:id',
+          pageBuilder: (c, s) => _fade(context: c, state: s,
+              child: TestActiveScreen(testId: s.pathParameters['id']!))),
+      GoRoute(path: '/tests/results/:id',
+          pageBuilder: (c, s) => _fade(context: c, state: s,
+              child: TestResultsScreen(testId: s.pathParameters['id']!))),
+      GoRoute(path: '/tests/report/:id',
+          pageBuilder: (c, s) => _fade(context: c, state: s,
+              child: TestReportScreen(testId: s.pathParameters['id']!))),
+      GoRoute(path: '/tests/history',
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const TestHistoryScreen())),
+      GoRoute(path: '/tests/analytics',
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const TestAnalyticsScreen())),
     ],
     errorBuilder: (c, s) => Scaffold(
       body: Center(child: Text('Page not found: ${s.error}')),

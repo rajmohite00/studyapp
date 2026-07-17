@@ -8,6 +8,7 @@ import '../widgets/bottom_nav_bar.dart';
 import '../app_theme.dart';
 import 'planner_screen.dart';
 import 'ai_screen.dart';
+import 'tests_screen.dart';
 import 'profile_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
