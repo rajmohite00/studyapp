@@ -10,11 +10,11 @@ const { z } = require('zod');
 
 const createSchema = z.object({
   subject:       z.string().min(1).max(100),
-  topics:        z.array(z.string().min(1)).optional().default([]),
+  topics:        z.array(z.string()).optional().default([]),
   testType:      z.enum(['full_subject', 'topic_wise']).optional().default('full_subject'),
   difficulty:    z.enum(['easy', 'medium', 'hard', 'mixed']).optional().default('mixed'),
-  questionCount: z.number().int().min(5).max(100),
-  timerMinutes:  z.number().int().min(0).max(180).optional().default(0),
+  questionCount: z.coerce.number().int().min(5).max(100),
+  timerMinutes:  z.coerce.number().int().min(0).max(180).optional().default(0),
 });
 
 const answerSchema = z.object({
