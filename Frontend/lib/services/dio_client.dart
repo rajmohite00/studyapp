@@ -3,10 +3,10 @@ import 'storage_service.dart';
 import 'package:flutter/foundation.dart';
 
 // ── App Config ─────────────────────────────────────────────────────────────
-// To use a local backend during development:
-//   Change _kBaseUrl to 'http://10.0.2.2:3000/api/v1' (Android emulator)
-//   or     'http://localhost:3000/api/v1'              (Windows/iOS simulator)
 const String _kBaseUrl = 'https://studyapp-e1sp.onrender.com/api/v1';
+
+// Paths that call Groq AI and can take 60-90 seconds
+const _kLongTimeoutPaths = ['/tests/create', '/analyse', '/exam-plan/create'];
 
 class DioClient {
   static Dio? _instance;
@@ -20,14 +20,14 @@ class DioClient {
   static Dio _createDio() {
     final dio = Dio(BaseOptions(
       baseUrl: _kBaseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 30),
+      connectTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 90), // default; overridden per-request below
       headers: {'Content-Type': 'application/json'},
     ));
 
     dio.interceptors.add(_AuthInterceptor(dio));
+    dio.interceptors.add(_TimeoutInterceptor());
 
-    // Only log in debug builds — never log tokens/bodies in production
     if (kDebugMode) {
       dio.interceptors.add(
         LogInterceptor(requestBody: false, responseBody: false, error: true),
@@ -35,6 +35,19 @@ class DioClient {
     }
 
     return dio;
+  }
+}
+
+/// Per-request timeout — give AI-heavy routes 3 minutes.
+class _TimeoutInterceptor extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final isLong = _kLongTimeoutPaths.any((p) => options.path.contains(p));
+    if (isLong) {
+      options.receiveTimeout = const Duration(minutes: 3);
+      options.connectTimeout = const Duration(seconds: 20);
+    }
+    handler.next(options);
   }
 }
 

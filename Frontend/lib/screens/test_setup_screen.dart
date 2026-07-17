@@ -73,8 +73,25 @@ class _TestSetupState extends ConsumerState<TestSetupScreen> {
       ref.invalidate(activeDraftProvider);
       context.go('/tests/active/${test.id}');
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isGenerating = false);
-      _showSnack('Failed to generate test. Please try again.');
+      // Show the actual error from server or network
+      String msg = 'Failed to generate test.';
+      if (e is Exception) {
+        final raw = e.toString();
+        if (raw.contains('404') || raw.contains('not found')) {
+          msg = 'Server not ready. Please wait a minute and try again.';
+        } else if (raw.contains('timeout') || raw.contains('ReceiveTimeout')) {
+          msg = 'AI is taking too long. Please try fewer questions or try again.';
+        } else if (raw.contains('429') || raw.contains('rate')) {
+          msg = 'AI rate limit reached. Please wait 1 minute and try again.';
+        } else if (raw.contains('500') || raw.contains('Internal')) {
+          msg = 'Server error. Please try again.';
+        } else if (raw.contains('GROQ') || raw.contains('json')) {
+          msg = 'AI response error. Try a different subject or fewer questions.';
+        }
+      }
+      _showSnack(msg);
     }
   }
 
