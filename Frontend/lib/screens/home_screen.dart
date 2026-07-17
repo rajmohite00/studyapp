@@ -247,3 +247,59 @@ class _ActionTile extends StatelessWidget {
     );
   }
 }
+
+// ── Shimmer / No-plan ─────────────────────────────────────────────────────────
+class _CardShimmer extends StatelessWidget {
+  const _CardShimmer();
+  @override
+  Widget build(BuildContext context) => Container(
+        height: 140,
+        margin: const EdgeInsets.only(bottom: 28),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: const Center(
+            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
+      );
+}
+
+class _NoPlanBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 28),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+      ),
+      child: Row(children: [
+        Container(
+          width: 44, height: 44,
+          decoration:
+              BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(12)),
+          child: const Icon(Icons.add_task_rounded, color: AppColors.primary, size: 22),
+        ),
+        const SizedBox(width: 14),
+        const Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('No Study Plan Yet',
+                style: TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            Text('Create an AI plan to get daily tasks',
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          ]),
+        ),
+        GestureDetector(
+          onTap: () => context.push('/exam-planner/setup'),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration:
+                BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(10)),
+            child: const Text('Create',
+                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+          ),
+        ),
+      ]),
+    );
+  }
+}
