@@ -100,7 +100,7 @@ ${difficultyInstr}
 
 ${typeInstr}
 
-IMPORTANT RULES:
+CRITICAL RULES — READ CAREFULLY:
 - No repeated or similar questions.
 - Questions must be factually accurate and unambiguous.
 - For MCQ, provide exactly 4 options. The answer must be one of the option strings exactly.
@@ -109,6 +109,9 @@ IMPORTANT RULES:
 - For Short Answer, correctAnswer must be a brief phrase (≤10 words).
 - Include a clear explanation for each answer.
 - Cover diverse topics within the subject.
+- IMPORTANT FOR CODE QUESTIONS: If a question references code or asks "what is the output", you MUST embed the COMPLETE code snippet directly inside the "question" field itself. Use this exact format:
+  "What is the output of the following code?\\n\\n\`\`\`\\n<full code here>\\n\`\`\`"
+  Never omit the code. The question field must be self-contained and fully readable on its own.`;
 
 Return ONLY a JSON object:
 {

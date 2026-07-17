@@ -258,14 +258,7 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
                               offset: const Offset(0, 2))
                         ],
                       ),
-                      child: Text(
-                        q.question,
-                        style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            height: 1.5,
-                            color: AppColors.textPrimary),
-                      ),
+                      child: _QuestionText(text: q.question),
                     ),
                     const SizedBox(height: 16),
 
@@ -680,6 +673,90 @@ class _NavBar extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Question Text Renderer ────────────────────────────────────────────────────
+// Splits the question text on ``` code fences and renders code blocks
+// with a dark monospaced background so code output questions are fully readable.
+class _QuestionText extends StatelessWidget {
+  final String text;
+  const _QuestionText({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    // Split on ``` markers. Odd-indexed segments are code blocks.
+    final parts = text.split('```');
+
+    if (parts.length == 1) {
+      // No code fence — plain text question
+      return Text(
+        text,
+        style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            height: 1.6,
+            color: AppColors.textPrimary),
+      );
+    }
+
+    // Build a column mixing prose and code blocks
+    final widgets = <Widget>[];
+    for (int i = 0; i < parts.length; i++) {
+      final segment = parts[i].trim();
+      if (segment.isEmpty) continue;
+
+      if (i.isOdd) {
+        // Code block — strip optional language tag on first line (e.g. "python\n...")
+        final lines = segment.split('\n');
+        final langTag = RegExp(r'^[a-zA-Z0-9+#]+$');
+        final code = (lines.isNotEmpty && langTag.hasMatch(lines.first.trim()))
+            ? lines.sublist(1).join('\n')
+            : segment;
+
+        widgets.add(
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E1E2E), // dark code background
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Text(
+                code.trimRight(),
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 13,
+                  color: Color(0xFFCDD6F4), // light text on dark bg
+                  height: 1.6,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          ),
+        );
+      } else {
+        // Prose text
+        widgets.add(
+          Text(
+            segment,
+            style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                height: 1.6,
+                color: AppColors.textPrimary),
+          ),
+        );
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
     );
   }
 }
