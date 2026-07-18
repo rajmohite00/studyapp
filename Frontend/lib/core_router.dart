@@ -18,7 +18,7 @@ import 'screens/exam_planner_setup_screen.dart';
 import 'screens/subject_info_screen.dart';
 import 'screens/change_password_screen.dart';
 // Tests module
-import 'screens/tests_screen.dart';
+// Tests module — TestsScreen lives inside HomeScreen shell (lazy tab), not a standalone route.
 import 'screens/test_setup_screen.dart';
 import 'screens/test_active_screen.dart';
 import 'screens/test_results_screen.dart';

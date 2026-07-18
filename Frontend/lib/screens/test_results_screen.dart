@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/test_provider.dart';
 import '../models/test_model.dart';
 import '../app_theme.dart';
+import '../widgets/shimmer_box.dart';
 
 class TestResultsScreen extends ConsumerStatefulWidget {
   final String testId;
@@ -36,9 +37,20 @@ class _TestResultsScreenState extends ConsumerState<TestResultsScreen> {
         future: _testFuture,
         builder: (ctx, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: AppColors.primary));
+            return Scaffold(
+              backgroundColor: AppColors.background,
+              body: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(children: [
+                  const SizedBox(height: 20),
+                  ShimmerBox(height: 180, borderRadius: BorderRadius.circular(20)),
+                  const SizedBox(height: 16),
+                  const ShimmerCard(height: 80),
+                  const ShimmerCard(height: 120),
+                  const ShimmerCard(height: 80),
+                ]),
+              ),
+            );
           }
           if (snap.hasError || snap.data == null) {
             return Center(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/test_provider.dart';
 import '../models/test_model.dart';
 import '../app_theme.dart';
+import '../widgets/shimmer_box.dart';
 
 class TestsScreen extends ConsumerWidget {
   const TestsScreen({super.key});
@@ -448,16 +449,18 @@ class _EmptyState extends StatelessWidget {
 class _StatsShimmer extends StatelessWidget {
   const _StatsShimmer();
   @override
-  Widget build(BuildContext context) => const SizedBox(height: 60);
+  Widget build(BuildContext context) => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: ShimmerStatRow(),
+      );
 }
 
 class _HistoryShimmer extends StatelessWidget {
   const _HistoryShimmer();
   @override
-  Widget build(BuildContext context) => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 20),
-        child: Center(
-            child: CircularProgressIndicator(
-                strokeWidth: 2, color: AppColors.primary)),
-      );
+  Widget build(BuildContext context) => Column(children: const [
+        ShimmerCard(height: 72),
+        ShimmerCard(height: 72),
+        ShimmerCard(height: 72),
+      ]);
 }

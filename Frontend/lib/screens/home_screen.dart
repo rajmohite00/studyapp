@@ -7,6 +7,7 @@ import '../providers/test_provider.dart';
 import '../models/exam_plan_model.dart';
 import '../models/test_model.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/shimmer_box.dart';
 import '../app_theme.dart';
 import 'planner_screen.dart';
 import 'ai_screen.dart';
@@ -23,20 +24,46 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   late int _idx = widget.initialTab;
-  late final List<Widget> _pages = [
-    const _HomeTab(),
-    const PlannerScreen(),
-    const AiScreen(),
-    const TestsScreen(),
-    const ProfileScreen(),
+
+  // Track which tabs have ever been visited — only build them once visited (lazy).
+  late final Set<int> _visited = {widget.initialTab};
+
+  static const List<Widget> _tabs = [
+    _HomeTab(),
+    PlannerScreen(),
+    AiScreen(),
+    TestsScreen(),
+    ProfileScreen(),
   ];
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-        backgroundColor: AppColors.background,
-        body: IndexedStack(index: _idx, children: _pages),
-        bottomNavigationBar: BottomNavBar(
-            currentIndex: _idx, onTap: (i) => setState(() => _idx = i)),
-      );
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: List.generate(_tabs.length, (i) {
+          // Only build a tab when it has been visited at least once
+          if (!_visited.contains(i)) return const SizedBox.shrink();
+          return Offstage(
+            offstage: _idx != i,
+            child: TickerMode(
+              enabled: _idx == i,
+              child: _tabs[i],
+            ),
+          );
+        }),
+      ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _idx,
+        onTap: (i) {
+          setState(() {
+            _visited.add(i); // mark as built
+            _idx = i;
+          });
+        },
+      ),
+    );
+  }
 }
 
 // ── Home Tab ──────────────────────────────────────────────────────────────────
@@ -249,15 +276,13 @@ class _ActionTile extends StatelessWidget {
 }
 
 // ── Shimmer / No-plan ─────────────────────────────────────────────────────────
+// Reuses ShimmerCard from widgets/shimmer_box.dart
 class _CardShimmer extends StatelessWidget {
   const _CardShimmer();
   @override
-  Widget build(BuildContext context) => Container(
-        height: 140,
-        margin: const EdgeInsets.only(bottom: 28),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-        child: const Center(
-            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
+  Widget build(BuildContext context) => const Padding(
+        padding: EdgeInsets.only(bottom: 28),
+        child: ShimmerCard(height: 160),
       );
 }
 

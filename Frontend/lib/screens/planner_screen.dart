@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/exam_plan_provider.dart';
 import '../models/exam_plan_model.dart';
 import '../app_theme.dart';
+import '../widgets/shimmer_box.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -33,10 +34,32 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         ],
       ),
       body: planAsync.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
+        loading: () => _PlannerShimmer(),
         error: (_, __) => _EmptyPlanner(),
         data: (plan) => plan == null ? _EmptyPlanner() : _PlannerBody(plan: plan),
+      ),
+    );
+  }
+}
+
+// ── Planner shimmer ────────────────────────────────────────────────────────────
+class _PlannerShimmer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // calendar placeholder
+          ShimmerBox(height: 220, borderRadius: BorderRadius.circular(16)),
+          const SizedBox(height: 20),
+          ShimmerBox(width: 140, height: 14, borderRadius: BorderRadius.circular(6)),
+          const SizedBox(height: 12),
+          const ShimmerCard(height: 68),
+          const ShimmerCard(height: 68),
+          const ShimmerCard(height: 68),
+        ],
       ),
     );
   }

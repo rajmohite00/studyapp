@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/test_provider.dart';
 import '../models/test_model.dart';
 import '../app_theme.dart';
+import '../widgets/shimmer_box.dart';
 
 class TestActiveScreen extends ConsumerStatefulWidget {
   final String testId;
@@ -122,19 +123,23 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
     final state = ref.watch(activeTestProvider);
 
     if (state.isLoading) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.background,
-        body: Center(
-            child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(
-                strokeWidth: 2, color: AppColors.primary),
-            SizedBox(height: 16),
-            Text('Loading test...',
-                style: TextStyle(color: AppColors.textSecondary)),
-          ],
-        )),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(children: [
+              // header shimmer
+              ShimmerBox(height: 48, borderRadius: BorderRadius.circular(12)),
+              const SizedBox(height: 16),
+              ShimmerBox(height: 120, borderRadius: BorderRadius.circular(16)),
+              const SizedBox(height: 16),
+              const ShimmerCard(height: 72),
+              const ShimmerCard(height: 72),
+              const ShimmerCard(height: 72),
+            ]),
+          ),
+        ),
       );
     }
 

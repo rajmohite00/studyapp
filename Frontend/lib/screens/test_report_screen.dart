@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/test_provider.dart';
 import '../models/test_model.dart';
 import '../app_theme.dart';
+import '../widgets/shimmer_box.dart';
 
 class TestReportScreen extends ConsumerWidget {
   final String testId;
@@ -31,9 +32,18 @@ class TestReportScreen extends ConsumerWidget {
         future: ref.read(testServiceProvider).getTest(testId),
         builder: (ctx, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: AppColors.primary));
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(children: [
+                const SizedBox(height: 16),
+                ShimmerBox(height: 48, borderRadius: BorderRadius.circular(12)),
+                const SizedBox(height: 16),
+                const ShimmerCard(height: 72),
+                const ShimmerCard(height: 72),
+                const ShimmerCard(height: 72),
+                const ShimmerCard(height: 120),
+              ]),
+            );
           }
           if (!snap.hasData) {
             return const Center(child: Text('Failed to load report'));

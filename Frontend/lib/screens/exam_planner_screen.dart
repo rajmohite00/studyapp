@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../app_theme.dart';
 import '../providers/exam_plan_provider.dart';
 import '../models/exam_plan_model.dart';
+import '../widgets/shimmer_box.dart';
 
 class ExamPlannerScreen extends ConsumerStatefulWidget {
   const ExamPlannerScreen({super.key});
@@ -81,8 +82,7 @@ class _ExamPlannerScreenState extends ConsumerState<ExamPlannerScreen>
             : null,
       ),
       body: planAsync.when(
-        loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
+        loading: () => _ExamPlannerShimmer(),
         error: (e, _) => _NoPlanView(),
         data: (plan) => plan == null
             ? _NoPlanView()
@@ -105,6 +105,22 @@ class _ExamPlannerScreenState extends ConsumerState<ExamPlannerScreen>
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
             )
           : null,
+    );
+  }
+}
+
+// ── Shimmer placeholder ───────────────────────────────────────────────────────
+class _ExamPlannerShimmer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Column(children: [
+        const ShimmerCard(height: 60),
+        const ShimmerCard(height: 60),
+        const ShimmerCard(height: 60),
+        const ShimmerCard(height: 60),
+      ]),
     );
   }
 }
