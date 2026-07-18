@@ -24,9 +24,10 @@ class AuthState {
     bool? isLoading,
     String? error,
     bool? initialized,
+    bool clearUser = false,
   }) =>
       AuthState(
-        user: user ?? this.user,
+        user: clearUser ? null : user ?? this.user,
         isLoading: isLoading ?? this.isLoading,
         error: error,
         initialized: initialized ?? this.initialized,
@@ -40,38 +41,61 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _init();
   }
 
+  /// On startup, check if a valid 7-day session exists in SharedPreferences.
+  /// - If valid:  restore user from cache (instant) → navigate to home.
+  /// - If expired: clear all session data → go to login.
+  /// A background network refresh is done silently after restoring from cache.
   Future<void> _init() async {
     try {
-      final token = await StorageService.getAccessToken();
-      if (token != null) {
+      if (StorageService.isSessionValid()) {
+        // Restore from local cache — instant, no spinner
         final cachedMap = StorageService.getUserCache();
         if (cachedMap != null) {
           try {
-            state = AuthState(user: UserModel.fromJson(cachedMap), initialized: true);
+            final cachedUser = UserModel.fromJson(cachedMap);
+            state = AuthState(user: cachedUser, initialized: true);
+            // Silently refresh user data from the server in background
+            _refreshUserInBackground();
+            return;
           } catch (_) {
             await StorageService.clearUserCache();
           }
         }
+
+        // Cache missing but session valid — fetch from network once
         try {
           final user = await _service.getMe();
           await StorageService.saveUserCache(user.toJson());
           state = AuthState(user: user, initialized: true);
         } catch (e) {
           if (e is DioException && e.response?.statusCode == 401) {
-            await StorageService.clearTokens();
-            await StorageService.clearUserCache();
+            // Server rejected token — clear session
+            await StorageService.clearSession();
             state = const AuthState(initialized: true);
           } else {
-            if (state.user == null) {
-              state = const AuthState(initialized: true);
-            }
+            // Network/server error (e.g. Render cold start) — keep offline
+            state = const AuthState(initialized: true);
           }
         }
       } else {
+        // Session expired or doesn't exist — clear any remnants
+        await StorageService.clearSession();
         state = const AuthState(initialized: true);
       }
     } catch (_) {
+      await StorageService.clearSession();
       state = const AuthState(initialized: true);
+    }
+  }
+
+  /// Silently refresh user profile from server after cache restore.
+  Future<void> _refreshUserInBackground() async {
+    try {
+      final user = await _service.getMe();
+      await StorageService.saveUserCache(user.toJson());
+      if (mounted) state = state.copyWith(user: user);
+    } catch (_) {
+      // Ignore — cached data stays valid
     }
   }
 
@@ -84,6 +108,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final data = await _service.register(name: name, email: email, password: password);
       final user = UserModel.fromJson(data['user']);
+      // Persist 7-day session
+      await StorageService.saveSession(
+        accessToken: data['accessToken'],
+        refreshToken: data['refreshToken'],
+        userId: user.id,
+      );
       await StorageService.saveUserCache(user.toJson());
       state = state.copyWith(user: user, isLoading: false);
     } catch (e) {
@@ -94,7 +124,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> login({required String email, required String password}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final user = await _service.login(email: email, password: password);
+      final rawData = await _service.loginRaw(email: email, password: password);
+      final user = UserModel.fromJson(rawData['user']);
+      // Persist 7-day session
+      await StorageService.saveSession(
+        accessToken: rawData['accessToken'],
+        refreshToken: rawData['refreshToken'],
+        userId: user.id,
+      );
       await StorageService.saveUserCache(user.toJson());
       state = state.copyWith(user: user, isLoading: false);
     } catch (e) {
@@ -115,14 +152,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
-    await _service.logout();
-    await StorageService.clearUserCache();
-    state = const AuthState(initialized: true);
+    try {
+      await _service.logout();
+    } finally {
+      await StorageService.clearSession();
+      state = const AuthState(initialized: true);
+    }
   }
 
   void forceLogout() {
-    StorageService.clearTokens();
-    StorageService.clearUserCache();
+    StorageService.clearSession();
     state = const AuthState(initialized: true);
   }
 
@@ -147,3 +186,4 @@ final authServiceProvider = Provider((_) => AuthService());
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>(
   (ref) => AuthNotifier(ref.read(authServiceProvider)),
 );
+

@@ -97,13 +97,13 @@ class _AuthInterceptor extends Interceptor {
             final response = await _dio.fetch(err.requestOptions);
             return handler.resolve(response);
           } else {
-            await StorageService.clearTokens();
+            await StorageService.clearSession();
             DioClient.onUnauthorized?.call();
           }
         } on DioException catch (e) {
           // If the refresh request itself got a 401/403, we clear tokens.
           if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-            await StorageService.clearTokens();
+            await StorageService.clearSession();
             DioClient.onUnauthorized?.call();
           }
           // Otherwise, it was a network error (like Render waking up timeout). Let the error bubble up without logging out.

@@ -20,12 +20,18 @@ class AuthService {
     return data;
   }
 
-  Future<UserModel> login({required String email, required String password}) async {
+  /// Returns raw data map: { accessToken, refreshToken, user }.
+  /// Used by AuthNotifier to persist session metadata alongside the token.
+  Future<Map<String, dynamic>> loginRaw({required String email, required String password}) async {
     final res = await _dio.post('/auth/login', data: {
       'email': email,
       'password': password,
     });
-    final data = res.data['data'];
+    return res.data['data'] as Map<String, dynamic>;
+  }
+
+  Future<UserModel> login({required String email, required String password}) async {
+    final data = await loginRaw(email: email, password: password);
     await StorageService.saveTokens(data['accessToken'], data['refreshToken']);
     return UserModel.fromJson(data['user']);
   }
@@ -34,7 +40,7 @@ class AuthService {
     try {
       await _dio.post('/auth/logout');
     } finally {
-      await StorageService.clearTokens();
+      await StorageService.clearSession();
     }
   }
 

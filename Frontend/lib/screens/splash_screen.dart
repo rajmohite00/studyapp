@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
+import '../services/storage_service.dart';
 import '../app_theme.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -13,44 +14,34 @@ class SplashScreen extends ConsumerStatefulWidget {
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
-  bool _minDurationPassed = false;
+  bool _navigationDone = false;
   bool _isTakingLong = false;
   Timer? _longWaitTimer;
 
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 600),
     );
-
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
-
     _controller.forward();
 
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        setState(() {
-          _minDurationPassed = true;
-        });
-        _checkAndNavigate();
-      }
+    // Show a friendly "Waking up server..." hint if it takes longer than 4 s
+    _longWaitTimer = Timer(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _isTakingLong = true);
     });
 
-    _longWaitTimer = Timer(const Duration(seconds: 4), () {
-      if (mounted) {
-        setState(() {
-          _isTakingLong = true;
-        });
-      }
-    });
+    // Run session check after a short minimum display time (500 ms)
+    Future.delayed(const Duration(milliseconds: 500), _checkSessionAndNavigate);
   }
 
   @override
@@ -60,23 +51,46 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     super.dispose();
   }
 
-  void _checkAndNavigate() {
-    final auth = ref.read(authStateProvider);
-    if (_minDurationPassed && auth.initialized) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          context.go(auth.isAuthenticated ? '/home' : '/welcome');
-        }
-      });
+  /// Primary session-check logic — lives on the Splash Screen.
+  ///
+  /// 1. Checks StorageService.isSessionValid() (local, synchronous).
+  /// 2. If the 7-day window has not expired, waits for AuthNotifier to finish
+  ///    initialising (it may be fetching the user from cache or network).
+  /// 3. Navigates to /home or /welcome.
+  Future<void> _checkSessionAndNavigate() async {
+    if (!mounted || _navigationDone) return;
+
+    // Fast path: session locally invalid — no need to wait for network
+    if (!StorageService.isSessionValid()) {
+      await StorageService.clearSession();
+      _navigate('/welcome');
+      return;
     }
+
+    // Session looks valid — wait for AuthNotifier to fully initialise
+    // (it restores from cache or makes a network call)
+    final auth = ref.read(authStateProvider);
+    if (auth.initialized) {
+      _navigate(auth.isAuthenticated ? '/home' : '/welcome');
+    }
+    // If not yet initialized, the listener below will catch it
+  }
+
+  void _navigate(String route) {
+    if (!mounted || _navigationDone) return;
+    _navigationDone = true;
+    _longWaitTimer?.cancel();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.go(route);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Listen for auth state changes just in case it initializes after the delay
-    ref.listen(authStateProvider, (previous, next) {
-      if (next.initialized) {
-        _checkAndNavigate();
+    // Also listen reactively in case auth initialises after the delay
+    ref.listen<AuthState>(authStateProvider, (_, next) {
+      if (next.initialized && !_navigationDone) {
+        _navigate(next.isAuthenticated ? '/home' : '/welcome');
       }
     });
 
@@ -143,3 +157,4 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     );
   }
 }
+
