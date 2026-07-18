@@ -269,6 +269,8 @@ class _PlannerBodyState extends ConsumerState<_PlannerBody> {
 
   List<MapEntry<int, DailyTaskModel>> _getTasksForDay(DateTime day) {
     final ds = '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+    // IMPORTANT: .asMap() gives the TRUE array index in generatedPlan as the key.
+    // We preserve this key all the way to toggleTask() so the correct item is updated.
     return widget.plan.generatedPlan
         .asMap()
         .entries
@@ -315,61 +317,83 @@ class _NavBtn extends StatelessWidget {
 // ── Planner Task Card ──────────────────────────────────────────────────────────
 class _PlannerTaskCard extends ConsumerWidget {
   final DailyTaskModel task;
-  final int index;
+  final int index; // TRUE global array index in generatedPlan
   final String planId;
   const _PlannerTaskCard(
       {required this.task, required this.index, required this.planId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Read the LIVE task from provider to avoid stale data from the prop
+    final livePlan = ref.watch(examPlanNotifierProvider).valueOrNull;
+    final liveTask = (livePlan != null && index < livePlan.generatedPlan.length)
+        ? livePlan.generatedPlan[index]
+        : task;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2))
-        ],
-      ),
-      child: Row(children: [
-        GestureDetector(
-          onTap: () => ref
-              .read(examPlanNotifierProvider.notifier)
-              .toggleTask(planId, index, !task.isCompleted),
-          child: Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              color: task.isCompleted ? AppColors.primary : Colors.transparent,
-              border: Border.all(
-                  color: task.isCompleted ? AppColors.primary : AppColors.textLight,
-                  width: 1.5),
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: task.isCompleted
-                ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
-                : null,
-          ),
+        border: Border.all(
+          color: liveTask.isCompleted
+              ? AppColors.accentGreen.withValues(alpha: 0.3)
+              : const Color(0xFFE8E8E8),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(task.topic,
-                style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: task.isCompleted ? AppColors.textLight : AppColors.textPrimary,
-                    decoration: task.isCompleted ? TextDecoration.lineThrough : null)),
-            const SizedBox(height: 2),
-            Text('${task.durationMinutes} min  ·  ${task.subject}',
-                style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+      ),
+      child: InkWell(
+        onTap: () => ref
+            .read(examPlanNotifierProvider.notifier)
+            .toggleTask(planId, index, !liveTask.isCompleted),
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 22, height: 22,
+              decoration: BoxDecoration(
+                color: liveTask.isCompleted ? AppColors.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                    color: liveTask.isCompleted ? AppColors.primary : const Color(0xFFD0D0D0),
+                    width: 1.5),
+              ),
+              child: liveTask.isCompleted
+                  ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(liveTask.topic,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: liveTask.isCompleted ? AppColors.textLight : AppColors.textPrimary,
+                        decoration: liveTask.isCompleted ? TextDecoration.lineThrough : null)),
+                const SizedBox(height: 2),
+                Text('${liveTask.subject}  ·  ${liveTask.durationMinutes} min',
+                    style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+              ]),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: liveTask.isCompleted
+                    ? AppColors.accentGreen.withValues(alpha: 0.1)
+                    : AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text('${liveTask.durationMinutes}m',
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: liveTask.isCompleted ? AppColors.accentGreen : AppColors.primary)),
+            ),
           ]),
         ),
-      ]),
+      ),
     );
   }
 }

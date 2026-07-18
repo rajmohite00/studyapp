@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../app_theme.dart';
 import '../providers/exam_plan_provider.dart';
 import '../models/exam_plan_model.dart';
-import '../widgets/animations.dart';
 
 class ExamPlannerScreen extends ConsumerStatefulWidget {
   const ExamPlannerScreen({super.key});
@@ -15,13 +13,7 @@ class ExamPlannerScreen extends ConsumerStatefulWidget {
 
 class _ExamPlannerScreenState extends ConsumerState<ExamPlannerScreen>
     with SingleTickerProviderStateMixin {
-  late TabController _tab;
-
-  @override
-  void initState() {
-    super.initState();
-    _tab = TabController(length: 3, vsync: this);
-  }
+  late final TabController _tab = TabController(length: 3, vsync: this);
 
   @override
   void dispose() {
@@ -32,63 +24,55 @@ class _ExamPlannerScreenState extends ConsumerState<ExamPlannerScreen>
   @override
   Widget build(BuildContext context) {
     final planAsync = ref.watch(examPlanNotifierProvider);
+    final hasPlan = planAsync.valueOrNull != null;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF7F8FA),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.textPrimary),
           onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
         ),
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Exam Planner',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 20, color: AppColors.textPrimary),
-        ),
-        centerTitle: false,
+        title: const Text('Exam Planner',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
         actions: [
-          if (planAsync.valueOrNull != null)
-            PressButton(
-              scaleDown: 0.88,
-              onTap: () => context.push('/exam-planner/setup'),
-              child: Container(
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.all(9),
-                decoration: BoxDecoration(
-                  gradient: AppColors.heroGradient,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
-                ),
-                child: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
-              ),
+          if (hasPlan)
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
+              onPressed: () => context.push('/exam-planner/setup'),
+              tooltip: 'New Plan',
             ),
         ],
-        bottom: planAsync.valueOrNull != null
+        bottom: hasPlan
             ? PreferredSize(
-                preferredSize: const Size.fromHeight(52),
+                preferredSize: const Size.fromHeight(48),
                 child: Container(
-                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.07), blurRadius: 12)],
+                    color: const Color(0xFFF0F0F5),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: TabBar(
                     controller: _tab,
                     labelColor: Colors.white,
                     unselectedLabelColor: AppColors.textSecondary,
                     indicator: BoxDecoration(
-                      gradient: AppColors.heroGradient,
-                      borderRadius: BorderRadius.circular(10),
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(9),
                     ),
                     indicatorSize: TabBarIndicatorSize.tab,
                     dividerColor: Colors.transparent,
-                    labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 13),
-                    unselectedLabelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w500, fontSize: 13),
+                    splashFactory: NoSplash.splashFactory,
+                    overlayColor: WidgetStateProperty.all(Colors.transparent),
+                    labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
                     tabs: const [
                       Tab(text: 'Study Plan'),
-                      Tab(text: 'Topics & PYQ'),
+                      Tab(text: 'Topics'),
                       Tab(text: 'Progress'),
                     ],
                   ),
@@ -97,71 +81,58 @@ class _ExamPlannerScreenState extends ConsumerState<ExamPlannerScreen>
             : null,
       ),
       body: planAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (e, _) => Center(child: Text('Error: $e')),
-        data: (plan) {
-          if (plan == null) return _NoPlanView();
-          return TabBarView(
-            controller: _tab,
-            children: [
-              _StudyPlanTab(plan: plan),
-              _TopicsPyqTab(subjects: plan.subjects),
-              _ProgressTab(plan: plan),
-            ],
-          );
-        },
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
+        error: (e, _) => _NoPlanView(),
+        data: (plan) => plan == null
+            ? _NoPlanView()
+            : TabBarView(
+                controller: _tab,
+                children: [
+                  _StudyPlanTab(plan: plan),
+                  _TopicsTab(subjects: plan.subjects),
+                  _ProgressTab(plan: plan),
+                ],
+              ),
       ),
       floatingActionButton: planAsync.valueOrNull == null
-          ? Container(
-              decoration: BoxDecoration(
-                gradient: AppColors.heroGradient,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 8))],
-              ),
-              child: FloatingActionButton.extended(
-                onPressed: () => context.push('/exam-planner/setup'),
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                icon: const Icon(Icons.add, color: Colors.white),
-                label: Text('Create Plan', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w700)),
-              ),
+          ? FloatingActionButton.extended(
+              onPressed: () => context.push('/exam-planner/setup'),
+              backgroundColor: AppColors.primary,
+              elevation: 2,
+              icon: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 18),
+              label: const Text('Create AI Plan',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
             )
           : null,
     );
   }
 }
 
-// ── No Plan View ─────────────────────────────────────────────────────────────
+// ── No Plan ───────────────────────────────────────────────────────────────────
 class _NoPlanView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: FadeSlideIn(
-        duration: const Duration(milliseconds: 400),
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 100, height: 100,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.calendar_today_rounded, size: 48, color: AppColors.primary),
-              ),
-              const SizedBox(height: 24),
-              const Text('No Exam Plan Yet', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              const Text(
-                'Create your personalized AI study plan with PYQ-prioritized topics and daily tasks.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-              ),
-            ],
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 88, height: 88,
+            decoration: BoxDecoration(
+                color: AppColors.primaryLight, borderRadius: BorderRadius.circular(24)),
+            child: const Icon(Icons.auto_awesome_rounded, size: 44, color: AppColors.primary),
           ),
-        ),
+          const SizedBox(height: 20),
+          const Text('No Exam Plan Yet',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+          const SizedBox(height: 8),
+          const Text(
+            'Create a personalised AI study plan with daily tasks, topics and PYQs.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+          ),
+        ]),
       ),
     );
   }
@@ -175,25 +146,32 @@ class _StudyPlanTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
-    final today = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-    final byDay = <int, List<MapEntry<int, DailyTaskModel>>>{};
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+    // Group tasks by day number, preserving their TRUE array index in generatedPlan.
+    // Key = day number, Value = list of (arrayIndex, task) pairs.
+    final byDay = <int, List<_IndexedTask>>{};
     for (int i = 0; i < plan.generatedPlan.length; i++) {
-      final t = plan.generatedPlan[i];
-      byDay.putIfAbsent(t.day, () => []).add(MapEntry(i, t));
+      final task = plan.generatedPlan[i];
+      byDay.putIfAbsent(task.day, () => []).add(_IndexedTask(arrayIndex: i, task: task));
     }
     final days = byDay.keys.toList()..sort();
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
       itemCount: days.length,
       itemBuilder: (ctx, i) {
         final day = days[i];
-        final tasks = byDay[day]!;
-        final isToday = tasks.first.value.date == today;
-        return _DayCard(
+        final entries = byDay[day]!;
+        final isToday = entries.any((e) => e.task.date == todayStr);
+        final allDone = entries.every((e) => e.task.isCompleted);
+
+        return _DaySection(
           day: day,
-          tasks: tasks,
+          entries: entries,
           isToday: isToday,
+          allDone: allDone,
           planId: plan.id,
         );
       },
@@ -201,107 +179,106 @@ class _StudyPlanTab extends ConsumerWidget {
   }
 }
 
-class _DayCard extends ConsumerWidget {
+/// Bundles the true array index with the task so it's never lost when filtering.
+class _IndexedTask {
+  final int arrayIndex;
+  final DailyTaskModel task;
+  const _IndexedTask({required this.arrayIndex, required this.task});
+}
+
+class _DaySection extends ConsumerWidget {
   final int day;
-  final List<MapEntry<int, DailyTaskModel>> tasks;
-  final bool isToday;
+  final List<_IndexedTask> entries;
+  final bool isToday, allDone;
   final String planId;
-  const _DayCard({required this.day, required this.tasks, required this.isToday, required this.planId});
+  const _DaySection({
+    required this.day,
+    required this.entries,
+    required this.isToday,
+    required this.allDone,
+    required this.planId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allDone = tasks.every((e) => e.value.isCompleted);
-    final date = tasks.first.value.date;
-    final headerGradient = isToday
-        ? AppColors.heroGradient
+    final headerColor = isToday
+        ? AppColors.primary
         : allDone
-            ? AppColors.cardGradientGreen
-            : null;
+            ? AppColors.accentGreen
+            : const Color(0xFFF0F0F5);
+    final headerTextColor = (isToday || allDone) ? Colors.white : AppColors.textSecondary;
+    final date = entries.first.task.date;
+    final dateLabel = _fmtDate(date);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: isToday
-                ? AppColors.primary.withOpacity(0.18)
-                : Colors.black.withOpacity(0.04),
-            blurRadius: isToday ? 20 : 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-              decoration: BoxDecoration(
-                gradient: headerGradient,
-                color: headerGradient == null ? AppColors.surface : null,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(children: [
-                    if (tasks.first.value.isRevision) Container(
-                      padding: const EdgeInsets.all(4),
-                      margin: const EdgeInsets.only(right: 8),
-                      decoration: BoxDecoration(
-                        color: (isToday || allDone) ? Colors.white.withOpacity(0.25) : AppColors.accentTeal.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Icon(Icons.refresh_rounded, size: 13, color: (isToday || allDone) ? Colors.white : AppColors.accentTeal),
-                    ),
-                    Text(
-                      'Day $day${tasks.first.value.isRevision ? " · Revision" : ""}',
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                        color: (isToday || allDone) ? Colors.white : AppColors.textPrimary,
-                      ),
-                    ),
-                  ]),
-                  Row(children: [
-                    if (isToday) Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text('TODAY', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white)),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _formatDate(date),
-                      style: GoogleFonts.outfit(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: (isToday || allDone) ? Colors.white.withOpacity(0.8) : AppColors.textSecondary,
-                      ),
-                    ),
-                  ]),
-                ],
-              ),
-            ),
-            ...tasks.map((entry) {
-              return _TaskTile(
-                task: entry.value,
-                globalIndex: entry.key,
-                planId: planId,
-              );
-            }),
-          ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isToday
+              ? AppColors.primary.withValues(alpha: 0.3)
+              : const Color(0xFFE8E8E8),
         ),
+        boxShadow: isToday
+            ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.1), blurRadius: 12, offset: const Offset(0, 4))]
+            : [const BoxShadow(color: Color(0x06000000), blurRadius: 4, offset: Offset(0, 2))],
       ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // ── Day header ─────────────────────────────────────
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: headerColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+          ),
+          child: Row(children: [
+            if (entries.first.task.isRevision)
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Icon(Icons.refresh_rounded, size: 13, color: headerTextColor),
+              ),
+            Text(
+              'Day $day${entries.first.task.isRevision ? "  ·  Revision" : ""}',
+              style: TextStyle(
+                  fontWeight: FontWeight.w700, fontSize: 14, color: headerTextColor),
+            ),
+            const Spacer(),
+            if (isToday)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(6)),
+                child: const Text('TODAY',
+                    style: TextStyle(
+                        fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white)),
+              ),
+            if (isToday) const SizedBox(width: 8),
+            Text(dateLabel,
+                style: TextStyle(
+                    fontSize: 11,
+                    color: (isToday || allDone)
+                        ? Colors.white.withValues(alpha: 0.8)
+                        : AppColors.textSecondary)),
+          ]),
+        ),
+        // ── Task rows ──────────────────────────────────────
+        ...entries.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final it = entry.value;
+          final isLast = idx == entries.length - 1;
+          return _TaskRow(
+            indexedTask: it,
+            planId: planId,
+            showDivider: !isLast,
+          );
+        }),
+      ]),
     );
   }
 
-  String _formatDate(String iso) {
+  static String _fmtDate(String iso) {
     try {
       final d = DateTime.parse(iso);
       const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -310,136 +287,127 @@ class _DayCard extends ConsumerWidget {
   }
 }
 
-class _TaskTile extends ConsumerWidget {
-  final DailyTaskModel task;
-  final int globalIndex;
+class _TaskRow extends ConsumerWidget {
+  final _IndexedTask indexedTask;
   final String planId;
-  const _TaskTile({required this.task, required this.globalIndex, required this.planId});
+  final bool showDivider;
+  const _TaskRow({required this.indexedTask, required this.planId, required this.showDivider});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return InkWell(
-      onTap: globalIndex < 0 ? null : () {
-        ref.read(examPlanNotifierProvider.notifier).toggleTask(planId, globalIndex, !task.isCompleted);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          border: const Border(top: BorderSide(color: AppColors.divider, width: 0.8)),
-          color: task.isCompleted ? AppColors.primaryLight.withOpacity(0.3) : Colors.white,
-        ),
-        child: Row(
-          children: [
+    final task = indexedTask.task;
+    final arrayIndex = indexedTask.arrayIndex; // ← always the TRUE array position
+
+    return Column(children: [
+      InkWell(
+        onTap: () => ref
+            .read(examPlanNotifierProvider.notifier)
+            .toggleTask(planId, arrayIndex, !task.isCompleted),
+        borderRadius: showDivider
+            ? BorderRadius.zero
+            : const BorderRadius.vertical(bottom: Radius.circular(15)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(children: [
+            // Checkbox
             AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              width: 26, height: 26,
+              duration: const Duration(milliseconds: 200),
+              width: 22, height: 22,
               decoration: BoxDecoration(
-                gradient: task.isCompleted ? AppColors.heroGradient : null,
-                color: task.isCompleted ? null : Colors.white,
-                borderRadius: BorderRadius.circular(8),
+                color: task.isCompleted ? AppColors.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: task.isCompleted ? AppColors.primary : AppColors.divider,
-                  width: task.isCompleted ? 0 : 1.5,
+                  color: task.isCompleted ? AppColors.primary : const Color(0xFFD0D0D0),
+                  width: 1.5,
                 ),
-                boxShadow: task.isCompleted ? [
-                  BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 6, offset: const Offset(0, 2)),
-                ] : [],
               ),
               child: task.isCompleted
-                  ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                  ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
                   : null,
             ),
             const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    task.topic,
-                    style: GoogleFonts.outfit(
+            // Task info
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(task.topic,
+                  style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      decoration: task.isCompleted ? TextDecoration.lineThrough : null,
                       color: task.isCompleted ? AppColors.textLight : AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    task.subject,
-                    style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
+                      decoration: task.isCompleted ? TextDecoration.lineThrough : null)),
+              const SizedBox(height: 2),
+              Text(task.subject,
+                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            ])),
+            // Duration badge
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                gradient: AppColors.heroGradient,
-                borderRadius: BorderRadius.circular(10),
+                color: task.isCompleted
+                    ? AppColors.accentGreen.withValues(alpha: 0.1)
+                    : AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                '${task.durationMinutes}m',
-                style: GoogleFonts.outfit(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w700),
-              ),
+              child: Text('${task.durationMinutes}m',
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: task.isCompleted ? AppColors.accentGreen : AppColors.primary)),
             ),
-          ],
+          ]),
         ),
       ),
-    );
+      if (showDivider)
+        const Divider(height: 1, indent: 48, endIndent: 0, color: Color(0xFFF0F0F0)),
+    ]);
   }
 }
 
-// ── Topics & PYQ Tab ─────────────────────────────────────────────────────────
-class _TopicsPyqTab extends StatelessWidget {
+// ── Topics Tab ────────────────────────────────────────────────────────────────
+class _TopicsTab extends StatelessWidget {
   final List<String> subjects;
-  const _TopicsPyqTab({required this.subjects});
+  const _TopicsTab({required this.subjects});
 
   @override
   Widget build(BuildContext context) {
+    if (subjects.isEmpty) {
+      return const Center(
+        child: Text('No subjects in plan.', style: TextStyle(color: AppColors.textSecondary)),
+      );
+    }
+    const colors = AppColors.subjectColors;
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
       itemCount: subjects.length,
       itemBuilder: (ctx, i) {
         final subject = subjects[i];
-        final color = AppColors.subjectColors[i % AppColors.subjectColors.length];
-        
-        return FadeSlideIn(
-          delay: Duration(milliseconds: 60 * i),
-          child: InkWell(
-            onTap: () => context.push('/exam-planner/subject-info', extra: subject),
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color.withOpacity(0.3)),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
-                    child: Icon(Icons.auto_awesome_rounded, color: color, size: 20),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(subject, style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.textPrimary)),
-                        const SizedBox(height: 4),
-                        Text('Generate AI Topics & PYQs', style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary)),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textLight),
-                ],
-              ),
+        final color = colors[i % colors.length];
+        return GestureDetector(
+          onTap: () => context.push('/exam-planner/subject-info', extra: subject),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
             ),
+            child: Row(children: [
+              Container(
+                width: 42, height: 42,
+                decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                child: Icon(Icons.auto_awesome_rounded, color: color, size: 20),
+              ),
+              const SizedBox(width: 14),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(subject,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                const Text('Tap to view AI topics & PYQs',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              ])),
+              const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textLight),
+            ]),
           ),
         );
       },
@@ -447,146 +415,163 @@ class _TopicsPyqTab extends StatelessWidget {
   }
 }
 
-// ── Progress Tab ─────────────────────────────────────────────────────────────
+// ── Progress Tab ──────────────────────────────────────────────────────────────
 class _ProgressTab extends ConsumerWidget {
   final ExamPlanModel plan;
   const _ProgressTab({required this.plan});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(examProgressProvider);
     final total = plan.generatedPlan.length;
     final done = plan.generatedPlan.where((t) => t.isCompleted).length;
     final pct = total > 0 ? done / total : 0.0;
     final daysLeft = plan.examDate.difference(DateTime.now()).inDays;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Big progress ring
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primary, AppColors.primaryLight],
-                begin: Alignment.topLeft, end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(children: [
-              const Text('Overall Progress', style: TextStyle(color: Colors.white70, fontSize: 14)),
-              const SizedBox(height: 16),
-              Stack(alignment: Alignment.center, children: [
-                SizedBox(
-                  width: 130, height: 130,
-                  child: CircularProgressIndicator(
-                    value: pct,
-                    strokeWidth: 12,
-                    backgroundColor: Colors.white.withOpacity(0.2),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+      child: Column(children: [
+        // ── Overall progress card ───────────────────────
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(children: [
+            const Text('Overall Progress',
+                style: TextStyle(color: Colors.white70, fontSize: 13)),
+            const SizedBox(height: 16),
+            Stack(alignment: Alignment.center, children: [
+              SizedBox(
+                width: 120, height: 120,
+                child: CircularProgressIndicator(
+                  value: pct,
+                  strokeWidth: 10,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  strokeCap: StrokeCap.round,
                 ),
-                Column(children: [
-                  Text('${(pct * 100).toInt()}%', style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
-                  const Text('Complete', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                ]),
-              ]),
-              const SizedBox(height: 16),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-                _StatChip(label: 'Done', value: '$done', icon: Icons.check_circle_outline),
-                _StatChip(label: 'Left', value: '${total - done}', icon: Icons.pending_outlined),
-                _StatChip(label: 'Days Left', value: '$daysLeft', icon: Icons.calendar_today_rounded),
+              ),
+              Column(children: [
+                Text('${(pct * 100).toInt()}%',
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 30, fontWeight: FontWeight.w800)),
+                const Text('done', style: TextStyle(color: Colors.white60, fontSize: 12)),
               ]),
             ]),
-          ),
-          const SizedBox(height: 20),
-          // Subjects
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)]),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Subjects', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 12),
-              ...plan.subjects.asMap().entries.map((e) {
-                final color = AppColors.subjectColors[e.key % AppColors.subjectColors.length];
-                final subjectTasks = plan.generatedPlan.where((t) => t.subject == e.value).toList();
-                final subjectDone = subjectTasks.where((t) => t.isCompleted).length;
-                final subjectPct = subjectTasks.isEmpty ? 0.0 : subjectDone / subjectTasks.length;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Text(e.value, style: const TextStyle(fontWeight: FontWeight.w600)),
-                      Text('$subjectDone/${subjectTasks.length}', style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.bold)),
-                    ]),
-                    const SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: subjectPct,
-                        backgroundColor: color.withOpacity(0.1),
-                        valueColor: AlwaysStoppedAnimation<Color>(color),
-                        minHeight: 8,
-                      ),
-                    ),
-                  ]),
-                );
-              }),
+            const SizedBox(height: 20),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+              _ProgressChip(label: 'Completed', value: '$done', icon: Icons.check_circle_outline_rounded),
+              _ProgressChip(label: 'Remaining', value: '${total - done}', icon: Icons.radio_button_unchecked_rounded),
+              _ProgressChip(label: 'Days Left', value: daysLeft > 0 ? '$daysLeft' : '0', icon: Icons.event_rounded),
             ]),
+          ]),
+        ),
+        const SizedBox(height: 16),
+
+        // ── Per-subject bars ────────────────────────────
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE8E8E8)),
           ),
-          const SizedBox(height: 16),
-          // Daily study info
-          progressAsync.when(
-            loading: () => const SizedBox(),
-            error: (_, __) => const SizedBox(),
-            data: (p) {
-              if (p == null) return const SizedBox();
-              return Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)]),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Subject Progress',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            const SizedBox(height: 14),
+            ...plan.subjects.asMap().entries.map((e) {
+              final color = AppColors.subjectColors[e.key % AppColors.subjectColors.length];
+              final subjectTasks = plan.generatedPlan.where((t) => t.subject == e.value).toList();
+              final subjectDone = subjectTasks.where((t) => t.isCompleted).length;
+              final subjectPct = subjectTasks.isEmpty ? 0.0 : subjectDone / subjectTasks.length;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 14),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text("Today's Tasks", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 12),
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-                    _InfoTile(label: 'Tasks Today', value: '${p.todayTasks}', color: AppColors.primary),
-                    _InfoTile(label: 'Done Today', value: '${p.todayCompleted}', color: AppColors.accentGreen),
-                    _InfoTile(label: 'Study Hours', value: '${p.dailyStudyHours}h', color: AppColors.accentOrange),
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Text(e.value,
+                        style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    Text('$subjectDone / ${subjectTasks.length}',
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w700, color: color)),
                   ]),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: subjectPct,
+                      minHeight: 7,
+                      backgroundColor: color.withValues(alpha: 0.1),
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  ),
                 ]),
               );
-            },
+            }),
+          ]),
+        ),
+        const SizedBox(height: 16),
+
+        // ── Exam date banner ────────────────────────────
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: daysLeft <= 3 && daysLeft >= 0
+                ? const Color(0xFFFFF0F0)
+                : AppColors.primaryLight,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: daysLeft <= 3 && daysLeft >= 0
+                  ? AppColors.accent.withValues(alpha: 0.4)
+                  : AppColors.primary.withValues(alpha: 0.2),
+            ),
           ),
-        ],
-      ),
+          child: Row(children: [
+            Icon(
+              Icons.event_rounded,
+              color: daysLeft <= 3 && daysLeft >= 0 ? AppColors.accent : AppColors.primary,
+              size: 22,
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(
+                daysLeft > 0 ? '$daysLeft days until exam' : daysLeft == 0 ? 'Exam is today!' : 'Exam passed',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: daysLeft <= 3 && daysLeft >= 0 ? AppColors.accent : AppColors.primary),
+              ),
+              Text(_fmtExamDate(plan.examDate),
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            ])),
+          ]),
+        ),
+      ]),
     );
+  }
+
+  static String _fmtExamDate(DateTime d) {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const wds = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    return '${wds[d.weekday - 1]}, ${d.day} ${months[d.month - 1]} ${d.year}';
   }
 }
 
-class _StatChip extends StatelessWidget {
+class _ProgressChip extends StatelessWidget {
   final String label, value;
   final IconData icon;
-  const _StatChip({required this.label, required this.value, required this.icon});
+  const _ProgressChip({required this.label, required this.value, required this.icon});
 
   @override
   Widget build(BuildContext context) => Column(children: [
-    Icon(icon, color: Colors.white70, size: 18),
-    const SizedBox(height: 4),
-    Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-    Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
-  ]);
-}
-
-class _InfoTile extends StatelessWidget {
-  final String label, value;
-  final Color color;
-  const _InfoTile({required this.label, required this.value, required this.color});
-
-  @override
-  Widget build(BuildContext context) => Column(children: [
-    Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-    Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-  ]);
+        Icon(icon, color: Colors.white60, size: 16),
+        const SizedBox(height: 4),
+        Text(value,
+            style: const TextStyle(
+                color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 10)),
+      ]);
 }
