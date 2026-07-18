@@ -198,7 +198,7 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Question number badge
+                    // Question number + type badges
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -206,11 +206,11 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 5),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
+                            color: AppColors.primary.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            'Q ${state.currentIndex + 1} of ${state.totalQuestions}',
+                            'Q ${state.currentIndex + 1} / ${state.totalQuestions}',
                             style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
@@ -218,36 +218,14 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
                           ),
                         ),
                         Row(children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: AppColors.divider)),
-                            child: Text(
-                              _diffLabel(q.difficulty),
-                              style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: _diffColor(q.difficulty)),
-                            ),
+                          _Badge(
+                            text: _diffLabel(q.difficulty),
+                            color: _diffColor(q.difficulty),
                           ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: AppColors.divider)),
-                            child: Text(
-                              _typeLabel(q.type),
-                              style: const TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.textSecondary,
-                                  fontWeight: FontWeight.w600),
-                            ),
+                          const SizedBox(width: 6),
+                          _Badge(
+                            text: _typeLabel(q.type),
+                            color: AppColors.textSecondary,
                           ),
                         ]),
                       ],
@@ -257,16 +235,11 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
                     // Question card
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(18),
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.04),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2))
-                        ],
+                        border: Border.all(color: const Color(0xFFE8E8EE)),
                       ),
                       child: _QuestionText(text: q.question),
                     ),
@@ -339,20 +312,20 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
               const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
             color: isLow
-                ? AppColors.accent.withValues(alpha: 0.12)
-                : AppColors.primaryLight,
+                ? const Color(0xFFE53E3E).withValues(alpha: 0.1)
+                : AppColors.primary.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             Icon(Icons.timer_outlined,
                 size: 14,
-                color: isLow ? AppColors.accent : AppColors.primary),
+                color: isLow ? const Color(0xFFE53E3E) : AppColors.primary),
             const SizedBox(width: 4),
             Text(timerStr,
                 style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: isLow ? AppColors.accent : AppColors.primary)),
+                    color: isLow ? const Color(0xFFE53E3E) : AppColors.primary)),
           ]),
         ),
         // Score chip
@@ -388,11 +361,11 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isSel ? AppColors.primaryLight : Colors.white,
+            color: isSel ? AppColors.primary.withValues(alpha: 0.06) : Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-                color: isSel ? AppColors.primary : AppColors.divider,
-                width: isSel ? 2 : 1),
+                color: isSel ? AppColors.primary : const Color(0xFFE8E8EE),
+                width: isSel ? 1.5 : 1),
           ),
           child: Row(
             children: [
@@ -521,7 +494,7 @@ class _QuestionGrid extends StatelessWidget {
                     color: isCurrent
                         ? AppColors.primary
                         : isAnswered
-                            ? AppColors.accentGreen
+                            ? const Color(0xFF059669)
                             : const Color(0xFFF5F5F5),
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -544,7 +517,7 @@ class _QuestionGrid extends StatelessWidget {
           Row(children: [
             _Legend(color: AppColors.primary, label: 'Current'),
             const SizedBox(width: 16),
-            _Legend(color: AppColors.accentGreen, label: 'Answered'),
+            _Legend(color: const Color(0xFF059669), label: 'Answered'),
             const SizedBox(width: 16),
             _Legend(color: const Color(0xFFF5F5F5), label: 'Unanswered', dark: true),
           ]),
@@ -630,7 +603,7 @@ class _NavBar extends StatelessWidget {
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: isLast ? AppColors.accentGreen : AppColors.primary,
+                  color: isLast ? const Color(0xFF059669) : AppColors.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
@@ -744,6 +717,26 @@ class _TextAnswerInputState extends State<_TextAnswerInput> {
       ),
     );
   }
+}
+
+// ── Badge widget ──────────────────────────────────────────────────────────────
+class _Badge extends StatelessWidget {
+  final String text;
+  final Color color;
+  const _Badge({required this.text, required this.color});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Text(text,
+            style: TextStyle(
+                fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+      );
 }
 
 // ── Question Text Renderer ────────────────────────────────────────────────────
