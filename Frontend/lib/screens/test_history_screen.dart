@@ -110,7 +110,7 @@ class _TestHistoryScreenState extends ConsumerState<TestHistoryScreen> {
             child: historyAsync.when(
               loading: () => ListView(
                 padding: const EdgeInsets.all(16),
-                children: const [
+                children: [
                   ShimmerCard(height: 72),
                   ShimmerCard(height: 72),
                   ShimmerCard(height: 72),

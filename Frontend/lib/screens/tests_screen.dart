@@ -132,7 +132,7 @@ class TestsScreen extends ConsumerWidget {
               historyAsync.when(
                 loading: () => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     _SectionLabel('Recent Results'),
                     SizedBox(height: 10),
                     ShimmerCard(height: 68),

@@ -111,7 +111,7 @@ CRITICAL RULES — READ CAREFULLY:
 - Cover diverse topics within the subject.
 - IMPORTANT FOR CODE QUESTIONS: If a question references code or asks "what is the output", you MUST embed the COMPLETE code snippet directly inside the "question" field itself. Use this exact format:
   "What is the output of the following code?\\n\\n\`\`\`\\n<full code here>\\n\`\`\`"
-  Never omit the code. The question field must be self-contained and fully readable on its own.`;
+  Never omit the code. The question field must be self-contained and fully readable on its own.
 
 Return ONLY a JSON object:
 {

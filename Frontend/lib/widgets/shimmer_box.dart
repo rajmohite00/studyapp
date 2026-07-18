@@ -67,7 +67,7 @@ class ShimmerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: height,
+      constraints: BoxConstraints(minHeight: height),
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -99,7 +99,7 @@ class ShimmerStatRow extends StatelessWidget {
     return Row(
       children: List.generate(3, (i) => Expanded(
         child: Container(
-          height: 72,
+          constraints: const BoxConstraints(minHeight: 72),
           margin: EdgeInsets.only(right: i < 2 ? 10 : 0),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
