@@ -17,7 +17,6 @@ import 'screens/exam_planner_screen.dart';
 import 'screens/exam_planner_setup_screen.dart';
 import 'screens/subject_info_screen.dart';
 import 'screens/change_password_screen.dart';
-import 'screens/flashcards_screen.dart';
 // Tests module
 import 'screens/tests_screen.dart';
 import 'screens/test_setup_screen.dart';
@@ -94,10 +93,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/exam-planner/subject-info',
           pageBuilder: (c, s) => _fade(context: c, state: s,
               child: SubjectInfoScreen(subject: s.extra as String))),
-
-      // ── Flashcards ────────────────────────────────────
-      GoRoute(path: '/flashcards',
-          pageBuilder: (c, s) => _fade(context: c, state: s, child: const FlashcardsScreen())),
 
       // ── Profile ───────────────────────────────────────
       GoRoute(path: '/profile',

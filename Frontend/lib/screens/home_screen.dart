@@ -175,7 +175,7 @@ class _QuickActions extends StatelessWidget {
       (Icons.calendar_today_rounded, 'Planner', "Today's tasks", Color(0xFF6C4CF1), '/exam-planner'),
       (Icons.auto_awesome_rounded, 'AI Tutor', 'Ask anything', Color(0xFF0284C7), '/ai/chat'),
       (Icons.quiz_rounded, 'Take Test', 'Practice & assess', Color(0xFF059669), '/tests/setup'),
-      (Icons.style_rounded, 'Flashcards', 'Quick revision', Color(0xFFD97706), '/flashcards'),
+      (Icons.menu_book_rounded, 'Exam Plan', 'AI study plan', Color(0xFFD97706), '/exam-planner/setup'),
     ];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Text('Quick Actions',
