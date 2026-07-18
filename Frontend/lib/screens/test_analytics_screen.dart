@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/test_provider.dart';
 import '../models/test_model.dart';
 import '../app_theme.dart';
+import '../widgets/shimmer_box.dart';
 
 class TestAnalyticsScreen extends ConsumerWidget {
   const TestAnalyticsScreen({super.key});
@@ -29,9 +30,15 @@ class TestAnalyticsScreen extends ConsumerWidget {
                 color: AppColors.textPrimary)),
       ),
       body: statsAsync.when(
-        loading: () => const Center(
-            child: CircularProgressIndicator(
-                strokeWidth: 2, color: AppColors.primary)),
+        loading: () => SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(children: const [
+            ShimmerCard(height: 80),
+            ShimmerCard(height: 80),
+            ShimmerCard(height: 160),
+            ShimmerCard(height: 120),
+          ]),
+        ),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (stats) => stats.totalTests == 0
             ? _EmptyAnalytics()
