@@ -229,6 +229,334 @@ class _SubjectStep extends StatelessWidget {
   final String? selected;
   final TextEditingController customCtrl;
   final ValueChanged<String> onSelect;
+  const _SubjectStep({required this.selected, required this.customCtrl, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('Select a subject',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+        const SizedBox(height: 4),
+        const Text('Choose from the list or type your own',
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8, runSpacing: 8,
+          children: _kSubjects.map((s) {
+            final isSel = selected == s;
+            return GestureDetector(
+              onTap: () => onSelect(s),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                decoration: BoxDecoration(
+                  color: isSel ? AppColors.primary : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: isSel ? AppColors.primary : const Color(0xFFE8E8EE)),
+                ),
+                child: Text(s, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
+                    color: isSel ? Colors.white : AppColors.textPrimary)),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 20),
+        Row(children: [
+          Expanded(
+            child: TextField(
+              controller: customCtrl,
+              decoration: const InputDecoration(hintText: 'Custom subject (e.g. Fluid Mechanics)'),
+              onSubmitted: (v) { if (v.trim().isNotEmpty) onSelect(v.trim()); },
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () {
+              final v = customCtrl.text.trim();
+              if (v.isNotEmpty) { onSelect(v); customCtrl.clear(); }
+            },
+            child: Container(
+              height: 48, width: 48,
+              decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
+              child: const Icon(Icons.check_rounded, color: Colors.white, size: 20),
+            ),
+          ),
+        ]),
+        if (selected != null && !_kSubjects.contains(selected)) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3))),
+            child: Text('✓ $selected', style: const TextStyle(color: AppColors.primary,
+                fontWeight: FontWeight.w600, fontSize: 13)),
+          ),
+        ],
+      ]),
+    );
+  }
+}
+
+// ── Step 2: Type ──────────────────────────────────────────────────────────────
+class _TypeStep extends StatelessWidget {
+  final String testType;
+  final List<String> topics;
+  final TextEditingController topicCtrl;
+  final ValueChanged<String> onTypeChange;
+  final VoidCallback onAddTopic;
+  final ValueChanged<String> onRemoveTopic;
+  const _TypeStep({required this.testType, required this.topics, required this.topicCtrl,
+      required this.onTypeChange, required this.onAddTopic, required this.onRemoveTopic});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('Choose test type',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+        const SizedBox(height: 16),
+        _TypeCard(selected: testType == 'full_subject', title: 'Entire Subject',
+            subtitle: 'Questions from all topics', icon: Icons.library_books_outlined,
+            onTap: () => onTypeChange('full_subject')),
+        const SizedBox(height: 10),
+        _TypeCard(selected: testType == 'topic_wise', title: 'Topic Wise',
+            subtitle: 'Focus on specific topics you choose', icon: Icons.topic_outlined,
+            onTap: () => onTypeChange('topic_wise')),
+        if (testType == 'topic_wise') ...[
+          const SizedBox(height: 20),
+          const Text('Add topics', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary)),
+          const SizedBox(height: 8),
+          Row(children: [
+            Expanded(child: TextField(controller: topicCtrl,
+                decoration: const InputDecoration(hintText: 'e.g. OOP, Normalization'),
+                onSubmitted: (_) => onAddTopic())),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onAddTopic,
+              child: Container(height: 48, width: 48,
+                decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
+                child: const Icon(Icons.add_rounded, color: Colors.white, size: 22)),
+            ),
+          ]),
+          if (topics.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(spacing: 8, runSpacing: 8,
+              children: topics.map((t) => Chip(
+                    label: Text(t, style: const TextStyle(fontSize: 12, color: AppColors.primary)),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.08),
+                    deleteIconColor: AppColors.primary,
+                    side: BorderSide(color: AppColors.primary.withValues(alpha: 0.2)),
+                    onDeleted: () => onRemoveTopic(t),
+                  )).toList()),
+          ],
+        ],
+      ]),
+    );
+  }
+}
+
+class _TypeCard extends StatelessWidget {
+  final bool selected;
+  final String title, subtitle;
+  final IconData icon;
+  final VoidCallback onTap;
+  const _TypeCard({required this.selected, required this.title, required this.subtitle,
+      required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: selected ? AppColors.primary : const Color(0xFFE8E8EE),
+              width: selected ? 1.5 : 1),
+        ),
+        child: Row(children: [
+          Container(width: 38, height: 38,
+            decoration: BoxDecoration(
+              color: selected ? AppColors.primary.withValues(alpha: 0.1) : const Color(0xFFF5F5F8),
+              borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, size: 20, color: selected ? AppColors.primary : AppColors.textSecondary)),
+          const SizedBox(width: 14),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700,
+                color: selected ? AppColors.primary : AppColors.textPrimary)),
+            Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          ])),
+          if (selected)
+            Container(width: 20, height: 20,
+              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+              child: const Icon(Icons.check_rounded, color: Colors.white, size: 13)),
+        ]),
+      ),
+    );
+  }
+}
+
+// ── Step 3: Options ───────────────────────────────────────────────────────────
+class _OptionsStep extends StatelessWidget {
+  final String difficulty;
+  final int questionCount, timerMinutes;
+  final ValueChanged<String> onDifficultyChange;
+  final ValueChanged<int> onCountChange, onTimerChange;
+  const _OptionsStep({required this.difficulty, required this.questionCount,
+      required this.timerMinutes, required this.onDifficultyChange,
+      required this.onCountChange, required this.onTimerChange});
+
+  @override
+  Widget build(BuildContext context) {
+    const difficulties = [('easy','Easy'), ('medium','Medium'), ('hard','Hard'), ('mixed','Mixed')];
+    const counts = [10, 20, 30];
+    const timers = [(0,'No Timer'), (15,'15 min'), (30,'30 min'), (45,'45 min'), (60,'60 min')];
+    const diffColors = {'easy': Color(0xFF059669), 'medium': Color(0xFFD97706),
+        'hard': Color(0xFFE53E3E), 'mixed': AppColors.primary};
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Container(
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE8E8EE))),
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Difficulty
+          _OptionLabel('Difficulty'),
+          const SizedBox(height: 10),
+          Wrap(spacing: 8, runSpacing: 8,
+            children: difficulties.map((d) {
+              final isSel = difficulty == d.$1;
+              final clr = diffColors[d.$1] ?? AppColors.primary;
+              return _Chip(label: d.$2, selected: isSel, color: clr,
+                  onTap: () => onDifficultyChange(d.$1));
+            }).toList()),
+          const SizedBox(height: 20),
+          // Questions
+          _OptionLabel('Number of Questions'),
+          const SizedBox(height: 10),
+          Row(children: counts.map((c) {
+            final isSel = questionCount == c;
+            return Expanded(child: Padding(
+              padding: EdgeInsets.only(right: c != counts.last ? 8.0 : 0),
+              child: GestureDetector(
+                onTap: () => onCountChange(c),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isSel ? AppColors.primary : const Color(0xFFF5F5F8),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: isSel ? AppColors.primary : const Color(0xFFE8E8EE))),
+                  child: Column(children: [
+                    Text('$c', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18,
+                        color: isSel ? Colors.white : AppColors.textPrimary)),
+                    Text('Qs', style: TextStyle(fontSize: 10,
+                        color: isSel ? Colors.white70 : AppColors.textSecondary)),
+                  ]),
+                ),
+              ),
+            ));
+          }).toList()),
+          const SizedBox(height: 20),
+          // Timer
+          _OptionLabel('Time Limit'),
+          const SizedBox(height: 10),
+          Wrap(spacing: 8, runSpacing: 8,
+            children: timers.map((t) {
+              final isSel = timerMinutes == t.$1;
+              return _Chip(label: t.$2, selected: isSel, color: AppColors.primary,
+                  onTap: () => onTimerChange(t.$1));
+            }).toList()),
+        ]),
+      ),
+    );
+  }
+}
+
+class _OptionLabel extends StatelessWidget {
+  final String text;
+  const _OptionLabel(this.text);
+  @override
+  Widget build(BuildContext context) => Text(text,
+      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary));
+}
+
+class _Chip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
+  const _Chip({required this.label, required this.selected, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected ? color : const Color(0xFFF5F5F8),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: selected ? color : const Color(0xFFE8E8EE)),
+          ),
+          child: Text(label,
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
+                  color: selected ? Colors.white : AppColors.textPrimary)),
+        ),
+      );
+}
+
+// ── Bottom Bar ────────────────────────────────────────────────────────────────
+class _BottomBar extends StatelessWidget {
+  final int step;
+  final bool isGenerating, canProceed;
+  final VoidCallback onNext;
+  const _BottomBar({required this.step, required this.isGenerating,
+      required this.canProceed, required this.onNext});
+
+  @override
+  Widget build(BuildContext context) {
+    final isLast = step == 2;
+    final canTap = !isGenerating && canProceed;
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
+      child: GestureDetector(
+        onTap: canTap ? onNext : null,
+        child: Container(
+          width: double.infinity, height: 52,
+          decoration: BoxDecoration(
+            color: canTap ? AppColors.primary : const Color(0xFFDDDDE8),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Center(
+            child: isGenerating
+                ? const Row(mainAxisSize: MainAxisSize.min, children: [
+                    SizedBox(width: 18, height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                    SizedBox(width: 10),
+                    Text('Generating questions…',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                  ])
+                : Text(isLast ? 'Generate Test ✨' : 'Next  →',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
+                        color: canTap ? Colors.white : AppColors.textSecondary)),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
   const _SubjectStep(
       {required this.selected,
