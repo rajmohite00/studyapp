@@ -493,7 +493,7 @@ class _OptionsStep extends StatelessWidget {
       ('hard', 'Hard'),
       ('mixed', 'Mixed'),
     ];
-    final counts = [10, 20, 30, 50];
+    final counts = [10, 20, 30];
     final timers = [
       (0, 'No Timer'),
       (15, '15 min'),
