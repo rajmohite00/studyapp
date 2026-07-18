@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/test_provider.dart';
 import '../models/test_model.dart';
 import '../app_theme.dart';
+import '../widgets/shimmer_box.dart';
 
 class TestHistoryScreen extends ConsumerStatefulWidget {
   const TestHistoryScreen({super.key});
@@ -107,9 +108,16 @@ class _TestHistoryScreenState extends ConsumerState<TestHistoryScreen> {
           // ── List ─────────────────────────────────────────
           Expanded(
             child: historyAsync.when(
-              loading: () => const Center(
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: AppColors.primary)),
+              loading: () => ListView(
+                padding: const EdgeInsets.all(16),
+                children: const [
+                  ShimmerCard(height: 72),
+                  ShimmerCard(height: 72),
+                  ShimmerCard(height: 72),
+                  ShimmerCard(height: 72),
+                  ShimmerCard(height: 72),
+                ],
+              ),
               error: (e, _) => Center(
                   child: Text('Error: $e',
                       style: const TextStyle(
