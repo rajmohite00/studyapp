@@ -16,10 +16,11 @@ class TestsScreen extends ConsumerWidget {
     final draftAsync = ref.watch(activeDraftProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF7F7FA),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: context.canPop()
             ? IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new_rounded,
@@ -29,12 +30,20 @@ class TestsScreen extends ConsumerWidget {
             : null,
         title: const Text('Tests',
             style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary)),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: const Color(0xFFEEEEEE)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history_rounded,
+                color: AppColors.textSecondary, size: 22),
+            onPressed: () => context.push('/tests/history'),
+            tooltip: 'History',
+          ),
+        ],
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, color: Color(0xFFEEEEEE)),
         ),
       ),
       body: RefreshIndicator(
@@ -50,8 +59,47 @@ class TestsScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Start new test button ──────────────────────
-              _StartButton(onTap: () => context.push('/tests/setup')),
+              // ── Hero: Start new test ───────────────────────
+              GestureDetector(
+                onTap: () => context.push('/tests/setup'),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Start New Test',
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white)),
+                          const SizedBox(height: 4),
+                          Text('AI-generated questions for any subject',
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color:
+                                      Colors.white.withValues(alpha: 0.8))),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 48, height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.play_arrow_rounded,
+                          color: Colors.white, size: 28),
+                    ),
+                  ]),
+                ),
+              ),
               const SizedBox(height: 16),
 
               // ── Continue draft ─────────────────────────────
@@ -59,37 +107,49 @@ class TestsScreen extends ConsumerWidget {
                 loading: () => const SizedBox(),
                 error: (_, __) => const SizedBox(),
                 data: (draft) => draft != null
-                    ? _ContinueDraftCard(draft: draft)
+                    ? Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _DraftBanner(draft: draft),
+                      )
                     : const SizedBox(),
               ),
 
-              // ── Stats summary ──────────────────────────────
+              // ── Stats row ──────────────────────────────────
               statsAsync.when(
-                loading: () => const _StatsShimmer(),
+                loading: () => const Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: ShimmerStatRow()),
                 error: (_, __) => const SizedBox(),
                 data: (stats) => stats.totalTests > 0
-                    ? _StatsSummary(stats: stats)
+                    ? Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: _StatsRow(stats: stats),
+                      )
                     : const SizedBox(),
               ),
 
               // ── Recent results ─────────────────────────────
               historyAsync.when(
-                loading: () => const _HistoryShimmer(),
+                loading: () => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    _SectionLabel('Recent Results'),
+                    SizedBox(height: 10),
+                    ShimmerCard(height: 68),
+                    ShimmerCard(height: 68),
+                    ShimmerCard(height: 68),
+                  ],
+                ),
                 error: (_, __) => const SizedBox(),
                 data: (tests) {
-                  if (tests.isEmpty) return _EmptyState();
+                  if (tests.isEmpty) return _EmptyView();
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Recent Results',
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary)),
+                          const _SectionLabel('Recent Results'),
                           GestureDetector(
                             onTap: () => context.push('/tests/history'),
                             child: const Text('View All',
@@ -101,16 +161,42 @@ class TestsScreen extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      ...tests.take(5).map((t) => _TestHistoryCard(
-                            test: t,
-                            onTap: () =>
-                                context.push('/tests/report/${t.id}'),
-                          )),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                              color: const Color(0xFFE8E8EE)),
+                        ),
+                        child: Column(
+                          children: tests
+                              .take(5)
+                              .toList()
+                              .asMap()
+                              .entries
+                              .map((entry) {
+                            final isLast =
+                                entry.key == tests.take(5).length - 1;
+                            return Column(children: [
+                              _ResultRow(
+                                test: entry.value,
+                                onTap: () => context.push(
+                                    '/tests/report/${entry.value.id}'),
+                              ),
+                              if (!isLast)
+                                const Divider(
+                                    height: 1,
+                                    indent: 16,
+                                    color: Color(0xFFF0F0F0)),
+                            ]);
+                          }).toList(),
+                        ),
+                      ),
                     ],
                   );
                 },
               ),
-              const SizedBox(height: 80),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -119,201 +205,131 @@ class TestsScreen extends ConsumerWidget {
   }
 }
 
-// ── Start Button ──────────────────────────────────────────────────────────────
-class _StartButton extends StatelessWidget {
-  final VoidCallback onTap;
-  const _StartButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Start New Test',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800)),
-                  SizedBox(height: 4),
-                  Text('AI-generated questions for any subject',
-                      style: TextStyle(
-                          color: Colors.white70, fontSize: 13)),
-                ],
-              ),
-            ),
-            Icon(Icons.play_arrow_rounded, color: Colors.white, size: 40),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Continue Draft ────────────────────────────────────────────────────────────
-class _ContinueDraftCard extends StatelessWidget {
+// ── Draft banner ──────────────────────────────────────────────────────────────
+class _DraftBanner extends StatelessWidget {
   final TestModel draft;
-  const _ContinueDraftCard({required this.draft});
+  const _DraftBanner({required this.draft});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.push('/tests/active/${draft.id}'),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.accentOrange.withValues(alpha: 0.4)),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: AppColors.accentOrange.withValues(alpha: 0.4)),
         ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.accentOrange.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.play_circle_outline_rounded,
-                  color: AppColors.accentOrange, size: 22),
+        child: Row(children: [
+          Container(
+            width: 36, height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.accentOrange.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(9),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
+            child: const Icon(Icons.play_circle_outline_rounded,
+                color: AppColors.accentOrange, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Continue Draft Test',
+                  const Text('Continue Draft',
                       style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary)),
                   Text(draft.subject,
                       style: const TextStyle(
-                          fontSize: 12, color: AppColors.textSecondary)),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.textLight, size: 18),
-          ],
-        ),
+                          fontSize: 11,
+                          color: AppColors.textSecondary)),
+                ]),
+          ),
+          const Icon(Icons.chevron_right_rounded,
+              color: AppColors.textLight, size: 18),
+        ]),
       ),
     );
   }
 }
 
-// ── Stats Summary ─────────────────────────────────────────────────────────────
-class _StatsSummary extends StatelessWidget {
+// ── Stats Row ─────────────────────────────────────────────────────────────────
+class _StatsRow extends StatelessWidget {
   final TestStats stats;
-  const _StatsSummary({required this.stats});
+  const _StatsRow({required this.stats});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return GestureDetector(
+      onTap: () => context.push('/tests/analytics'),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE8E8EE)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Performance Summary',
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary)),
-            GestureDetector(
-              onTap: () => context.push('/tests/analytics'),
-              child: const Text('Details',
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Performance',
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary)),
+                const Text('Details →',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                _StatNum(
+                    value: '${stats.totalTests}',
+                    label: 'Tests',
+                    color: AppColors.primary),
+                _Divider(),
+                _StatNum(
+                    value: '${stats.avgScore}%',
+                    label: 'Avg Score',
+                    color: const Color(0xFF059669)),
+                _Divider(),
+                _StatNum(
+                    value: '${stats.overallAccuracy}%',
+                    label: 'Accuracy',
+                    color: const Color(0xFF0284C7)),
+                _Divider(),
+                _StatNum(
+                    value: '${stats.highestScore}%',
+                    label: 'Best',
+                    color: const Color(0xFFD97706)),
+              ],
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-                child: _StatCard(
-                    label: 'Tests',
-                    value: '${stats.totalTests}',
-                    icon: Icons.quiz_outlined,
-                    color: AppColors.primary)),
-            const SizedBox(width: 10),
-            Expanded(
-                child: _StatCard(
-                    label: 'Avg Score',
-                    value: '${stats.avgScore}%',
-                    icon: Icons.bar_chart_rounded,
-                    color: AppColors.accentGreen)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-                child: _StatCard(
-                    label: 'Best Score',
-                    value: '${stats.highestScore}%',
-                    icon: Icons.emoji_events_outlined,
-                    color: AppColors.accentOrange)),
-            const SizedBox(width: 10),
-            Expanded(
-                child: _StatCard(
-                    label: 'Accuracy',
-                    value: '${stats.overallAccuracy}%',
-                    icon: Icons.gps_fixed_rounded,
-                    color: AppColors.accentPurple)),
-          ],
-        ),
-        const SizedBox(height: 16),
-      ],
+      ),
     );
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final String label, value;
-  final IconData icon;
+class _StatNum extends StatelessWidget {
+  final String value, label;
   final Color color;
-  const _StatCard(
-      {required this.label,
-      required this.value,
-      required this.icon,
-      required this.color});
+  const _StatNum(
+      {required this.value, required this.label, required this.color});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2))
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 8),
+  Widget build(BuildContext context) => Expanded(
+        child: Column(children: [
           Text(value,
               style: TextStyle(
                   fontSize: 20,
@@ -321,146 +337,125 @@ class _StatCard extends StatelessWidget {
                   color: color)),
           Text(label,
               style: const TextStyle(
-                  fontSize: 11, color: AppColors.textSecondary)),
-        ],
-      ),
-    );
-  }
+                  fontSize: 10, color: AppColors.textSecondary)),
+        ]),
+      );
 }
 
-// ── Test History Card ─────────────────────────────────────────────────────────
-class _TestHistoryCard extends StatelessWidget {
+class _Divider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Container(
+      width: 1, height: 32, color: const Color(0xFFF0F0F0));
+}
+
+// ── Result Row ────────────────────────────────────────────────────────────────
+class _ResultRow extends StatelessWidget {
   final TestModel test;
   final VoidCallback onTap;
-  const _TestHistoryCard({required this.test, required this.onTap});
+  const _ResultRow({required this.test, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final color = test.percentage >= 70
-        ? AppColors.accentGreen
+        ? const Color(0xFF059669)
         : test.percentage >= 50
-            ? AppColors.accentOrange
-            : Colors.red.shade400;
+            ? const Color(0xFFD97706)
+            : const Color(0xFFE53E3E);
 
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 6,
-                offset: const Offset(0, 2))
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Center(
-                child: Text(test.grade,
-                    style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                        color: color)),
-              ),
+      borderRadius: BorderRadius.circular(14),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(children: [
+          Container(
+            width: 42, height: 42,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
+            child: Center(
+              child: Text(test.grade,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      color: color)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(test.subject,
                       style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary)),
-                  const SizedBox(height: 2),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   Text(
-                      '${test.correct}/${test.totalQuestions} correct  ·  ${_fmt(test.submittedAt)}',
+                      '${test.correct}/${test.totalQuestions} correct  ·  ${_fmtDate(test.submittedAt)}',
                       style: const TextStyle(
                           fontSize: 11, color: AppColors.textSecondary)),
-                ],
-              ),
-            ),
-            Text('${test.percentage}%',
-                style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 15,
-                    color: color)),
-          ],
-        ),
+                ]),
+          ),
+          Text('${test.percentage}%',
+              style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                  color: color)),
+        ]),
       ),
     );
   }
 
-  String _fmt(DateTime? d) {
+  static String _fmtDate(DateTime? d) {
     if (d == null) return '';
     const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return '${d.day} ${m[d.month - 1]}';
   }
 }
 
-// ── Empty State ───────────────────────────────────────────────────────────────
-class _EmptyState extends StatelessWidget {
+// ── Empty ─────────────────────────────────────────────────────────────────────
+class _EmptyView extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Center(
-        child: Column(
-          children: [
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: Center(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 64, height: 64,
               decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(20)),
+                  color: const Color(0xFFF0EEFF),
+                  borderRadius: BorderRadius.circular(18)),
               child: const Icon(Icons.quiz_outlined,
-                  color: AppColors.primary, size: 36),
+                  color: AppColors.primary, size: 30),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             const Text('No tests yet',
                 style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary)),
-            const SizedBox(height: 8),
-            const Text('Start a test above to begin practising',
+            const SizedBox(height: 6),
+            const Text('Tap Start New Test to begin',
                 style: TextStyle(
                     fontSize: 13, color: AppColors.textSecondary)),
-          ],
+          ]),
         ),
-      ),
-    );
-  }
-}
-
-// ── Shimmer placeholders ──────────────────────────────────────────────────────
-class _StatsShimmer extends StatelessWidget {
-  const _StatsShimmer();
-  @override
-  Widget build(BuildContext context) => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8),
-        child: ShimmerStatRow(),
       );
 }
 
-class _HistoryShimmer extends StatelessWidget {
-  const _HistoryShimmer();
+// ── Section label ─────────────────────────────────────────────────────────────
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
+
   @override
-  Widget build(BuildContext context) => Column(children: const [
-        ShimmerCard(height: 72),
-        ShimmerCard(height: 72),
-        ShimmerCard(height: 72),
-      ]);
+  Widget build(BuildContext context) => Text(text,
+      style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimary));
 }

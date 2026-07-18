@@ -109,45 +109,63 @@ class _TestSetupState extends ConsumerState<TestSetupScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
-        backgroundColor: AppColors.accent,
+        backgroundColor: const Color(0xFFE53E3E),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final titles = ['Choose Subject', 'Test Type', 'Options'];
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF7F7FA),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
               size: 18, color: AppColors.textPrimary),
           onPressed: () =>
               _step > 0 ? setState(() => _step--) : context.pop(),
         ),
-        title: Text(
-          _step == 0
-              ? 'Choose Subject'
-              : _step == 1
-                  ? 'Test Type'
-                  : 'Test Options',
-          style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary),
-        ),
+        title: Text(titles[_step],
+            style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary)),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(
-            value: (_step + 1) / 3,
-            backgroundColor: AppColors.divider,
-            color: AppColors.primary,
-            minHeight: 3,
-          ),
+          preferredSize: const Size.fromHeight(40),
+          child: Column(children: [
+            const Divider(height: 1, color: Color(0xFFEEEEEE)),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(3, (i) {
+                  final done = i < _step;
+                  final active = i == _step;
+                  return Row(mainAxisSize: MainAxisSize.min, children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      width: active ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: active || done
+                            ? AppColors.primary
+                            : const Color(0xFFDDDDE8),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    if (i < 2) const SizedBox(width: 6),
+                  ]);
+                }),
+              ),
+            ),
+          ]),
         ),
       ),
       body: Column(
