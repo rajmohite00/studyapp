@@ -39,16 +39,20 @@ class _TestResultsScreenState extends ConsumerState<TestResultsScreen> {
           if (snap.connectionState == ConnectionState.waiting) {
             return Scaffold(
               backgroundColor: AppColors.background,
-              body: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(children: [
-                  const SizedBox(height: 20),
-                  ShimmerBox(height: 180, borderRadius: BorderRadius.circular(20)),
-                  const SizedBox(height: 16),
-                  const ShimmerCard(height: 80),
-                  const ShimmerCard(height: 120),
-                  const ShimmerCard(height: 80),
-                ]),
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(children: [
+                    const SizedBox(height: 20),
+                    ShimmerBox(height: 180, borderRadius: BorderRadius.circular(20)),
+                    const SizedBox(height: 16),
+                    ShimmerBox(height: 80, borderRadius: BorderRadius.circular(14)),
+                    const SizedBox(height: 12),
+                    ShimmerBox(height: 120, borderRadius: BorderRadius.circular(14)),
+                    const SizedBox(height: 12),
+                    ShimmerBox(height: 80, borderRadius: BorderRadius.circular(14)),
+                  ]),
+                ),
               ),
             );
           }

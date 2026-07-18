@@ -32,17 +32,36 @@ class TestReportScreen extends ConsumerWidget {
         future: ref.read(testServiceProvider).getTest(testId),
         builder: (ctx, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
-            return Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(children: [
-                const SizedBox(height: 16),
-                ShimmerBox(height: 48, borderRadius: BorderRadius.circular(12)),
-                const SizedBox(height: 16),
-                const ShimmerCard(height: 72),
-                const ShimmerCard(height: 72),
-                const ShimmerCard(height: 72),
-                const ShimmerCard(height: 120),
-              ]),
+            return Scaffold(
+              backgroundColor: AppColors.background,
+              appBar: AppBar(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                      size: 18, color: AppColors.textPrimary),
+                  onPressed: () => context.pop(),
+                ),
+                title: const Text('Detailed Report',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary)),
+              ),
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(children: [
+                  ShimmerBox(height: 48, borderRadius: BorderRadius.circular(12)),
+                  const SizedBox(height: 12),
+                  ShimmerBox(height: 72, borderRadius: BorderRadius.circular(14)),
+                  const SizedBox(height: 12),
+                  ShimmerBox(height: 72, borderRadius: BorderRadius.circular(14)),
+                  const SizedBox(height: 12),
+                  ShimmerBox(height: 72, borderRadius: BorderRadius.circular(14)),
+                  const SizedBox(height: 12),
+                  ShimmerBox(height: 140, borderRadius: BorderRadius.circular(14)),
+                ]),
+              ),
             );
           }
           if (!snap.hasData) {

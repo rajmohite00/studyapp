@@ -126,17 +126,22 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
       return Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(children: [
-              // header shimmer
               ShimmerBox(height: 48, borderRadius: BorderRadius.circular(12)),
+              const SizedBox(height: 8),
+              ShimmerBox(height: 6, borderRadius: BorderRadius.circular(3)),
               const SizedBox(height: 16),
-              ShimmerBox(height: 120, borderRadius: BorderRadius.circular(16)),
+              ShimmerBox(height: 100, borderRadius: BorderRadius.circular(16)),
               const SizedBox(height: 16),
-              const ShimmerCard(height: 72),
-              const ShimmerCard(height: 72),
-              const ShimmerCard(height: 72),
+              ShimmerBox(height: 60, borderRadius: BorderRadius.circular(12)),
+              const SizedBox(height: 10),
+              ShimmerBox(height: 60, borderRadius: BorderRadius.circular(12)),
+              const SizedBox(height: 10),
+              ShimmerBox(height: 60, borderRadius: BorderRadius.circular(12)),
+              const SizedBox(height: 10),
+              ShimmerBox(height: 60, borderRadius: BorderRadius.circular(12)),
             ]),
           ),
         ),
