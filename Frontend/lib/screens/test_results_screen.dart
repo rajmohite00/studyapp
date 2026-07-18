@@ -206,10 +206,10 @@ class _ResultsBody extends ConsumerWidget {
   }
 
   Color _gradeColor(int pct) {
-    if (pct >= 80) return AppColors.accentGreen;
+    if (pct >= 80) return const Color(0xFF059669);
     if (pct >= 60) return AppColors.primary;
-    if (pct >= 50) return AppColors.accentOrange;
-    return Colors.red.shade400;
+    if (pct >= 50) return const Color(0xFFD97706);
+    return const Color(0xFFE53E3E);
   }
 
   String _fmtTime(int secs) {
@@ -229,11 +229,11 @@ class _ScoreGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       ('Total', '${test.totalQuestions}', AppColors.primary),
-      ('Attempted', '${test.attempted}', AppColors.accentBlue),
-      ('Correct', '${test.correct}', AppColors.accentGreen),
-      ('Wrong', '${test.wrong}', AppColors.accent),
-      ('Skipped', '${test.skipped}', AppColors.accentOrange),
-      ('Marks', '${test.marks}', AppColors.accentPurple),
+      ('Attempted', '${test.attempted}', const Color(0xFF0284C7)),
+      ('Correct', '${test.correct}', const Color(0xFF059669)),
+      ('Wrong', '${test.wrong}', const Color(0xFFE53E3E)),
+      ('Skipped', '${test.skipped}', const Color(0xFFD97706)),
+      ('Marks', '${test.marks}', const Color(0xFF6C4CF1)),
     ];
     return GridView.count(
       crossAxisCount: 3,
@@ -362,14 +362,14 @@ class _AnalysisSection extends StatelessWidget {
                 _TopicChips(
                     title: '💪 Strong Topics',
                     topics: analysis.strongTopics,
-                    color: AppColors.accentGreen),
+                    color: const Color(0xFF059669)),
               ],
               if (analysis.weakTopics.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 _TopicChips(
                     title: '⚠️ Weak Topics',
                     topics: analysis.weakTopics,
-                    color: AppColors.accent),
+                    color: const Color(0xFFE53E3E)),
               ],
               if (analysis.personalizedFeedback.isNotEmpty) ...[
                 const SizedBox(height: 10),
@@ -506,17 +506,17 @@ class _RevisionPlanCard extends StatelessWidget {
             _PriorityRow(
                 label: '🔴 High Priority',
                 items: plan.highPriority,
-                color: AppColors.accent),
+                color: const Color(0xFFE53E3E)),
           if (plan.mediumPriority.isNotEmpty)
             _PriorityRow(
                 label: '🟡 Medium Priority',
                 items: plan.mediumPriority,
-                color: AppColors.accentOrange),
+                color: const Color(0xFFD97706)),
           if (plan.lowPriority.isNotEmpty)
             _PriorityRow(
                 label: '🟢 Low Priority',
                 items: plan.lowPriority,
-                color: AppColors.accentGreen),
+                color: const Color(0xFF059669)),
           if (plan.estimatedHours > 0) ...[
             const SizedBox(height: 8),
             Row(children: [
