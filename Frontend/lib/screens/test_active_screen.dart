@@ -423,30 +423,13 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
 
   Widget _buildTextInput(
       TestQuestion q, String? answered, ActiveTestState state) {
-    return Container(
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: answered != null && answered.isNotEmpty
-                  ? AppColors.primary
-                  : AppColors.divider)),
-      child: TextField(
-        controller: TextEditingController(text: answered ?? ''),
-        onChanged: (v) => ref
-            .read(activeTestProvider.notifier)
-            .selectAnswer(state.currentIndex, v),
-        decoration: InputDecoration(
-          hintText: q.type == 'fill_blank'
-              ? 'Type the missing word/phrase...'
-              : 'Type your answer...',
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(14),
-        ),
-        maxLines: q.type == 'short_answer' ? 3 : 1,
-        style: const TextStyle(
-            fontSize: 15, color: AppColors.textPrimary),
-      ),
+    return _TextAnswerInput(
+      key: ValueKey('text_${state.currentIndex}'),
+      questionType: q.type,
+      initialValue: answered ?? '',
+      onChanged: (v) => ref
+          .read(activeTestProvider.notifier)
+          .selectAnswer(state.currentIndex, v),
     );
   }
 
@@ -672,6 +655,82 @@ class _NavBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Persistent text input for fill_blank / short_answer ──────────────────────
+// Uses a StatefulWidget so the TextEditingController lives across rebuilds.
+// The ValueKey on the parent ensures a fresh controller when the question changes.
+class _TextAnswerInput extends StatefulWidget {
+  final String questionType;
+  final String initialValue;
+  final ValueChanged<String> onChanged;
+
+  const _TextAnswerInput({
+    super.key,
+    required this.questionType,
+    required this.initialValue,
+    required this.onChanged,
+  });
+
+  @override
+  State<_TextAnswerInput> createState() => _TextAnswerInputState();
+}
+
+class _TextAnswerInputState extends State<_TextAnswerInput> {
+  late final TextEditingController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(text: widget.initialValue);
+    // Place cursor at end of any pre-filled text
+    _ctrl.selection = TextSelection.collapsed(offset: _ctrl.text.length);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isAnswered = _ctrl.text.isNotEmpty;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isAnswered ? AppColors.primary : AppColors.divider,
+          width: isAnswered ? 2 : 1,
+        ),
+      ),
+      child: TextField(
+        controller: _ctrl,
+        onChanged: (v) {
+          widget.onChanged(v);
+          // Rebuild border color only — setState is cheap here since
+          // the controller is owned by this widget, not recreated.
+          setState(() {});
+        },
+        decoration: InputDecoration(
+          hintText: widget.questionType == 'fill_blank'
+              ? 'Type the missing word or phrase...'
+              : 'Type your answer here...',
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.all(16),
+          hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 14),
+        ),
+        maxLines: widget.questionType == 'short_answer' ? 4 : 1,
+        textInputAction: widget.questionType == 'short_answer'
+            ? TextInputAction.newline
+            : TextInputAction.done,
+        style: const TextStyle(fontSize: 15, color: AppColors.textPrimary, height: 1.5),
+        autofocus: false,
       ),
     );
   }
