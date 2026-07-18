@@ -118,11 +118,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
               ),
               const SizedBox(height: 40),
               const SizedBox(
-                width: 32,
-                height: 32,
+                width: 24,
+                height: 24,
                 child: CircularProgressIndicator(
-                  color: AppColors.accent,
-                  strokeWidth: 3,
+                  color: AppColors.primary,
+                  strokeWidth: 2.5,
                 ),
               ),
               if (_isTakingLong) ...[
