@@ -235,41 +235,42 @@ class _ScoreGrid extends StatelessWidget {
       ('Skipped', '${test.skipped}', const Color(0xFFD97706)),
       ('Marks', '${test.marks}', const Color(0xFF6C4CF1)),
     ];
-    return GridView.count(
-      crossAxisCount: 3,
-      crossAxisSpacing: 8,
-      mainAxisSpacing: 8,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.5,
-      children: items
-          .map((item) => Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 6)
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(item.$2,
-                        style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: item.$3)),
-                    Text(item.$1,
-                        style: const TextStyle(
-                            fontSize: 10,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ))
-          .toList(),
+    // Use LayoutBuilder so it adapts to any screen width — no fixed GridView
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final itemW = (constraints.maxWidth - 16) / 3; // 3 per row, 8px gap
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: items.map((item) => SizedBox(
+            width: itemW,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFEEEEEE)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(item.$2,
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: item.$3)),
+                  const SizedBox(height: 2),
+                  Text(item.$1,
+                      style: const TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          )).toList(),
+        );
+      },
     );
   }
 }
