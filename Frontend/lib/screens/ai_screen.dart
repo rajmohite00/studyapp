@@ -89,13 +89,6 @@ class _AiScreenState extends ConsumerState<AiScreen> {
     elevation: 0,
     surfaceTintColor: Colors.transparent,
     centerTitle: true,
-    leading: state.messages.isNotEmpty
-        ? IconButton(
-            icon: const Icon(Icons.delete_outline_rounded,
-                color: AppColors.textSecondary, size: 22),
-            onPressed: () => ref.read(aiCoachProvider.notifier).clearChat(),
-          )
-        : null,
     title: Row(mainAxisSize: MainAxisSize.min, children: [
       Container(
         width: 32, height: 32,
@@ -108,11 +101,13 @@ class _AiScreenState extends ConsumerState<AiScreen> {
           fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
     ]),
     actions: [
-      TextButton(
-        onPressed: () => context.push('/ai/chat'),
-        child: Text('Full Chat', style: GoogleFonts.outfit(
-            fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600)),
-      ),
+      if (state.messages.isNotEmpty)
+        IconButton(
+          icon: const Icon(Icons.delete_outline_rounded,
+              color: AppColors.textSecondary, size: 22),
+          onPressed: () => ref.read(aiCoachProvider.notifier).clearChat(),
+          tooltip: 'Clear chat',
+        ),
     ],
     bottom: const PreferredSize(preferredSize: Size.fromHeight(1),
         child: Divider(height: 1, color: Color(0xFFF0F0F5))),

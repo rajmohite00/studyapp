@@ -10,15 +10,13 @@ import 'screens/signup_screen.dart';
 import 'screens/otp_screen.dart';
 import 'screens/profile_setup_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/ai_chat_screen.dart';
 import 'screens/quiz_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/settings_screen.dart';
 import 'screens/exam_planner_screen.dart';
 import 'screens/exam_planner_setup_screen.dart';
 import 'screens/subject_info_screen.dart';
 import 'screens/change_password_screen.dart';
-// Tests module
-// Tests module — TestsScreen lives inside HomeScreen shell (lazy tab), not a standalone route.
 import 'screens/test_setup_screen.dart';
 import 'screens/test_active_screen.dart';
 import 'screens/test_results_screen.dart';
@@ -79,8 +77,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           pageBuilder: (c, s) => _fade(context: c, state: s, child: const HomeScreen(initialTab: 3))),
 
       // ── AI ────────────────────────────────────────────
+      // /ai/chat opens HomeScreen with AI tab (index 2) selected — no duplicate screen
       GoRoute(path: '/ai/chat',
-          pageBuilder: (c, s) => _fade(context: c, state: s, child: const AiChatScreen())),
+          pageBuilder: (c, s) => _fade(
+              context: c, state: s,
+              child: const HomeScreen(initialTab: 2))),
       GoRoute(path: '/ai/quiz',
           pageBuilder: (c, s) => _fade(context: c, state: s,
               child: QuizScreen(quizData: s.extra as Map<String, dynamic>))),
@@ -99,6 +100,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           pageBuilder: (c, s) => _fade(context: c, state: s, child: const ProfileScreen())),
       GoRoute(path: '/change-password',
           pageBuilder: (c, s) => _fade(context: c, state: s, child: const ChangePasswordScreen())),
+      GoRoute(path: '/settings',
+          pageBuilder: (c, s) => _fade(context: c, state: s, child: const SettingsScreen())),
 
       // ── Tests module ──────────────────────────────────
       // NOTE: /tests is NOT a standalone route — Tests tab lives inside HomeScreen shell.

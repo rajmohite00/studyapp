@@ -52,6 +52,7 @@ class StudyCoachApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       themeMode: ref.watch(themeModeProvider),
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       scrollBehavior: _SmoothScrollBehavior(),
       routerConfig: router,
     );
