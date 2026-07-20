@@ -13,8 +13,9 @@ const _kDefaultSubjects = [
   'Java', 'Python', 'JavaScript', 'Data Structures', 'Machine Learning',
 ];
 
+// All test types stored as backend-safe values directly
 const _kTestTypes = [
-  (Icons.edit_note_rounded,  'Practice',     'Untimed casual practice',  'practice'),
+  (Icons.edit_note_rounded,  'Practice',     'Untimed casual practice',  'full_subject'),
   (Icons.timer_outlined,     'Mock Exam',    'Full timed simulation',    'mock_exam'),
   (Icons.book_outlined,      'Chapter Test', 'Specific topic focus',     'chapter_test'),
   (Icons.refresh_rounded,    'Revision',     'Review past mistakes',     'revision'),
@@ -27,16 +28,39 @@ class TestSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _TestSetupState extends ConsumerState<TestSetupScreen> {
-  String  _subject    = '';
-  String  _testType   = 'practice';
-  String  _difficulty = 'medium';
+  // ── State ────────────────────────────────────────────────────────────────────
+  String  _subject    = '';   // resolved in initState
+  String  _testType   = 'full_subject';   // backend-safe default  String  _difficulty = 'medium';
   int     _qCount     = 20;
-  int     _timer      = 30;
+  int     _timer      = 0;
   bool    _generating = false;
 
-  // Custom subject text field
   final _customCtrl = TextEditingController();
   bool _showCustomField = false;
+
+  // ── Resolve subject synchronously (never empty) ───────────────────────────
+  String _resolveSubject() {
+    if (_subject.isNotEmpty) return _subject;
+    try {
+      final user = ref.read(authStateProvider).user;
+      final subs = user?.profile.subjects ?? [];
+      return subs.isNotEmpty ? subs.first : _kDefaultSubjects.first;
+    } catch (_) {
+      return _kDefaultSubjects.first;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Try to set subject immediately (synchronous path)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_subject.isEmpty) {
+        setState(() => _subject = _resolveSubject());
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -44,43 +68,38 @@ class _TestSetupState extends ConsumerState<TestSetupScreen> {
     super.dispose();
   }
 
-  // ── Called once after first build to pre-select a subject ────────────────
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = ref.read(authStateProvider).user;
-      final profileSubjects = user?.profile.subjects ?? [];
-      if (profileSubjects.isNotEmpty && _subject.isEmpty) {
-        setState(() => _subject = profileSubjects.first);
-      } else if (_subject.isEmpty) {
-        setState(() => _subject = _kDefaultSubjects.first);
-      }
-    });
-  }
+  // ── All 4 test types map 1:1 to backend enum ──────────────────────────────
+  static const _typeMap = {
+    'practice':     'full_subject',    // practice = full subject, untimed
+    'full_subject': 'full_subject',
+    'mock_exam':    'mock_exam',
+    'chapter_test': 'chapter_test',
+    'revision':     'revision',
+    'topic_wise':   'topic_wise',
+  };
 
   Future<void> _start() async {
-    // Apply any pending custom subject
-    final custom = _customCtrl.text.trim();
-    if (custom.isNotEmpty) setState(() => _subject = custom);
-    final subject = custom.isNotEmpty ? custom : _subject;
+    // 1. Resolve final subject (custom field overrides chip selection)
+    final custom  = _customCtrl.text.trim();
+    final subject = custom.isNotEmpty ? custom : _resolveSubject();
 
     if (subject.isEmpty) {
-      _showErr('Please choose or enter a subject first.');
+      _showErr('Please select a subject first.');
       return;
     }
+
+    // 2. Map UI test type to backend enum value
+    final backendType = _typeMap[_testType] ?? 'full_subject';
+
     setState(() => _generating = true);
     try {
-      final user = ref.read(authStateProvider).user;
-      // Determine difficulty: use profile grade if user hasn't changed it
-      // (keep whatever the user picked — they may override)
       final test = await ref.read(testServiceProvider).createTest(
-        subject: subject,
-        topics: [],
-        testType: _testType == 'practice' ? 'full_subject' : _testType,
-        difficulty: _difficulty,
+        subject:       subject,
+        topics:        [],
+        testType:      backendType,
+        difficulty:    _difficulty,
         questionCount: _qCount,
-        timerMinutes: _timer,
+        timerMinutes:  _timer,
       );
       if (!mounted) return;
       ref.invalidate(activeDraftProvider);
@@ -94,17 +113,48 @@ class _TestSetupState extends ConsumerState<TestSetupScreen> {
 
   String _parseErr(dynamic e) {
     try {
-      if (e.runtimeType.toString().contains('DioException')) {
+      final type = e.runtimeType.toString();
+      if (type.contains('DioException') || type.contains('DioError')) {
+        final statusCode = (e as dynamic).response?.statusCode as int?;
         final data = (e as dynamic).response?.data;
-        if (data is Map && data['error'] is Map) {
-          return data['error']['message']?.toString() ?? 'Failed to generate test.';
+
+        // Extract the most useful message from backend error shape
+        if (data is Map) {
+          final errorObj = data['error'];
+          if (errorObj is Map) {
+            // Validation details array → show first field error
+            final details = errorObj['details'];
+            if (details is List && details.isNotEmpty) {
+              final first = details.first;
+              if (first is Map) {
+                return '${first['field'] ?? 'Input'}: ${first['message']}';
+              }
+            }
+            final msg = errorObj['message']?.toString() ?? '';
+            if (msg.isNotEmpty) return msg;
+          }
+          final msg = data['message']?.toString() ?? '';
+          if (msg.isNotEmpty) return msg;
         }
-        final code = (e as dynamic).response?.statusCode;
-        if (code == 429) return 'AI rate limit. Wait 1 minute and retry.';
-        if (code == 500) return 'Server error. Please retry.';
+
+        // HTTP status fallbacks
+        if (statusCode == 422) return 'Invalid input. Check your subject and selections.';
+        if (statusCode == 429) return 'AI is busy right now. Wait 1 minute and retry.';
+        if (statusCode == 503) return 'AI service unavailable. Try again shortly.';
+        if (statusCode == 500) return 'Server error. Please try again.';
+        if (statusCode == 404) return 'Server waking up. Wait 10 seconds and retry.';
+
+        // Connection/timeout errors
+        final errMsg = e.toString().toLowerCase();
+        if (errMsg.contains('timeout')) {
+          return 'Request timed out. Try 10 questions for faster results.';
+        }
+        if (errMsg.contains('connection')) {
+          return 'No internet connection. Check your network.';
+        }
       }
     } catch (_) {}
-    return 'Failed to generate test. Try again.';
+    return 'Something went wrong. Please try again.';
   }
 
   void _showErr(String msg) {
