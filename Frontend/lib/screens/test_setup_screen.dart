@@ -376,9 +376,9 @@ class _TestSetupState extends ConsumerState<TestSetupScreen> {
             // ── QUESTIONS ───────────────────────────────────────
             _SectionTitle('Number of Questions', titleC),
             const SizedBox(height: 12),
-            Row(children: [10, 20, 30, 40].map((n) {
+            Row(children: [10, 20, 30].map((n) {
               final sel    = _qCount == n;
-              final isLast = n == 40;
+              final isLast = n == 30;
               return Expanded(child: Padding(
                 padding: EdgeInsets.only(right: isLast ? 0 : 8),
                 child: GestureDetector(

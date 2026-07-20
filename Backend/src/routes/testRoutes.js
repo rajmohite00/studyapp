@@ -16,7 +16,7 @@ const createSchema = z.object({
     'mock_exam', 'chapter_test', 'revision', 'practice',
   ]).optional().default('full_subject'),
   difficulty:    z.enum(['easy', 'medium', 'hard', 'mixed']).optional().default('mixed'),
-  questionCount: z.coerce.number().int().min(5).max(40),
+  questionCount: z.coerce.number().int().min(5).max(30),
   timerMinutes:  z.coerce.number().int().min(0).max(180).optional().default(0),
 });
 
