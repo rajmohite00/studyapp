@@ -1,6 +1,8 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/test_provider.dart';
 import '../models/test_model.dart';
 import '../app_theme.dart';
@@ -9,695 +11,404 @@ import '../widgets/shimmer_box.dart';
 class TestResultsScreen extends ConsumerStatefulWidget {
   final String testId;
   const TestResultsScreen({super.key, required this.testId});
-
   @override
-  ConsumerState<TestResultsScreen> createState() =>
-      _TestResultsScreenState();
+  ConsumerState<TestResultsScreen> createState() => _TestResultsState();
 }
 
-class _TestResultsScreenState extends ConsumerState<TestResultsScreen> {
-  late Future<TestModel> _testFuture;
+class _TestResultsState extends ConsumerState<TestResultsScreen> {
+  late Future<TestModel> _future;
 
   @override
   void initState() {
     super.initState();
-    _testFuture =
-        ref.read(testServiceProvider).getTest(widget.testId);
-    // Kick off AI analysis in background
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(analysisProvider.notifier).analyse(widget.testId);
-    });
+    _future = ref.read(testServiceProvider).getTest(widget.testId);
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => ref.read(analysisProvider.notifier).analyse(widget.testId));
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: FutureBuilder<TestModel>(
-        future: _testFuture,
-        builder: (ctx, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
-            return Scaffold(
-              backgroundColor: AppColors.background,
-              body: SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(children: [
-                    const SizedBox(height: 20),
-                    ShimmerBox(height: 180, borderRadius: BorderRadius.circular(20)),
-                    const SizedBox(height: 16),
-                    ShimmerBox(height: 80, borderRadius: BorderRadius.circular(14)),
-                    const SizedBox(height: 12),
-                    ShimmerBox(height: 120, borderRadius: BorderRadius.circular(14)),
-                    const SizedBox(height: 12),
-                    ShimmerBox(height: 80, borderRadius: BorderRadius.circular(14)),
-                  ]),
-                ),
-              ),
-            );
-          }
-          if (snap.hasError || snap.data == null) {
-            return Center(
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                const Text('Failed to load results'),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                    onPressed: () => context.go('/home/tests'),
-                    child: const Text('Go Back')),
-              ]),
-            );
-          }
-          return _ResultsBody(test: snap.data!);
-        },
-      ),
-    );
-  }
+  Widget build(BuildContext context) => FutureBuilder<TestModel>(
+    future: _future,
+    builder: (ctx, snap) {
+      if (snap.connectionState == ConnectionState.waiting) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: SafeArea(child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(children: [
+              const SizedBox(height: 20),
+              ShimmerBox(height: 240, borderRadius: BorderRadius.circular(22)),
+              const SizedBox(height: 14),
+              ShimmerBox(height: 88, borderRadius: BorderRadius.circular(16)),
+              const SizedBox(height: 10),
+              ShimmerBox(height: 120, borderRadius: BorderRadius.circular(16)),
+            ]),
+          )),
+        );
+      }
+      if (snap.hasError || snap.data == null) {
+        return Scaffold(body: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text('Could not load results',
+              style: GoogleFonts.outfit(color: AppColors.textSecondary)),
+          const SizedBox(height: 12),
+          ElevatedButton(onPressed: () => context.go('/home/tests'),
+              child: Text('Go Back', style: GoogleFonts.outfit())),
+        ])));
+      }
+      return _ResultsBody(test: snap.data!);
+    },
+  );
 }
 
+// ── Results Body ──────────────────────────────────────────────────────────────
 class _ResultsBody extends ConsumerWidget {
   final TestModel test;
   const _ResultsBody({required this.test});
 
+  Color get _gradeColor {
+    if (test.percentage >= 80) return const Color(0xFF10B981);
+    if (test.percentage >= 60) return AppColors.primary;
+    if (test.percentage >= 50) return const Color(0xFFF59E0B);
+    return const Color(0xFFEF4444);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final analysisState = ref.watch(analysisProvider);
-    final gradeColor = _gradeColor(test.percentage);
-
-    return CustomScrollView(
-      slivers: [
-        // ── Header ─────────────────────────────────────────────
-        SliverAppBar(
-          expandedHeight: 220,
-          pinned: true,
-          backgroundColor: gradeColor,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                size: 18, color: Colors.white),
-            onPressed: () => context.canPop() ? context.pop() : context.go('/home/tests'),
-          ),
-          actions: [
-            TextButton.icon(
-              onPressed: () =>
-                  context.push('/tests/report/${test.id}'),
-              icon: const Icon(Icons.description_outlined,
-                  color: Colors.white, size: 18),
-              label: const Text('Full Report',
-                  style: TextStyle(color: Colors.white, fontSize: 12)),
-            ),
-          ],
-          flexibleSpace: FlexibleSpaceBar(
-            background: Container(
-              color: gradeColor,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 50),
-                  Text(test.grade,
-                      style: const TextStyle(
-                          fontSize: 64,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white)),
-                  Text('${test.percentage}%',
-                      style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white70)),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      test.passed ? '✓ PASSED' : '✗ FAILED',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+    final analysis = ref.watch(analysisProvider);
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded, color: AppColors.textPrimary),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/home/tests'),
         ),
-
-        SliverPadding(
-          padding: const EdgeInsets.all(16),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
-              // ── Score breakdown ───────────────────────────────
-              Text(test.subject,
-                  style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary)),
-              const SizedBox(height: 4),
-              Text(
-                  '${test.difficulty[0].toUpperCase()}${test.difficulty.substring(1)} · ${test.questionCount} questions',
-                  style: const TextStyle(
-                      fontSize: 13, color: AppColors.textSecondary)),
+        title: Text('Test Result', style: GoogleFonts.outfit(
+            fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.ios_share_rounded, color: AppColors.textSecondary),
+            onPressed: () => context.push('/tests/report/${test.id}'),
+          ),
+        ],
+        bottom: const PreferredSize(preferredSize: Size.fromHeight(1),
+            child: Divider(height: 1, color: Color(0xFFF0F0F5))),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // ── Score Card ────────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [BoxShadow(color: _gradeColor.withValues(alpha: 0.12),
+                  blurRadius: 20, offset: const Offset(0, 6))],
+            ),
+            child: Column(children: [
+              Text('${test.subject} — ${test.difficulty[0].toUpperCase()}${test.difficulty.substring(1)}',
+                  style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary),
+                  textAlign: TextAlign.center),
               const SizedBox(height: 20),
-
-              _ScoreGrid(test: test),
-              const SizedBox(height: 20),
-
-              // ── Time stats ────────────────────────────────────
-              _InfoCard(
-                title: 'Time Statistics',
-                icon: Icons.timer_outlined,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _TimeStat(
-                        label: 'Total Time',
-                        value: _fmtTime(test.timeSpentSecs)),
-                    _TimeStat(
-                        label: 'Avg / Q',
-                        value: '${test.avgTimePerQuestion}s'),
-                    _TimeStat(
-                        label: 'Accuracy',
-                        value: '${test.accuracy}%'),
-                  ],
-                ),
+              // Circular ring
+              SizedBox(
+                width: 160, height: 160,
+                child: Stack(alignment: Alignment.center, children: [
+                  CustomPaint(
+                    size: const Size(160, 160),
+                    painter: _RingPainter(
+                        value: test.percentage / 100,
+                        trackColor: AppColors.primaryLight,
+                        arcColor: _gradeColor,
+                        strokeWidth: 14),
+                  ),
+                  Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text('${test.percentage}%', style: GoogleFonts.outfit(
+                        fontSize: 34, fontWeight: FontWeight.w900, color: _gradeColor)),
+                    Text(test.grade, style: GoogleFonts.outfit(
+                        fontSize: 16, fontWeight: FontWeight.w700,
+                        color: AppColors.textSecondary)),
+                  ]),
+                ]),
               ),
-              const SizedBox(height: 16),
-
-              // ── AI Analysis ───────────────────────────────────
-              _AnalysisSection(analysisState: analysisState),
-              const SizedBox(height: 16),
-
-              // ── Revision Plan ─────────────────────────────────
-              if (analysisState.test?.revisionPlan != null)
-                _RevisionPlanCard(
-                    plan: analysisState.test!.revisionPlan!),
               const SizedBox(height: 20),
-
-              // ── Action buttons ────────────────────────────────
-              _ActionButtons(test: test),
-              const SizedBox(height: 40),
+              // Correct / Wrong row
+              Row(children: [
+                Expanded(child: _ScoreChip(
+                    label: 'Correct', value: '${test.correct}',
+                    color: const Color(0xFF10B981))),
+                const SizedBox(width: 12),
+                Expanded(child: _ScoreChip(
+                    label: 'Wrong', value: '${test.wrong}',
+                    color: const Color(0xFFEF4444))),
+                const SizedBox(width: 12),
+                Expanded(child: _ScoreChip(
+                    label: 'Skipped', value: '${test.skipped}',
+                    color: const Color(0xFFF59E0B))),
+              ]),
             ]),
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+
+          // ── Stats row ─────────────────────────────────
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10, offset: const Offset(0, 3))],
+            ),
+            child: Row(children: [
+              _StatCol(icon: Icons.timer_outlined, label: 'Time Taken',
+                  value: _fmtTime(test.timeSpentSecs)),
+              _VDivider(),
+              _StatCol(icon: Icons.gps_fixed_rounded, label: 'Accuracy',
+                  value: '${test.accuracy}%'),
+              _VDivider(),
+              _StatCol(icon: Icons.speed_rounded, label: 'Avg/Q',
+                  value: '${test.avgTimePerQuestion}s'),
+            ]),
+          ),
+          const SizedBox(height: 16),
+
+          // ── AI Insight ────────────────────────────────
+          if (analysis.isLoading)
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                  color: AppColors.primaryLight, borderRadius: BorderRadius.circular(18)),
+              child: Row(children: [
+                const SizedBox(width: 18, height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
+                const SizedBox(width: 12),
+                Text('Generating AI insights…', style: GoogleFonts.outfit(
+                    fontSize: 13, color: AppColors.primary)),
+              ]),
+            )
+          else if (analysis.test?.aiAnalysis != null) ...[
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.20)),
+              ),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Container(
+                  width: 40, height: 40,
+                  decoration: const BoxDecoration(
+                      gradient: AppColors.heroGradient, shape: BoxShape.circle),
+                  child: const Icon(Icons.auto_awesome_rounded,
+                      color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('AI Insight', style: GoogleFonts.outfit(
+                      fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                  const SizedBox(height: 4),
+                  Text(
+                    analysis.test!.aiAnalysis!.motivationMessage.isNotEmpty
+                        ? analysis.test!.aiAnalysis!.motivationMessage
+                        : analysis.test!.aiAnalysis!.personalizedFeedback,
+                    style: GoogleFonts.outfit(fontSize: 13,
+                        color: AppColors.primaryDark, height: 1.5),
+                  ),
+                ])),
+              ]),
+            ),
+          ],
+          const SizedBox(height: 16),
+
+          // ── Strong Topics ─────────────────────────────
+          if (analysis.test?.aiAnalysis?.strongTopics.isNotEmpty == true) ...[
+            _TopicsSection(
+              title: 'Strong Topics',
+              icon: Icons.check_circle_outline_rounded,
+              iconColor: const Color(0xFF10B981),
+              topics: analysis.test!.aiAnalysis!.strongTopics,
+              chipColor: const Color(0xFFECFDF5),
+              textColor: const Color(0xFF10B981),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // ── Weak Topics ───────────────────────────────
+          if (analysis.test?.aiAnalysis?.weakTopics.isNotEmpty == true) ...[
+            _TopicsSection(
+              title: 'Needs Review',
+              icon: Icons.warning_amber_rounded,
+              iconColor: const Color(0xFFEF4444),
+              topics: analysis.test!.aiAnalysis!.weakTopics,
+              chipColor: const Color(0xFFFFF0F0),
+              textColor: const Color(0xFFEF4444),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // ── Action buttons ────────────────────────────
+          GestureDetector(
+            onTap: () => context.push('/tests/report/${test.id}'),
+            child: Container(
+              width: double.infinity, height: 52,
+              decoration: BoxDecoration(
+                  gradient: AppColors.heroGradient,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.28),
+                      blurRadius: 12, offset: const Offset(0, 4))]),
+              child: Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.description_outlined, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Text('View Full Report', style: GoogleFonts.outfit(
+                    fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white)),
+              ])),
+            ),
+          ),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () => context.push('/tests/setup'),
+            child: Container(
+              width: double.infinity, height: 52,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.40), width: 1.5),
+              ),
+              child: Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.replay_rounded, color: AppColors.primary, size: 18),
+                const SizedBox(width: 8),
+                Text('Take Another Test', style: GoogleFonts.outfit(
+                    fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.primary)),
+              ])),
+            ),
+          ),
+        ]),
+      ),
     );
   }
 
-  Color _gradeColor(int pct) {
-    if (pct >= 80) return const Color(0xFF059669);
-    if (pct >= 60) return AppColors.primary;
-    if (pct >= 50) return const Color(0xFFD97706);
-    return const Color(0xFFE53E3E);
-  }
-
-  String _fmtTime(int secs) {
+  static String _fmtTime(int secs) {
     if (secs < 60) return '${secs}s';
-    final m = secs ~/ 60;
-    final s = secs % 60;
+    final m = secs ~/ 60, s = secs % 60;
     return '${m}m ${s}s';
   }
 }
 
-// ── Score Grid ────────────────────────────────────────────────────────────────
-class _ScoreGrid extends StatelessWidget {
-  final TestModel test;
-  const _ScoreGrid({required this.test});
-
-  @override
-  Widget build(BuildContext context) {
-    final items = [
-      ('Total', '${test.totalQuestions}', AppColors.primary),
-      ('Attempted', '${test.attempted}', const Color(0xFF0284C7)),
-      ('Correct', '${test.correct}', const Color(0xFF059669)),
-      ('Wrong', '${test.wrong}', const Color(0xFFE53E3E)),
-      ('Skipped', '${test.skipped}', const Color(0xFFD97706)),
-      ('Marks', '${test.marks}', const Color(0xFF6C4CF1)),
-    ];
-    // Use LayoutBuilder so it adapts to any screen width — no fixed GridView
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final itemW = (constraints.maxWidth - 16) / 3; // 3 per row, 8px gap
-        return Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: items.map((item) => SizedBox(
-            width: itemW,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFEEEEEE)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(item.$2,
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: item.$3)),
-                  const SizedBox(height: 2),
-                  Text(item.$1,
-                      style: const TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w600)),
-                ],
-              ),
-            ),
-          )).toList(),
-        );
-      },
-    );
-  }
-}
-
-class _TimeStat extends StatelessWidget {
+// ── Supporting widgets ────────────────────────────────────────────────────────
+class _ScoreChip extends StatelessWidget {
   final String label, value;
-  const _TimeStat({required this.label, required this.value});
-
+  final Color color;
+  const _ScoreChip({required this.label, required this.value, required this.color});
   @override
-  Widget build(BuildContext context) => Column(children: [
-        Text(value,
-            style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary)),
-        Text(label,
-            style: const TextStyle(
-                fontSize: 11, color: AppColors.textSecondary)),
-      ]);
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(vertical: 12),
+    decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
+    child: Column(children: [
+      Text(value, style: GoogleFonts.outfit(fontSize: 22,
+          fontWeight: FontWeight.w800, color: color)),
+      Text(label, style: GoogleFonts.outfit(fontSize: 11, color: AppColors.textSecondary)),
+    ]),
+  );
 }
 
-// ── AI Analysis Section ───────────────────────────────────────────────────────
-class _AnalysisSection extends StatelessWidget {
-  final AnalysisState analysisState;
-  const _AnalysisSection({required this.analysisState});
-
-  @override
-  Widget build(BuildContext context) {
-    if (analysisState.isLoading) {
-      return _InfoCard(
-        title: 'AI Performance Analysis',
-        icon: Icons.auto_awesome_outlined,
-        child: const Padding(
-          padding: EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: [
-              SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: AppColors.primary)),
-              SizedBox(width: 12),
-              Text('Generating your personalised analysis...',
-                  style: TextStyle(
-                      color: AppColors.textSecondary, fontSize: 13)),
-            ],
-          ),
-        ),
-      );
-    }
-
-    final analysis = analysisState.test?.aiAnalysis;
-    if (analysis == null) return const SizedBox();
-
-    return Column(
-      children: [
-        _InfoCard(
-          title: 'AI Performance Analysis',
-          icon: Icons.auto_awesome_outlined,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (analysis.motivationMessage.isNotEmpty) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(analysis.motivationMessage,
-                      style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          fontStyle: FontStyle.italic)),
-                ),
-                const SizedBox(height: 12),
-              ],
-              if (analysis.overallPerformance.isNotEmpty)
-                _AnalysisRow(
-                    label: 'Overall',
-                    value: analysis.overallPerformance),
-              if (analysis.estimatedLevel.isNotEmpty)
-                _AnalysisRow(
-                    label: 'Level',
-                    value: analysis.estimatedLevel),
-              if (analysis.strongTopics.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                _TopicChips(
-                    title: '💪 Strong Topics',
-                    topics: analysis.strongTopics,
-                    color: const Color(0xFF059669)),
-              ],
-              if (analysis.weakTopics.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                _TopicChips(
-                    title: '⚠️ Weak Topics',
-                    topics: analysis.weakTopics,
-                    color: const Color(0xFFE53E3E)),
-              ],
-              if (analysis.personalizedFeedback.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                const Text('Feedback',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textSecondary)),
-                const SizedBox(height: 4),
-                Text(analysis.personalizedFeedback,
-                    style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textPrimary,
-                        height: 1.5)),
-              ],
-              if (analysis.studySuggestions.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                const Text('Study Suggestions',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textSecondary)),
-                const SizedBox(height: 6),
-                ...analysis.studySuggestions.map((s) => Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('• ',
-                              style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.bold)),
-                          Expanded(
-                              child: Text(s,
-                                  style: const TextStyle(
-                                      fontSize: 13,
-                                      color: AppColors.textPrimary,
-                                      height: 1.4))),
-                        ],
-                      ),
-                    )),
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AnalysisRow extends StatelessWidget {
+class _StatCol extends StatelessWidget {
+  final IconData icon;
   final String label, value;
-  const _AnalysisRow({required this.label, required this.value});
-
+  const _StatCol({required this.icon, required this.label, required this.value});
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 70,
-              child: Text(label,
-                  style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textSecondary)),
-            ),
-            Expanded(
-                child: Text(value,
-                    style: const TextStyle(
-                        fontSize: 13, color: AppColors.textPrimary, height: 1.4))),
-          ],
-        ),
-      );
+  Widget build(BuildContext context) => Expanded(
+    child: Column(children: [
+      Icon(icon, size: 16, color: AppColors.textSecondary),
+      const SizedBox(height: 6),
+      Text(value, style: GoogleFonts.outfit(fontSize: 16,
+          fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+      Text(label, style: GoogleFonts.outfit(fontSize: 11,
+          color: AppColors.textSecondary), textAlign: TextAlign.center),
+    ]),
+  );
 }
 
-class _TopicChips extends StatelessWidget {
-  final String title;
-  final List<String> topics;
-  final Color color;
-  const _TopicChips(
-      {required this.title, required this.topics, required this.color});
-
+class _VDivider extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary)),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: topics
-                .map((t) => Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                            color: color.withValues(alpha: 0.3)),
-                      ),
-                      child: Text(t,
-                          style: TextStyle(
-                              fontSize: 11,
-                              color: color,
-                              fontWeight: FontWeight.w600)),
-                    ))
-                .toList(),
-          ),
-        ],
-      );
+  Widget build(BuildContext context) =>
+      Container(width: 1, height: 44, color: const Color(0xFFF0F0F5));
 }
 
-// ── Revision Plan ─────────────────────────────────────────────────────────────
-class _RevisionPlanCard extends StatelessWidget {
-  final RevisionPlan plan;
-  const _RevisionPlanCard({required this.plan});
-
-  @override
-  Widget build(BuildContext context) {
-    return _InfoCard(
-      title: 'AI Revision Plan',
-      icon: Icons.menu_book_outlined,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (plan.highPriority.isNotEmpty)
-            _PriorityRow(
-                label: '🔴 High Priority',
-                items: plan.highPriority,
-                color: const Color(0xFFE53E3E)),
-          if (plan.mediumPriority.isNotEmpty)
-            _PriorityRow(
-                label: '🟡 Medium Priority',
-                items: plan.mediumPriority,
-                color: const Color(0xFFD97706)),
-          if (plan.lowPriority.isNotEmpty)
-            _PriorityRow(
-                label: '🟢 Low Priority',
-                items: plan.lowPriority,
-                color: const Color(0xFF059669)),
-          if (plan.estimatedHours > 0) ...[
-            const SizedBox(height: 8),
-            Row(children: [
-              const Icon(Icons.access_time_outlined,
-                  size: 14, color: AppColors.textSecondary),
-              const SizedBox(width: 4),
-              Text('Estimated revision: ~${plan.estimatedHours}h',
-                  style: const TextStyle(
-                      fontSize: 12, color: AppColors.textSecondary)),
-            ]),
-          ],
-          if (plan.suggestedNextTest.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(8)),
-              child: Row(children: [
-                const Icon(Icons.lightbulb_outline_rounded,
-                    size: 14, color: AppColors.primary),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text('Next: ${plan.suggestedNextTest}',
-                      style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600)),
-                ),
-              ]),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _PriorityRow extends StatelessWidget {
-  final String label;
-  final List<String> items;
-  final Color color;
-  const _PriorityRow(
-      {required this.label, required this.items, required this.color});
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textSecondary)),
-            const SizedBox(height: 4),
-            ...items.map((t) => Padding(
-                  padding: const EdgeInsets.only(left: 8, bottom: 2),
-                  child: Row(children: [
-                    Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                            color: color, shape: BoxShape.circle)),
-                    const SizedBox(width: 6),
-                    Expanded(
-                        child: Text(t,
-                            style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textPrimary))),
-                  ]),
-                )),
-          ],
-        ),
-      );
-}
-
-// ── Action buttons ────────────────────────────────────────────────────────────
-class _ActionButtons extends StatelessWidget {
-  final TestModel test;
-  const _ActionButtons({required this.test});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () => context.push('/tests/report/${test.id}'),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(12)),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.description_outlined,
-                    color: Colors.white, size: 18),
-                SizedBox(width: 8),
-                Text('View Detailed Report',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14)),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        GestureDetector(
-          onTap: () => context.push('/tests/setup'),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary)),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.replay_rounded,
-                    color: AppColors.primary, size: 18),
-                SizedBox(width: 8),
-                Text('Take Another Test',
-                    style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── Shared Info Card ──────────────────────────────────────────────────────────
-class _InfoCard extends StatelessWidget {
+class _TopicsSection extends StatelessWidget {
   final String title;
   final IconData icon;
-  final Widget child;
-  const _InfoCard(
-      {required this.title, required this.icon, required this.child});
+  final Color iconColor, chipColor, textColor;
+  final List<String> topics;
+  const _TopicsSection({required this.title, required this.icon,
+      required this.iconColor, required this.chipColor,
+      required this.textColor, required this.topics});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2))
-        ],
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 8, offset: const Offset(0, 2))],
+    ),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Icon(icon, size: 16, color: iconColor),
+        const SizedBox(width: 6),
+        Text(title, style: GoogleFonts.outfit(fontSize: 15,
+            fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+      ]),
+      const SizedBox(height: 12),
+      Wrap(spacing: 8, runSpacing: 8,
+        children: topics.map((t) => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(color: chipColor,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: textColor.withValues(alpha: 0.25))),
+          child: Text(t, style: GoogleFonts.outfit(fontSize: 12,
+              fontWeight: FontWeight.w600, color: textColor)),
+        )).toList(),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Icon(icon, size: 16, color: AppColors.primary),
-            const SizedBox(width: 6),
-            Text(title,
-                style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary)),
-          ]),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
-    );
+    ]),
+  );
+}
+
+// ── Ring Painter ──────────────────────────────────────────────────────────────
+class _RingPainter extends CustomPainter {
+  final double value;
+  final Color trackColor, arcColor;
+  final double strokeWidth;
+  const _RingPainter({required this.value, required this.trackColor,
+      required this.arcColor, required this.strokeWidth});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    final track = Paint()
+      ..color = trackColor
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, radius, track);
+    final arc = Paint()
+      ..color = arcColor
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(rect, -math.pi / 2, 2 * math.pi * value.clamp(0, 1), false, arc);
   }
+
+  @override
+  bool shouldRepaint(_RingPainter old) => old.value != value;
 }

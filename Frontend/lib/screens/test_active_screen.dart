@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/test_provider.dart';
 import '../models/test_model.dart';
 import '../app_theme.dart';
@@ -10,16 +11,15 @@ import '../widgets/shimmer_box.dart';
 class TestActiveScreen extends ConsumerStatefulWidget {
   final String testId;
   const TestActiveScreen({super.key, required this.testId});
-
   @override
   ConsumerState<TestActiveScreen> createState() => _TestActiveScreenState();
 }
 
 class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
   Timer? _timer;
-  int _elapsedSecs = 0;
-  int? _remainingSecs; // null = no timer
-  bool _timerStarted = false;
+  int _elapsed = 0;
+  int? _remaining;
+  bool _started = false;
 
   @override
   void initState() {
@@ -29,76 +29,68 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
 
   Future<void> _load() async {
     await ref.read(activeTestProvider.notifier).loadTest(widget.testId);
-    final state = ref.read(activeTestProvider);
-    if (state.test != null && state.test!.timerMinutes > 0) {
-      _remainingSecs = state.test!.timerMinutes * 60;
+    final s = ref.read(activeTestProvider);
+    if (s.test != null && s.test!.timerMinutes > 0) {
+      _remaining = s.test!.timerMinutes * 60;
     }
     _startTimer();
   }
 
   void _startTimer() {
-    if (_timerStarted) return;
-    _timerStarted = true;
+    if (_started) return;
+    _started = true;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       setState(() {
-        _elapsedSecs++;
-        if (_remainingSecs != null) {
-          _remainingSecs = (_remainingSecs! - 1).clamp(0, 99999);
-          if (_remainingSecs == 0) _confirmSubmit(autoSubmit: true);
+        _elapsed++;
+        if (_remaining != null) {
+          _remaining = (_remaining! - 1).clamp(0, 999999);
+          if (_remaining == 0) _doSubmit();
         }
       });
     });
   }
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
+  void dispose() { _timer?.cancel(); super.dispose(); }
 
-  void _confirmSubmit({bool autoSubmit = false}) {
+  void _askSubmit() {
     _timer?.cancel();
-    if (autoSubmit) {
-      _doSubmit();
-      return;
-    }
+    final state = ref.read(activeTestProvider);
+    final unanswered = state.totalQuestions - state.answeredCount;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Submit Test?',
-            style: TextStyle(fontWeight: FontWeight.w800)),
-        content: Builder(builder: (ctx) {
-          final state = ref.read(activeTestProvider);
-          final unanswered =
-              state.totalQuestions - state.answeredCount;
-          return Text(
-              unanswered > 0
-                  ? 'You have $unanswered unanswered questions. Submit anyway?'
-                  : 'Are you sure you want to submit?',
-              style: const TextStyle(color: AppColors.textSecondary));
-        }),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Submit Test?', style: GoogleFonts.outfit(
+            fontWeight: FontWeight.w800, fontSize: 18)),
+        content: Text(
+          unanswered > 0
+              ? '$unanswered question${unanswered > 1 ? 's' : ''} unanswered. Submit anyway?'
+              : 'Are you sure you want to submit?',
+          style: GoogleFonts.outfit(color: AppColors.textSecondary, fontSize: 14)),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
-          TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _startTimer(); // resume
-              },
-              child: const Text('Keep Going')),
+          OutlinedButton(
+            onPressed: () { Navigator.pop(context); _startTimer(); },
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppColors.divider),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: Text('Keep Going', style: GoogleFonts.outfit(
+                color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+          ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _doSubmit();
-            },
+            onPressed: () { Navigator.pop(context); _doSubmit(); },
             style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                minimumSize: Size.zero,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10))),
-            child: const Text('Submit'),
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: Text('Submit', style: GoogleFonts.outfit(
+                color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -106,16 +98,19 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
   }
 
   Future<void> _doSubmit() async {
-    final result = await ref
-        .read(activeTestProvider.notifier)
-        .submitTest(_elapsedSecs);
+    final result = await ref.read(activeTestProvider.notifier).submitTest(_elapsed);
     if (!mounted) return;
     if (result != null) {
       ref.invalidate(testHistoryProvider);
-      ref.invalidate(activeDraftProvider);
       ref.invalidate(testStatsProvider);
+      ref.invalidate(activeDraftProvider);
       context.go('/tests/results/${result.id}');
     }
+  }
+
+  String _fmt(int secs) {
+    final m = secs ~/ 60, s = secs % 60;
+    return '${m.toString().padLeft(2,'0')}:${s.toString().padLeft(2,'0')}';
   }
 
   @override
@@ -125,424 +120,271 @@ class _TestActiveScreenState extends ConsumerState<TestActiveScreen> {
     if (state.isLoading) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(children: [
-              ShimmerBox(height: 48, borderRadius: BorderRadius.circular(12)),
-              const SizedBox(height: 8),
-              ShimmerBox(height: 6, borderRadius: BorderRadius.circular(3)),
-              const SizedBox(height: 16),
-              ShimmerBox(height: 100, borderRadius: BorderRadius.circular(16)),
-              const SizedBox(height: 16),
-              ShimmerBox(height: 60, borderRadius: BorderRadius.circular(12)),
-              const SizedBox(height: 10),
-              ShimmerBox(height: 60, borderRadius: BorderRadius.circular(12)),
-              const SizedBox(height: 10),
-              ShimmerBox(height: 60, borderRadius: BorderRadius.circular(12)),
-              const SizedBox(height: 10),
-              ShimmerBox(height: 60, borderRadius: BorderRadius.circular(12)),
-            ]),
-          ),
-        ),
-      );
-    }
-
-    if (state.test == null) {
-      return Scaffold(
-        body: Center(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Text('Test not found',
-                style: TextStyle(color: AppColors.textSecondary)),
-            const SizedBox(height: 12),
-            ElevatedButton(
-                onPressed: () => context.go('/home/tests'),
-                child: const Text('Go Back')),
+        appBar: AppBar(backgroundColor: Colors.white, elevation: 0,
+          leading: IconButton(icon: const Icon(Icons.close_rounded, color: AppColors.textPrimary),
+              onPressed: () => context.go('/home/tests'))),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(children: [
+            ShimmerBox(height: 6, borderRadius: BorderRadius.circular(3)),
+            const SizedBox(height: 16),
+            ShimmerBox(height: 120, borderRadius: BorderRadius.circular(18)),
+            const SizedBox(height: 16),
+            ...List.generate(4, (_) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: ShimmerBox(height: 62, borderRadius: BorderRadius.circular(14)),
+            )),
           ]),
         ),
       );
     }
 
+    if (state.test == null) {
+      return Scaffold(body: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text('Test not found', style: GoogleFonts.outfit(color: AppColors.textSecondary)),
+        const SizedBox(height: 12),
+        ElevatedButton(onPressed: () => context.go('/home/tests'),
+            child: Text('Go Back', style: GoogleFonts.outfit())),
+      ])));
+    }
+
     final test = state.test!;
     final q = test.questions[state.currentIndex];
     final answered = state.answers[state.currentIndex];
+    final timerStr = _remaining != null ? _fmt(_remaining!) : _fmt(_elapsed);
+    final isLow = _remaining != null && _remaining! < 60;
 
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) return;
         _timer?.cancel();
-        final answers = state.answers.entries
-            .map((e) => {'questionIndex': e.key, 'userAnswer': e.value})
-            .toList();
-        ref
-            .read(testServiceProvider)
-            .saveBulkAnswers(test.id, answers)
-            .catchError((_) {});
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: _buildAppBar(state, test),
-        body: Column(
-          children: [
-            // Progress bar
-            LinearProgressIndicator(
-              value: (state.currentIndex + 1) / state.totalQuestions,
-              backgroundColor: AppColors.divider,
-              color: AppColors.primary,
-              minHeight: 3,
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Question number + type badges
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            'Q ${state.currentIndex + 1} / ${state.totalQuestions}',
-                            style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.primary),
-                          ),
-                        ),
-                        Row(children: [
-                          _Badge(
-                            text: _diffLabel(q.difficulty),
-                            color: _diffColor(q.difficulty),
-                          ),
-                          const SizedBox(width: 6),
-                          _Badge(
-                            text: _typeLabel(q.type),
-                            color: AppColors.textSecondary,
-                          ),
-                        ]),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Question card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE8E8EE)),
-                      ),
-                      child: _QuestionText(text: q.question),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Options / Input
-                    if (q.type == 'mcq' || q.type == 'true_false')
-                      ..._buildOptions(q, answered, state)
-                    else
-                      _buildTextInput(q, answered, state),
-
-                    const SizedBox(height: 24),
-
-                    // Question grid navigator
-                    _QuestionGrid(
-                      total: state.totalQuestions,
-                      current: state.currentIndex,
-                      answers: state.answers,
-                      onTap: (i) =>
-                          ref.read(activeTestProvider.notifier).goToQuestion(i),
-                    ),
-                  ],
-                ),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          leadingWidth: 48,
+          leading: IconButton(
+            icon: const Icon(Icons.close_rounded, color: AppColors.textPrimary, size: 22),
+            onPressed: () { _timer?.cancel(); context.go('/home/tests'); },
+          ),
+          title: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Text('Question ${state.currentIndex + 1} of ${state.totalQuestions}',
+                style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary)),
+            Text(test.subject, style: GoogleFonts.outfit(fontSize: 11,
+                color: AppColors.textSecondary)),
+          ]),
+          centerTitle: true,
+          actions: [
+            // Timer
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: isLow
+                    ? const Color(0xFFEF4444).withValues(alpha: 0.10)
+                    : AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(20),
               ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.timer_outlined, size: 14,
+                    color: isLow ? const Color(0xFFEF4444) : AppColors.primary),
+                const SizedBox(width: 4),
+                Text(timerStr, style: GoogleFonts.outfit(
+                    fontSize: 13, fontWeight: FontWeight.w700,
+                    color: isLow ? const Color(0xFFEF4444) : AppColors.primary)),
+              ]),
             ),
-
-            // Nav buttons
-            _NavBar(
-              state: state,
-              isSubmitting: state.isSubmitting,
-              onPrev: () =>
-                  ref.read(activeTestProvider.notifier).prevQuestion(),
-              onNext: () =>
-                  ref.read(activeTestProvider.notifier).nextQuestion(),
-              onSubmit: () => _confirmSubmit(),
+            TextButton(
+              onPressed: _askSubmit,
+              child: Text('Submit', style: GoogleFonts.outfit(
+                  fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
             ),
           ],
+          bottom: const PreferredSize(preferredSize: Size.fromHeight(1),
+              child: Divider(height: 1, color: Color(0xFFF0F0F5))),
         ),
+        body: Column(children: [
+          // Progress bar
+          LinearProgressIndicator(
+            value: (state.currentIndex + 1) / state.totalQuestions,
+            backgroundColor: AppColors.primaryLight,
+            color: AppColors.primary,
+            minHeight: 4,
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                // Question card
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 12, offset: const Offset(0, 4))],
+                  ),
+                  child: Text(q.question, style: GoogleFonts.outfit(
+                      fontSize: 16, fontWeight: FontWeight.w600,
+                      height: 1.6, color: AppColors.textPrimary)),
+                ),
+                const SizedBox(height: 16),
+
+                // Options
+                if (q.type == 'mcq' || q.type == 'true_false')
+                  ..._buildOptions(q, answered, state)
+                else
+                  _TextInput(
+                    key: ValueKey('txt_${state.currentIndex}'),
+                    initial: answered ?? '',
+                    type: q.type,
+                    onChanged: (v) => ref.read(activeTestProvider.notifier)
+                        .selectAnswer(state.currentIndex, v),
+                  ),
+
+                const SizedBox(height: 20),
+                // Question number grid
+                _QGrid(
+                  total: state.totalQuestions,
+                  current: state.currentIndex,
+                  answers: state.answers,
+                  onTap: (i) => ref.read(activeTestProvider.notifier).goToQuestion(i),
+                ),
+              ]),
+            ),
+          ),
+          // Nav buttons
+          _NavBar(
+            state: state,
+            isSubmitting: state.isSubmitting,
+            onPrev: () => ref.read(activeTestProvider.notifier).prevQuestion(),
+            onNext: () => ref.read(activeTestProvider.notifier).nextQuestion(),
+            onSubmit: _askSubmit,
+          ),
+        ]),
       ),
     );
   }
 
-  AppBar _buildAppBar(ActiveTestState state, TestModel test) {
-    final timerStr = _remainingSecs != null
-        ? _fmtTime(_remainingSecs!)
-        : _fmtTime(_elapsedSecs);
-    final isLow = _remainingSecs != null && _remainingSecs! < 60;
-
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.close_rounded,
-            color: AppColors.textPrimary),
-        onPressed: () {
-          _timer?.cancel();
-          context.go('/home/tests');
-        },
-      ),
-      title: Text(test.subject,
-          style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary)),
-      actions: [
-        // Timer chip
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-          padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: isLow
-                ? const Color(0xFFE53E3E).withValues(alpha: 0.1)
-                : AppColors.primary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.timer_outlined,
-                size: 14,
-                color: isLow ? const Color(0xFFE53E3E) : AppColors.primary),
-            const SizedBox(width: 4),
-            Text(timerStr,
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: isLow ? const Color(0xFFE53E3E) : AppColors.primary)),
-          ]),
-        ),
-        // Score chip
-        Container(
-          margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
-          padding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-              color: AppColors.accentGreen.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20)),
-          child: Text(
-            '${state.answeredCount}/${state.totalQuestions}',
-            style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: AppColors.accentGreen),
-          ),
-        ),
-      ],
-    );
-  }
-
-  List<Widget> _buildOptions(
-      TestQuestion q, String? answered, ActiveTestState state) {
-    return q.options.map((opt) {
+  List<Widget> _buildOptions(TestQuestion q, String? answered, ActiveTestState state) {
+    const labels = ['A','B','C','D','E','F'];
+    return q.options.asMap().entries.map((e) {
+      final i = e.key;
+      final opt = e.value;
       final isSel = answered == opt;
+      final label = i < labels.length ? labels[i] : '${i+1}';
       return GestureDetector(
-        onTap: () => ref
-            .read(activeTestProvider.notifier)
+        onTap: () => ref.read(activeTestProvider.notifier)
             .selectAnswer(state.currentIndex, opt),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: isSel ? AppColors.primary.withValues(alpha: 0.06) : Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            color: isSel ? AppColors.primaryLight : Colors.white,
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
-                color: isSel ? AppColors.primary : const Color(0xFFE8E8EE),
-                width: isSel ? 1.5 : 1),
+                color: isSel ? AppColors.primary : const Color(0xFFE8E6F0),
+                width: isSel ? 2 : 1),
+            boxShadow: [BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 6, offset: const Offset(0, 2))],
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: isSel ? AppColors.primary : Colors.transparent,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                      color:
-                          isSel ? AppColors.primary : AppColors.textLight,
-                      width: 1.5),
-                ),
-                child: isSel
-                    ? const Icon(Icons.check_rounded,
-                        color: Colors.white, size: 13)
-                    : null,
+          child: Row(children: [
+            Container(
+              width: 30, height: 30,
+              decoration: BoxDecoration(
+                color: isSel ? AppColors.primary : Colors.transparent,
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: isSel ? AppColors.primary : AppColors.textLight, width: 1.5),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  opt,
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: isSel ? FontWeight.w600 : FontWeight.w500,
-                      color: isSel
-                          ? AppColors.primary
-                          : AppColors.textPrimary),
-                ),
-              ),
-            ],
-          ),
+              child: Center(child: Text(label, style: GoogleFonts.outfit(
+                  fontSize: 12, fontWeight: FontWeight.w700,
+                  color: isSel ? Colors.white : AppColors.textSecondary))),
+            ),
+            const SizedBox(width: 14),
+            Expanded(child: Text(opt, style: GoogleFonts.outfit(
+                fontSize: 14,
+                fontWeight: isSel ? FontWeight.w600 : FontWeight.w500,
+                color: AppColors.textPrimary))),
+          ]),
         ),
       );
     }).toList();
   }
-
-  Widget _buildTextInput(
-      TestQuestion q, String? answered, ActiveTestState state) {
-    return _TextAnswerInput(
-      key: ValueKey('text_${state.currentIndex}'),
-      questionType: q.type,
-      initialValue: answered ?? '',
-      onChanged: (v) => ref
-          .read(activeTestProvider.notifier)
-          .selectAnswer(state.currentIndex, v),
-    );
-  }
-
-  String _fmtTime(int secs) {
-    final m = secs ~/ 60;
-    final s = secs % 60;
-    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-  }
-
-  String _diffLabel(String d) {
-    switch (d) {
-      case 'easy': return 'Easy';
-      case 'hard': return 'Hard';
-      default: return 'Medium';
-    }
-  }
-
-  Color _diffColor(String d) {
-    switch (d) {
-      case 'easy': return AppColors.accentGreen;
-      case 'hard': return AppColors.accent;
-      default: return AppColors.accentOrange;
-    }
-  }
-
-  String _typeLabel(String t) {
-    switch (t) {
-      case 'true_false': return 'True/False';
-      case 'fill_blank': return 'Fill Blank';
-      case 'short_answer': return 'Short Answer';
-      default: return 'MCQ';
-    }
-  }
 }
 
-// ── Question Grid ─────────────────────────────────────────────────────────────
-class _QuestionGrid extends StatelessWidget {
+// ── Question Number Grid ──────────────────────────────────────────────────────
+class _QGrid extends StatelessWidget {
   final int total, current;
   final Map<int, String> answers;
   final ValueChanged<int> onTap;
-  const _QuestionGrid(
-      {required this.total,
-      required this.current,
-      required this.answers,
-      required this.onTap});
+  const _QGrid({required this.total, required this.current,
+      required this.answers, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.divider),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8, offset: const Offset(0, 2))],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Questions',
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary)),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: List.generate(total, (i) {
-              final isAnswered =
-                  answers[i] != null && answers[i]!.isNotEmpty;
-              final isCurrent = i == current;
-              return GestureDetector(
-                onTap: () => onTap(i),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 120),
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: isCurrent
-                        ? AppColors.primary
-                        : isAnswered
-                            ? const Color(0xFF059669)
-                            : const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${i + 1}',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: (isCurrent || isAnswered)
-                              ? Colors.white
-                              : AppColors.textSecondary),
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-          const SizedBox(height: 8),
-          Row(children: [
-            _Legend(color: AppColors.primary, label: 'Current'),
-            const SizedBox(width: 16),
-            _Legend(color: const Color(0xFF059669), label: 'Answered'),
-            const SizedBox(width: 16),
-            _Legend(color: const Color(0xFFF5F5F5), label: 'Unanswered', dark: true),
-          ]),
-        ],
-      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Text('Questions', style: GoogleFonts.outfit(fontSize: 12,
+              fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          const Spacer(),
+          _QGridLegend(color: AppColors.primary, label: 'Current'),
+          const SizedBox(width: 10),
+          _QGridLegend(color: AppColors.accentGreen, label: 'Done'),
+        ]),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 6, runSpacing: 6,
+          children: List.generate(total, (i) {
+            final isCurrent = i == current;
+            final isDone = answers[i] != null && answers[i]!.isNotEmpty;
+            Color bg = const Color(0xFFF3F3F7);
+            Color fg = AppColors.textSecondary;
+            if (isCurrent) { bg = AppColors.primary; fg = Colors.white; }
+            else if (isDone) { bg = AppColors.accentGreen; fg = Colors.white; }
+            return GestureDetector(
+              onTap: () => onTap(i),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 120),
+                width: 34, height: 34,
+                decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+                child: Center(child: Text('${i+1}', style: GoogleFonts.outfit(
+                    fontSize: 12, fontWeight: FontWeight.w700, color: fg))),
+              ),
+            );
+          }),
+        ),
+      ]),
     );
   }
 }
 
-class _Legend extends StatelessWidget {
+class _QGridLegend extends StatelessWidget {
   final Color color;
   final String label;
-  final bool dark;
-  const _Legend({required this.color, required this.label, this.dark = false});
-
+  const _QGridLegend({required this.color, required this.label});
   @override
   Widget build(BuildContext context) => Row(mainAxisSize: MainAxisSize.min, children: [
-    Container(
-        width: 12, height: 12,
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
+    Container(width: 10, height: 10,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
     const SizedBox(width: 4),
-    Text(label,
-        style: TextStyle(
-            fontSize: 10,
-            color: dark ? AppColors.textSecondary : AppColors.textSecondary)),
+    Text(label, style: GoogleFonts.outfit(fontSize: 10, color: AppColors.textSecondary)),
   ]);
 }
 
@@ -551,274 +393,115 @@ class _NavBar extends StatelessWidget {
   final ActiveTestState state;
   final bool isSubmitting;
   final VoidCallback onPrev, onNext, onSubmit;
-  const _NavBar(
-      {required this.state,
-      required this.isSubmitting,
-      required this.onPrev,
-      required this.onNext,
-      required this.onSubmit});
+  const _NavBar({required this.state, required this.isSubmitting,
+      required this.onPrev, required this.onNext, required this.onSubmit});
 
   @override
   Widget build(BuildContext context) {
     final isLast = state.currentIndex == state.totalQuestions - 1;
     return Container(
-      padding: EdgeInsets.fromLTRB(
-          16, 10, 16, MediaQuery.of(context).padding.bottom + 10),
       color: Colors.white,
-      child: Row(
-        children: [
-          if (state.currentIndex > 0) ...[
-            GestureDetector(
-              onTap: onPrev,
-              child: Container(
-                height: 48,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.divider)),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.arrow_back_rounded,
-                        color: AppColors.textPrimary, size: 18),
-                    SizedBox(width: 6),
-                    Text('Prev',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary)),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-          ],
+      padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
+      child: Row(children: [
+        if (state.currentIndex > 0) ...[
           Expanded(
             child: GestureDetector(
-              onTap: isSubmitting
-                  ? null
-                  : isLast
-                      ? onSubmit
-                      : onNext,
+              onTap: onPrev,
               child: Container(
-                height: 48,
+                height: 52,
                 decoration: BoxDecoration(
-                  color: isLast ? const Color(0xFF059669) : AppColors.primary,
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE8E6F0), width: 1.5),
                 ),
-                child: Center(
-                  child: isSubmitting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              isLast ? 'Submit Test' : 'Next',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              isLast
-                                  ? Icons.check_rounded
-                                  : Icons.arrow_forward_rounded,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ],
-                        ),
-                ),
+                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  const Icon(Icons.chevron_left_rounded,
+                      color: AppColors.textPrimary, size: 22),
+                  Text('Previous', style: GoogleFonts.outfit(
+                      fontSize: 14, fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary)),
+                ]),
               ),
             ),
           ),
+          const SizedBox(width: 12),
         ],
-      ),
+        Expanded(
+          flex: 2,
+          child: GestureDetector(
+            onTap: isSubmitting ? null : (isLast ? onSubmit : onNext),
+            child: Container(
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: isSubmitting ? null : AppColors.heroGradient,
+                color: isSubmitting ? AppColors.divider : null,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: isSubmitting ? [] : [BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.28),
+                    blurRadius: 12, offset: const Offset(0, 4))],
+              ),
+              child: Center(child: isSubmitting
+                  ? const SizedBox(width: 22, height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                  : Row(mainAxisSize: MainAxisSize.min, children: [
+                      Text(isLast ? 'Submit' : 'Next', style: GoogleFonts.outfit(
+                          fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white)),
+                      const SizedBox(width: 4),
+                      Icon(isLast ? Icons.check_circle_outline_rounded
+                          : Icons.chevron_right_rounded,
+                          color: Colors.white, size: 20),
+                    ])),
+            ),
+          ),
+        ),
+      ]),
     );
   }
 }
 
-// ── Persistent text input for fill_blank / short_answer ──────────────────────
-// Uses a StatefulWidget so the TextEditingController lives across rebuilds.
-// The ValueKey on the parent ensures a fresh controller when the question changes.
-class _TextAnswerInput extends StatefulWidget {
-  final String questionType;
-  final String initialValue;
+// ── Text answer input ─────────────────────────────────────────────────────────
+class _TextInput extends StatefulWidget {
+  final String initial, type;
   final ValueChanged<String> onChanged;
-
-  const _TextAnswerInput({
-    super.key,
-    required this.questionType,
-    required this.initialValue,
-    required this.onChanged,
-  });
-
+  const _TextInput({super.key, required this.initial,
+      required this.type, required this.onChanged});
   @override
-  State<_TextAnswerInput> createState() => _TextAnswerInputState();
+  State<_TextInput> createState() => _TextInputState();
 }
 
-class _TextAnswerInputState extends State<_TextAnswerInput> {
-  late final TextEditingController _ctrl;
-
+class _TextInputState extends State<_TextInput> {
+  late final TextEditingController _c;
   @override
   void initState() {
     super.initState();
-    _ctrl = TextEditingController(text: widget.initialValue);
-    // Place cursor at end of any pre-filled text
-    _ctrl.selection = TextSelection.collapsed(offset: _ctrl.text.length);
+    _c = TextEditingController(text: widget.initial)
+      ..selection = TextSelection.collapsed(offset: widget.initial.length);
   }
-
   @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
+  void dispose() { _c.dispose(); super.dispose(); }
   @override
   Widget build(BuildContext context) {
-    final isAnswered = _ctrl.text.isNotEmpty;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
+    return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isAnswered ? AppColors.primary : AppColors.divider,
-          width: isAnswered ? 2 : 1,
-        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.divider),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: TextField(
-        controller: _ctrl,
-        onChanged: (v) {
-          widget.onChanged(v);
-          // Rebuild border color only — setState is cheap here since
-          // the controller is owned by this widget, not recreated.
-          setState(() {});
-        },
+        controller: _c,
+        onChanged: (v) { widget.onChanged(v); setState(() {}); },
+        maxLines: widget.type == 'short_answer' ? 4 : 1,
         decoration: InputDecoration(
-          hintText: widget.questionType == 'fill_blank'
-              ? 'Type the missing word or phrase...'
-              : 'Type your answer here...',
+          hintText: widget.type == 'fill_blank'
+              ? 'Type the missing word…' : 'Type your answer…',
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(16),
-          hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 14),
+          hintStyle: GoogleFonts.outfit(color: AppColors.textLight, fontSize: 14),
         ),
-        maxLines: widget.questionType == 'short_answer' ? 4 : 1,
-        textInputAction: widget.questionType == 'short_answer'
-            ? TextInputAction.newline
-            : TextInputAction.done,
-        style: const TextStyle(fontSize: 15, color: AppColors.textPrimary, height: 1.5),
-        autofocus: false,
+        style: GoogleFonts.outfit(fontSize: 15, color: AppColors.textPrimary, height: 1.5),
       ),
-    );
-  }
-}
-
-// ── Badge widget ──────────────────────────────────────────────────────────────
-class _Badge extends StatelessWidget {
-  final String text;
-  final Color color;
-  const _Badge({required this.text, required this.color});
-
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-        ),
-        child: Text(text,
-            style: TextStyle(
-                fontSize: 11, fontWeight: FontWeight.w600, color: color)),
-      );
-}
-
-// ── Question Text Renderer ────────────────────────────────────────────────────
-// Splits the question text on ``` code fences and renders code blocks
-// with a dark monospaced background so code output questions are fully readable.
-class _QuestionText extends StatelessWidget {
-  final String text;
-  const _QuestionText({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    // Split on ``` markers. Odd-indexed segments are code blocks.
-    final parts = text.split('```');
-
-    if (parts.length == 1) {
-      // No code fence — plain text question
-      return Text(
-        text,
-        style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            height: 1.6,
-            color: AppColors.textPrimary),
-      );
-    }
-
-    // Build a column mixing prose and code blocks
-    final widgets = <Widget>[];
-    for (int i = 0; i < parts.length; i++) {
-      final segment = parts[i].trim();
-      if (segment.isEmpty) continue;
-
-      if (i.isOdd) {
-        // Code block — strip optional language tag on first line (e.g. "python\n...")
-        final lines = segment.split('\n');
-        final langTag = RegExp(r'^[a-zA-Z0-9+#]+$');
-        final code = (lines.isNotEmpty && langTag.hasMatch(lines.first.trim()))
-            ? lines.sublist(1).join('\n')
-            : segment;
-
-        widgets.add(
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E1E2E), // dark code background
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Text(
-                code.trimRight(),
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 13,
-                  color: Color(0xFFCDD6F4), // light text on dark bg
-                  height: 1.6,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ),
-          ),
-        );
-      } else {
-        // Prose text
-        widgets.add(
-          Text(
-            segment,
-            style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                height: 1.6,
-                color: AppColors.textPrimary),
-          ),
-        );
-      }
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: widgets,
     );
   }
 }

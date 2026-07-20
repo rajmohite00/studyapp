@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/test_provider.dart';
 import '../app_theme.dart';
 
-// ── Preset subjects ────────────────────────────────────────────────────────────
 const _kSubjects = [
-  'Java', 'DBMS', 'Operating System', 'Computer Networks',
-  'Python', 'C++', 'JavaScript', 'React', 'Flutter', 'Node.js',
-  'Data Structures', 'Algorithms', 'SQL', 'Machine Learning',
-  'Mathematics', 'Physics', 'Chemistry', 'Biology', 'History', 'Geography',
+  'Mathematics','Biology','Chemistry','Physics','History',
+  'English','Geography','Computer Science','Economics','Psychology',
+  'Java','Python','JavaScript','Data Structures','Machine Learning',
+];
+
+const _kTestTypes = [
+  (Icons.edit_note_rounded,    'Practice',     'Untimed casual practice',   'practice'),
+  (Icons.timer_outlined,       'Mock Exam',    'Full timed simulation',      'mock_exam'),
+  (Icons.book_outlined,        'Chapter Test', 'Specific topic focus',       'chapter_test'),
+  (Icons.refresh_rounded,      'Revision',     'Review past mistakes',       'revision'),
 ];
 
 class TestSetupScreen extends ConsumerStatefulWidget {
@@ -19,540 +25,293 @@ class TestSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _TestSetupState extends ConsumerState<TestSetupScreen> {
-  int _step = 0; // 0=subject, 1=type, 2=options
+  String _subject    = 'Mathematics';
+  String _testType   = 'practice';
+  String _difficulty = 'medium';
+  int    _qCount     = 20;
+  int    _timer      = 30;
+  bool   _generating = false;
 
-  // Step 1
-  String? _subject;
-  final _customSubjectCtrl = TextEditingController();
-
-  // Step 2
-  String _testType = 'full_subject'; // full_subject | topic_wise
-  final List<String> _topics = [];
-  final _topicCtrl = TextEditingController();
-
-  // Step 3
-  String _difficulty = 'mixed';
-  int _questionCount = 20;
-  int _timerMinutes = 0;
-
-  bool _isGenerating = false;
-
-  @override
-  void dispose() {
-    _customSubjectCtrl.dispose();
-    _topicCtrl.dispose();
-    super.dispose();
-  }
-
-  void _addTopic() {
-    final v = _topicCtrl.text.trim();
-    if (v.isEmpty || _topics.contains(v)) return;
-    setState(() {
-      _topics.add(v);
-      _topicCtrl.clear();
-    });
-  }
-
-  Future<void> _generate() async {
-    if (_subject == null || _subject!.isEmpty) return;
-    if (_testType == 'topic_wise' && _topics.isEmpty) {
-      _showSnack('Please add at least one topic.');
-      return;
-    }
-    setState(() => _isGenerating = true);
+  Future<void> _start() async {
+    setState(() => _generating = true);
     try {
       final test = await ref.read(testServiceProvider).createTest(
-            subject: _subject!,
-            topics: _testType == 'topic_wise' ? _topics : [],
-            testType: _testType,
-            difficulty: _difficulty,
-            questionCount: _questionCount,
-            timerMinutes: _timerMinutes,
-          );
+        subject: _subject,
+        topics: [],
+        testType: _testType == 'practice' ? 'full_subject' : _testType,
+        difficulty: _difficulty,
+        questionCount: _qCount,
+        timerMinutes: _timer,
+      );
       if (!mounted) return;
       ref.invalidate(activeDraftProvider);
       context.go('/tests/active/${test.id}');
     } catch (e) {
       if (!mounted) return;
-      setState(() => _isGenerating = false);
-      String msg = 'Failed to generate. Please try again.';
-      try {
-        if (e.runtimeType.toString().contains('DioException')) {
-          // ignore: avoid_dynamic_calls
-          final data = (e as dynamic).response?.data;
-          if (data is Map && data['error'] != null) {
-            final err = data['error'];
-            if (err is Map) {
-              final details = err['details'];
-              if (details is List && details.isNotEmpty) {
-                msg = details.map((d) => '${d['field']}: ${d['message']}').join(', ');
-              } else {
-                msg = err['message']?.toString() ?? msg;
-              }
-            }
-          }
-          final status = (e as dynamic).response?.statusCode;
-          if (msg == 'Failed to generate. Please try again.') {
-            if (status == 422) msg = 'Validation error. Try again.';
-            else if (status == 404) msg = 'Server not ready. Wait and retry.';
-            else if (status == 429) msg = 'AI rate limit. Wait 1 min.';
-            else if (status == 500) msg = 'Server error. Please retry.';
-            else if (e.toString().contains('ReceiveTimeout')) msg = 'AI timeout. Try fewer questions.';
-          }
-        }
-      } catch (_) {}
-      _showSnack(msg);
+      setState(() => _generating = false);
+      _showErr(_parseErr(e));
     }
   }
 
-  void _showSnack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: const Color(0xFFE53E3E),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
+  String _parseErr(dynamic e) {
+    try {
+      if (e.runtimeType.toString().contains('DioException')) {
+        final data = (e as dynamic).response?.data;
+        if (data is Map && data['error'] is Map) {
+          return data['error']['message']?.toString() ?? 'Failed to generate test.';
+        }
+        final code = (e as dynamic).response?.statusCode;
+        if (code == 429) return 'AI rate limit. Wait 1 minute and retry.';
+        if (code == 500) return 'Server error. Please retry.';
+      }
+    } catch (_) {}
+    return 'Failed to generate test. Try again.';
+  }
+
+  void _showErr(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg, style: GoogleFonts.outfit(fontSize: 13)),
+      backgroundColor: const Color(0xFFEF4444),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
-    final titles = ['Choose Subject', 'Test Type', 'Options'];
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              size: 18, color: AppColors.textPrimary),
-          onPressed: () =>
-              _step > 0 ? setState(() => _step--) : context.pop(),
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          onPressed: () => context.pop(),
         ),
-        title: Text(titles[_step],
-            style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary)),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(40),
-          child: Column(children: [
-            const Divider(height: 1, color: Color(0xFFEEEEEE)),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(3, (i) {
-                  final done = i < _step;
-                  final active = i == _step;
-                  return Row(mainAxisSize: MainAxisSize.min, children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      width: active ? 24 : 8,
-                      height: 8,
+        title: Text('New Test', style: GoogleFonts.outfit(
+            fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+        bottom: const PreferredSize(preferredSize: Size.fromHeight(1),
+            child: Divider(height: 1, color: Color(0xFFF0F0F5))),
+      ),
+      body: Column(children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+
+              // ── Subject ─────────────────────────────────
+              _Label('Choose Subject'),
+              const SizedBox(height: 12),
+              Wrap(spacing: 8, runSpacing: 8,
+                children: _kSubjects.map((s) {
+                  final sel = _subject == s;
+                  return GestureDetector(
+                    onTap: () => setState(() => _subject = s),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
                       decoration: BoxDecoration(
-                        color: active || done
-                            ? AppColors.primary
-                            : const Color(0xFFDDDDE8),
-                        borderRadius: BorderRadius.circular(4),
+                        color: sel ? AppColors.primary : Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                            color: sel ? AppColors.primary : const Color(0xFFE8E6F0)),
+                        boxShadow: sel ? [BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.22),
+                            blurRadius: 8, offset: const Offset(0, 3))] : [],
                       ),
+                      child: Text(s, style: GoogleFonts.outfit(
+                          fontSize: 13, fontWeight: FontWeight.w600,
+                          color: sel ? Colors.white : AppColors.textPrimary)),
                     ),
-                    if (i < 2) const SizedBox(width: 6),
-                  ]);
-                }),
+                  );
+                }).toList(),
               ),
-            ),
-          ]),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _step == 0
-                ? _SubjectStep(
-                    selected: _subject,
-                    customCtrl: _customSubjectCtrl,
-                    onSelect: (s) => setState(() => _subject = s),
-                  )
-                : _step == 1
-                    ? _TypeStep(
-                        testType: _testType,
-                        topics: _topics,
-                        topicCtrl: _topicCtrl,
-                        onTypeChange: (t) =>
-                            setState(() => _testType = t),
-                        onAddTopic: _addTopic,
-                        onRemoveTopic: (t) =>
-                            setState(() => _topics.remove(t)),
-                      )
-                    : _OptionsStep(
-                        difficulty: _difficulty,
-                        questionCount: _questionCount,
-                        timerMinutes: _timerMinutes,
-                        onDifficultyChange: (d) =>
-                            setState(() => _difficulty = d),
-                        onCountChange: (c) =>
-                            setState(() => _questionCount = c),
-                        onTimerChange: (t) =>
-                            setState(() => _timerMinutes = t),
+              const SizedBox(height: 28),
+
+              // ── Test Type ────────────────────────────────
+              _Label('Test Type'),
+              const SizedBox(height: 12),
+              GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12, mainAxisSpacing: 12,
+                childAspectRatio: 1.55,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: _kTestTypes.map((t) {
+                  final sel = _testType == t.$4;
+                  return GestureDetector(
+                    onTap: () => setState(() => _testType = t.$4),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: sel ? AppColors.primaryLight : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: sel ? AppColors.primary : const Color(0xFFE8E6F0),
+                            width: sel ? 1.5 : 1),
+                        boxShadow: [BoxShadow(
+                            color: sel ? AppColors.primary.withValues(alpha: 0.10)
+                                : Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 8, offset: const Offset(0, 2))],
                       ),
-          ),
-          _BottomBar(
-            step: _step,
-            isGenerating: _isGenerating,
-            canProceed: _step == 0
-                ? (_subject != null && _subject!.isNotEmpty)
-                : true,
-            onNext: () {
-              if (_step == 0 && (_subject == null || _subject!.isEmpty)) {
-                _showSnack('Please select a subject first.');
-                return;
-              }
-              if (_step < 2) {
-                setState(() => _step++);
-              } else {
-                _generate();
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center, children: [
+                        Icon(t.$1, size: 22,
+                            color: sel ? AppColors.primary : AppColors.textSecondary),
+                        const SizedBox(height: 8),
+                        Text(t.$2, style: GoogleFonts.outfit(fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: sel ? AppColors.primary : AppColors.textPrimary)),
+                        Text(t.$3, style: GoogleFonts.outfit(fontSize: 11,
+                            color: AppColors.textSecondary),
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ]),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 28),
 
-// ── Step 1: Subject ───────────────────────────────────────────────────────────
-class _SubjectStep extends StatelessWidget {
-  final String? selected;
-  final TextEditingController customCtrl;
-  final ValueChanged<String> onSelect;
-  const _SubjectStep({required this.selected, required this.customCtrl, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Select a subject',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-        const SizedBox(height: 4),
-        const Text('Choose from the list or type your own',
-            style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 8, runSpacing: 8,
-          children: _kSubjects.map((s) {
-            final isSel = selected == s;
-            return GestureDetector(
-              onTap: () => onSelect(s),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              // ── Difficulty ───────────────────────────────
+              _Label('Difficulty'),
+              const SizedBox(height: 12),
+              Container(
                 decoration: BoxDecoration(
-                  color: isSel ? AppColors.primary : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: isSel ? AppColors.primary : const Color(0xFFE8E8EE)),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE8E6F0)),
                 ),
-                child: Text(s, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
-                    color: isSel ? Colors.white : AppColors.textPrimary)),
+                padding: const EdgeInsets.all(4),
+                child: Row(children: ['easy','medium','hard'].map((d) {
+                  final sel = _difficulty == d;
+                  final colors = {'easy': const Color(0xFF10B981),
+                    'medium': const Color(0xFFF59E0B), 'hard': const Color(0xFFEF4444)};
+                  final c = colors[d]!;
+                  return Expanded(child: GestureDetector(
+                    onTap: () => setState(() => _difficulty = d),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      decoration: BoxDecoration(
+                        color: sel ? c : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(child: Text(
+                        d[0].toUpperCase() + d.substring(1),
+                        style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600,
+                            color: sel ? Colors.white : AppColors.textSecondary),
+                      )),
+                    ),
+                  ));
+                }).toList()),
               ),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 20),
-        Row(children: [
-          Expanded(
-            child: TextField(
-              controller: customCtrl,
-              decoration: const InputDecoration(hintText: 'Custom subject (e.g. Fluid Mechanics)'),
-              onSubmitted: (v) { if (v.trim().isNotEmpty) onSelect(v.trim()); },
-            ),
+              const SizedBox(height: 28),
+
+              // ── Questions ────────────────────────────────
+              _Label('Questions'),
+              const SizedBox(height: 12),
+              Row(children: [10, 20, 30, 40].map((n) {
+                final sel = _qCount == n;
+                return Expanded(child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _qCount = n),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      decoration: BoxDecoration(
+                        color: sel ? AppColors.primary : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: sel ? AppColors.primary : const Color(0xFFE8E6F0)),
+                      ),
+                      child: Column(children: [
+                        Text('$n', style: GoogleFonts.outfit(fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: sel ? Colors.white : AppColors.textPrimary)),
+                        Text('Qs', style: GoogleFonts.outfit(fontSize: 10,
+                            color: sel ? Colors.white70 : AppColors.textSecondary)),
+                      ]),
+                    ),
+                  ),
+                ));
+              }).toList()),
+              const SizedBox(height: 28),
+
+              // ── Time Limit ───────────────────────────────
+              _Label('Time Limit'),
+              const SizedBox(height: 12),
+              Wrap(spacing: 8, runSpacing: 8,
+                children: [(0,'No Limit'),(15,'15 min'),(30,'30 min'),(45,'45 min'),(60,'60 min')]
+                    .map((t) {
+                  final sel = _timer == t.$1;
+                  return GestureDetector(
+                    onTap: () => setState(() => _timer = t.$1),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                      decoration: BoxDecoration(
+                        color: sel ? AppColors.primary : Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                            color: sel ? AppColors.primary : const Color(0xFFE8E6F0)),
+                      ),
+                      child: Text(t.$2, style: GoogleFonts.outfit(fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: sel ? Colors.white : AppColors.textPrimary)),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ]),
           ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () {
-              final v = customCtrl.text.trim();
-              if (v.isNotEmpty) { onSelect(v); customCtrl.clear(); }
-            },
+        ),
+
+        // ── Start Button ─────────────────────────────────
+        Container(
+          color: Colors.white,
+          padding: EdgeInsets.fromLTRB(
+              20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+          child: GestureDetector(
+            onTap: _generating ? null : _start,
             child: Container(
-              height: 48, width: 48,
-              decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.check_rounded, color: Colors.white, size: 20),
-            ),
-          ),
-        ]),
-        if (selected != null && !_kSubjects.contains(selected)) ...[
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3))),
-            child: Text('✓ $selected', style: const TextStyle(color: AppColors.primary,
-                fontWeight: FontWeight.w600, fontSize: 13)),
-          ),
-        ],
-      ]),
-    );
-  }
-}
-
-// ── Step 2: Type ──────────────────────────────────────────────────────────────
-class _TypeStep extends StatelessWidget {
-  final String testType;
-  final List<String> topics;
-  final TextEditingController topicCtrl;
-  final ValueChanged<String> onTypeChange;
-  final VoidCallback onAddTopic;
-  final ValueChanged<String> onRemoveTopic;
-  const _TypeStep({required this.testType, required this.topics, required this.topicCtrl,
-      required this.onTypeChange, required this.onAddTopic, required this.onRemoveTopic});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Choose test type',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-        const SizedBox(height: 16),
-        _TypeCard(selected: testType == 'full_subject', title: 'Entire Subject',
-            subtitle: 'Questions from all topics', icon: Icons.library_books_outlined,
-            onTap: () => onTypeChange('full_subject')),
-        const SizedBox(height: 10),
-        _TypeCard(selected: testType == 'topic_wise', title: 'Topic Wise',
-            subtitle: 'Focus on specific topics you choose', icon: Icons.topic_outlined,
-            onTap: () => onTypeChange('topic_wise')),
-        if (testType == 'topic_wise') ...[
-          const SizedBox(height: 20),
-          const Text('Add topics', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary)),
-          const SizedBox(height: 8),
-          Row(children: [
-            Expanded(child: TextField(controller: topicCtrl,
-                decoration: const InputDecoration(hintText: 'e.g. OOP, Normalization'),
-                onSubmitted: (_) => onAddTopic())),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: onAddTopic,
-              child: Container(height: 48, width: 48,
-                decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
-                child: const Icon(Icons.add_rounded, color: Colors.white, size: 22)),
-            ),
-          ]),
-          if (topics.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Wrap(spacing: 8, runSpacing: 8,
-              children: topics.map((t) => Chip(
-                    label: Text(t, style: const TextStyle(fontSize: 12, color: AppColors.primary)),
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.08),
-                    deleteIconColor: AppColors.primary,
-                    side: BorderSide(color: AppColors.primary.withValues(alpha: 0.2)),
-                    onDeleted: () => onRemoveTopic(t),
-                  )).toList()),
-          ],
-        ],
-      ]),
-    );
-  }
-}
-
-class _TypeCard extends StatelessWidget {
-  final bool selected;
-  final String title, subtitle;
-  final IconData icon;
-  final VoidCallback onTap;
-  const _TypeCard({required this.selected, required this.title, required this.subtitle,
-      required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primary.withValues(alpha: 0.05) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: selected ? AppColors.primary : const Color(0xFFE8E8EE),
-              width: selected ? 1.5 : 1),
-        ),
-        child: Row(children: [
-          Container(width: 38, height: 38,
-            decoration: BoxDecoration(
-              color: selected ? AppColors.primary.withValues(alpha: 0.1) : const Color(0xFFF5F5F8),
-              borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, size: 20, color: selected ? AppColors.primary : AppColors.textSecondary)),
-          const SizedBox(width: 14),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700,
-                color: selected ? AppColors.primary : AppColors.textPrimary)),
-            Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-          ])),
-          if (selected)
-            Container(width: 20, height: 20,
-              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-              child: const Icon(Icons.check_rounded, color: Colors.white, size: 13)),
-        ]),
-      ),
-    );
-  }
-}
-
-// ── Step 3: Options ───────────────────────────────────────────────────────────
-class _OptionsStep extends StatelessWidget {
-  final String difficulty;
-  final int questionCount, timerMinutes;
-  final ValueChanged<String> onDifficultyChange;
-  final ValueChanged<int> onCountChange, onTimerChange;
-  const _OptionsStep({required this.difficulty, required this.questionCount,
-      required this.timerMinutes, required this.onDifficultyChange,
-      required this.onCountChange, required this.onTimerChange});
-
-  @override
-  Widget build(BuildContext context) {
-    const difficulties = [('easy','Easy'), ('medium','Medium'), ('hard','Hard'), ('mixed','Mixed')];
-    const counts = [10, 20, 30];
-    const timers = [(0,'No Timer'), (15,'15 min'), (30,'30 min'), (45,'45 min'), (60,'60 min')];
-    const diffColors = {'easy': Color(0xFF059669), 'medium': Color(0xFFD97706),
-        'hard': Color(0xFFE53E3E), 'mixed': AppColors.primary};
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Container(
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE8E8EE))),
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // Difficulty
-          _OptionLabel('Difficulty'),
-          const SizedBox(height: 10),
-          Wrap(spacing: 8, runSpacing: 8,
-            children: difficulties.map((d) {
-              final isSel = difficulty == d.$1;
-              final clr = diffColors[d.$1] ?? AppColors.primary;
-              return _Chip(label: d.$2, selected: isSel, color: clr,
-                  onTap: () => onDifficultyChange(d.$1));
-            }).toList()),
-          const SizedBox(height: 20),
-          // Questions
-          _OptionLabel('Number of Questions'),
-          const SizedBox(height: 10),
-          Row(children: counts.map((c) {
-            final isSel = questionCount == c;
-            return Expanded(child: Padding(
-              padding: EdgeInsets.only(right: c != counts.last ? 8.0 : 0),
-              child: GestureDetector(
-                onTap: () => onCountChange(c),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  decoration: BoxDecoration(
-                    color: isSel ? AppColors.primary : const Color(0xFFF5F5F8),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: isSel ? AppColors.primary : const Color(0xFFE8E8EE))),
-                  child: Column(children: [
-                    Text('$c', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18,
-                        color: isSel ? Colors.white : AppColors.textPrimary)),
-                    Text('Qs', style: TextStyle(fontSize: 10,
-                        color: isSel ? Colors.white70 : AppColors.textSecondary)),
-                  ]),
-                ),
+              width: double.infinity, height: 54,
+              decoration: BoxDecoration(
+                gradient: _generating ? null : AppColors.heroGradient,
+                color: _generating ? AppColors.divider : null,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: _generating ? [] : [BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.30),
+                    blurRadius: 16, offset: const Offset(0, 6))],
               ),
-            ));
-          }).toList()),
-          const SizedBox(height: 20),
-          // Timer
-          _OptionLabel('Time Limit'),
-          const SizedBox(height: 10),
-          Wrap(spacing: 8, runSpacing: 8,
-            children: timers.map((t) {
-              final isSel = timerMinutes == t.$1;
-              return _Chip(label: t.$2, selected: isSel, color: AppColors.primary,
-                  onTap: () => onTimerChange(t.$1));
-            }).toList()),
-        ]),
-      ),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                if (_generating)
+                  const SizedBox(width: 20, height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                else
+                  const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
+                const SizedBox(width: 8),
+                Text(_generating ? 'Generating…' : 'Start Test',
+                    style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700,
+                        color: _generating ? AppColors.textSecondary : Colors.white)),
+              ]),
+            ),
+          ),
+        ),
+      ]),
     );
   }
 }
 
-class _OptionLabel extends StatelessWidget {
+class _Label extends StatelessWidget {
   final String text;
-  const _OptionLabel(this.text);
+  const _Label(this.text);
   @override
   Widget build(BuildContext context) => Text(text,
-      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary));
-}
-
-class _Chip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final Color color;
-  final VoidCallback onTap;
-  const _Chip({required this.label, required this.selected, required this.color, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: selected ? color : const Color(0xFFF5F5F8),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: selected ? color : const Color(0xFFE8E8EE)),
-          ),
-          child: Text(label,
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
-                  color: selected ? Colors.white : AppColors.textPrimary)),
-        ),
-      );
-}
-
-// ── Bottom Bar ────────────────────────────────────────────────────────────────
-class _BottomBar extends StatelessWidget {
-  final int step;
-  final bool isGenerating, canProceed;
-  final VoidCallback onNext;
-  const _BottomBar({required this.step, required this.isGenerating,
-      required this.canProceed, required this.onNext});
-
-  @override
-  Widget build(BuildContext context) {
-    final isLast = step == 2;
-    final canTap = !isGenerating && canProceed;
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
-      child: GestureDetector(
-        onTap: canTap ? onNext : null,
-        child: Container(
-          width: double.infinity, height: 52,
-          decoration: BoxDecoration(
-            color: canTap ? AppColors.primary : const Color(0xFFDDDDE8),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Center(
-            child: isGenerating
-                ? const Row(mainAxisSize: MainAxisSize.min, children: [
-                    SizedBox(width: 18, height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-                    SizedBox(width: 10),
-                    Text('Generating questions…',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                  ])
-                : Text(isLast ? 'Generate Test ✨' : 'Next  →',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
-                        color: canTap ? Colors.white : AppColors.textSecondary)),
-          ),
-        ),
-      ),
-    );
-  }
+      style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700,
+          color: AppColors.textPrimary));
 }
